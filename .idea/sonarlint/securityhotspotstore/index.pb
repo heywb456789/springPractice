@@ -21,3 +21,13 @@ Z
 *src/test/java/org/minjae/MenuItemTest.java,3\a\3a69aeb3c125467bbd932c36eeffc87397ddf3eb
 V
 &src/main/java/org/minjae/MenuItem.java,8\6\86bd5e45280ec9e989356c2bfe9f4ea884a398b0
+Y
+)src/test/java/org/minjae/CookingTest.java,b\f\bf1229f669ad946d3fb0ffb9da11386566852aca
+U
+%src/main/java/org/minjae/Cooking.java,d\2\d2ea8999e07e6385052f49d1631a7b99f6dfa536
+V
+&src/test/java/org/minjae/MenuTest.java,2\0\2094a156ed00547f7eccaef343b3a64aa0acc3db
+R
+"src/main/java/org/minjae/Menu.java,3\d\3d4c9e03c8a83f12d050edbce20dd43a5707c8cc
+V
+&src/main/java/org/minjae/Customer.java,5\5\5564fb63ca4bb198d234bde1d6a0a8496471e3e1
