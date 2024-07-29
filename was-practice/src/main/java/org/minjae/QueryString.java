@@ -1,5 +1,7 @@
 package org.minjae;
 
+import java.util.Optional;
+
 /**
  * packageName       : org.minjae
  * fileName         : QueryString
@@ -19,5 +21,13 @@ public class QueryString {
     public QueryString(String key, String value) {
         this.key = key;
         this.value = value;
+    }
+
+    public boolean exists(String key) {
+        return this.key.equals(key);
+    }
+
+    public Object getValue() {
+        return this.value;
     }
 }

@@ -2,6 +2,7 @@ package org.minjae;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.http.HttpHeaders;
 
 /**
  * packageName       : org.minjae
@@ -16,6 +17,8 @@ import java.io.IOException;
  */
 public class HttpRequest {
     private final RequestLine requestLine;
+//    private final HttpHeaders headers;
+//    private final Body body;
 
     //BufferedReader 를 통해서 들어온 라인의 첫번째를 전달
     public HttpRequest(BufferedReader br) throws IOException {
@@ -23,6 +26,14 @@ public class HttpRequest {
     }
 
     public QueryStrings getQueryString() {
-        return null;
+        return requestLine.getQueryString();
+    }
+
+    public boolean isGetRequest() {
+        return requestLine.isGetRequest();
+    }
+
+    public boolean matchPath(String path) {
+        return requestLine.matchPath(path);
     }
 }

@@ -23,3 +23,5 @@ Y
 )src/main/java/org/minjae/HttpRequest.java,c\0\c0ea51976b45e2ac6d2d3c90921f07408e65de71
 c
 3src/main/java/org/minjae/calculator/Calculator.java,5\7\5774f8278c89e957cbf756bc475bf8fc78db3690
+Z
+*src/main/java/org/minjae/HttpResponse.java,1\5\15d95311c61f07739a833acdf8522303708d5ab0

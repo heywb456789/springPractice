@@ -21,12 +21,24 @@ public class RequestLine {
 
     private final String method;
     private final String urlPath;
-    private String queryString;
+    private QueryStrings queryString;
 
     public RequestLine(String method, String urlPath, String queryString) {
         this.method = method;
         this.urlPath = urlPath;
-        this.queryString = queryString;
+        this.queryString = new QueryStrings(queryString);
+    }
+
+    public boolean isGetRequest() {
+        return "GET".equals(this.method);
+    }
+
+    public boolean matchPath(String path) {
+        return path.equals(this.urlPath);
+    }
+
+    public QueryStrings getQueryString() {
+        return this.queryString;
     }
 
     public RequestLine(String requestLine) {
@@ -37,7 +49,7 @@ public class RequestLine {
         this.urlPath = urlPathTokens[0];
 
         if(urlPathTokens.length == 2) {
-            this.queryString = urlPathTokens[1];
+            this.queryString = new QueryStrings(urlPathTokens[1]);
         }
 
     }
@@ -54,4 +66,6 @@ public class RequestLine {
     public int hashCode() {
         return Objects.hash(method, urlPath, queryString);
     }
+
+
 }

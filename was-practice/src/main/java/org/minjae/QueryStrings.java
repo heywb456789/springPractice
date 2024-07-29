@@ -30,4 +30,12 @@ public class QueryStrings {
                     queryStringList.add(new QueryString(values[0], values[1]));
                 });
     }
+
+    public String getValue(String key) {
+        return (String) this.queryStringList.stream()
+                .filter(queryString -> queryString.exists(key))
+                .map(QueryString::getValue)
+                .findFirst()
+                .orElse(null);
+    }
 }
