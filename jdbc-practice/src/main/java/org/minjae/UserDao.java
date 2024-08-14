@@ -21,7 +21,7 @@ public class UserDao {
 
         //try -withResource 사용시 자동으로 리소스 해제
         try{
-            con = getConnection();
+            con = ConnectionManager.getConnection();
             String sql = "insert into users (userId, password, name, email) values (?, ?, ? ,?)";
             ps = con.prepareStatement(sql);
             ps.setString(1, user.getUserID());
@@ -43,26 +43,13 @@ public class UserDao {
         }
     }
 
-    private Connection getConnection() {
-        String url = "jdbc:h2:tcp://localhost/~/test";
-        String user = "sa";
-        String password = "";
-
-        try{
-            Class.forName("org.h2.Driver");
-            return DriverManager.getConnection(url, user, password);
-        }catch(Exception e){
-            return null;
-        }
-    }
-
     public User findByUserId(String userId) throws SQLException {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null; //조회된 값을 가져온다.
 
         try{
-            con = getConnection();
+            con = ConnectionManager.getConnection();
             String sql = "select * from users where userId = ?";
             ps = con.prepareStatement(sql);
             ps.setString(1, userId);
