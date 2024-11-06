@@ -23,5 +23,6 @@ public class ReflectionTest {
         beans.addAll(reflection.getTypesAnnotatedWith(Controller.class));
 
         logger.debug("beans [{}]", beans);
+
     }
 }
