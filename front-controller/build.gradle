@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.minjae'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    //tomcat
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:8.5.42'
+
+    //servlet
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
+
+    //JSP
+    implementation 'javax.servlet:jstl:1.2'
+
+    //log
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    testImplementation 'org.assertj:assertj-core:3.23.1'
+}
+
+test {
+    useJUnitPlatform()
+}
