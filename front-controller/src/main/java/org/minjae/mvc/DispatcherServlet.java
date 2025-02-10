@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.minjae.mvc.controller.Controller;
+import org.minjae.mvc.controller.HandlerKey;
+import org.minjae.mvc.controller.RequestMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,7 @@ public class DispatcherServlet extends HttpServlet {
         log.info("Dispatching request...");
 
         try {
-            Controller handler = requestMappingHandler.findHandler(request.getRequestURI());
+            Controller handler = requestMappingHandler.findHandler(new HandlerKey(RequestMethod.valueOf(request.getMethod()), request.getRequestURI()));
             String viewName = handler.handleRequest(request, response);
 
             RequestDispatcher requestDispatcher = request.getRequestDispatcher(viewName);
