@@ -3,6 +3,7 @@ package org.minjae.mvc;
 import java.util.HashMap;
 import java.util.Map;
 import org.minjae.mvc.controller.Controller;
+import org.minjae.mvc.controller.ForwardController;
 import org.minjae.mvc.controller.HandlerKey;
 import org.minjae.mvc.controller.HomeController;
 import org.minjae.mvc.controller.RequestMethod;
@@ -17,7 +18,7 @@ import org.minjae.mvc.controller.UserCreateController;
  * @DATE @AUTHOR       @NOTE ----------------------------------------------------------- 2025-02-06
  * MinjaeKim       최초 생성
  */
-public class RequestMappingHandler {
+public class RequestMappingHandler implements HandlerMapping{
     //[key] /users  [value] UserController
 //    private Map<String, Controller> mappings = new HashMap<String, Controller>();
     private Map<HandlerKey, Controller> mappings = new HashMap<HandlerKey, Controller>();
@@ -26,6 +27,7 @@ public class RequestMappingHandler {
         mappings.put(new HandlerKey(RequestMethod.GET,"/"), new HomeController());
         mappings.put(new HandlerKey(RequestMethod.GET,"/users"), new HomeController());
         mappings.put(new HandlerKey(RequestMethod.POST,"/users"), new UserCreateController());
+        mappings.put(new HandlerKey(RequestMethod.POST,"/users/form"), new ForwardController("/users/form"));
     }
 
     public Controller findHandler(HandlerKey uriPath){

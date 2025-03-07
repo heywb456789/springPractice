@@ -1,6 +1,10 @@
 package org.minjae.mvc;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,6 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.minjae.mvc.controller.Controller;
 import org.minjae.mvc.controller.HandlerKey;
 import org.minjae.mvc.controller.RequestMethod;
+import org.minjae.mvc.view.JspViewResolever;
+import org.minjae.mvc.view.ModelAndView;
+import org.minjae.mvc.view.View;
+import org.minjae.mvc.view.ViewResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +35,21 @@ public class DispatcherServlet extends HttpServlet {
 
     private final static Logger log = LoggerFactory.getLogger(DispatcherServlet.class);
 
-    private RequestMappingHandler requestMappingHandler;
+//    private RequestMappingHandler requestMappingHandler;
+    //Interface로
+    private HandlerMapping handlerMapping;
+    private List<ViewResolver> viewResolvers;
+
+    private List<HandlerAdapter> handlerAdapters;
 
     @Override
     public void init() throws ServletException {
-        requestMappingHandler = new RequestMappingHandler();
+        RequestMappingHandler requestMappingHandler = new RequestMappingHandler();
         requestMappingHandler.init();
+        handlerMapping = requestMappingHandler;
+
+        handlerAdapters= List.of(new SimpleControllerHandlerAdapter());
+        viewResolvers = Collections.singletonList(new JspViewResolever());
     }
 
     @Override
@@ -41,11 +58,28 @@ public class DispatcherServlet extends HttpServlet {
         log.info("Dispatching request...");
 
         try {
-            Controller handler = requestMappingHandler.findHandler(new HandlerKey(RequestMethod.valueOf(request.getMethod()), request.getRequestURI()));
-            String viewName = handler.handleRequest(request, response);
+            //핸들러 서치
+//            Controller handler = handlerMapping.findHandler(new HandlerKey(RequestMethod.valueOf(request.getMethod()), request.getRequestURI()));
+            //service 에서 Object로 바꾸고 Anootation도 받을수 있도록 변경
+            Controller handler = handlerMapping.findHandler(new HandlerKey(RequestMethod.valueOf(request.getMethod()), request.getRequestURI()));
+//            String viewName = handler.handleRequest(request, response);
 
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher(viewName);
-            requestDispatcher.forward(request, response);
+//            RequestDispatcher requestDispatcher = request.getRequestDispatcher(viewName);
+//            requestDispatcher.forward(request, response);
+            //핸들러 어답터 서치
+            HandlerAdapter handlerAdapter = handlerAdapters.stream()
+                .filter(ha->ha.supports(handler))
+                .findFirst()
+                .orElseThrow(()->new ServletException("No handler found for request: " + request.getRequestURI()));
+
+            //어답터에서 찾아서 실행하면 ModelAndView Return
+            ModelAndView modelAndView = handlerAdapter.handle(request, response, handler);
+
+            //뷰 리졸버에서 뷰를 선택하여 렌더링
+            for(ViewResolver viewResolver : viewResolvers) {
+                View view = viewResolver.resolveView(modelAndView.getViewName());
+                view.render(modelAndView.getModel(),request,response);
+            }
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);

@@ -6,17 +6,22 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author : MinjaeKim
  * @packageName : org.minjae.mvc.controller
- * @fileName : HomeController
- * @date : 2025-02-06
- * @description : ===========================================================
- * @DATE @AUTHOR       @NOTE ----------------------------------------------------------- 2025-02-06
- * MinjaeKim       최초 생성
+ * @fileName : ForwardController
+ * @date : 2025-03-07
+ * @description :
+ * @AUTHOR : MinjaeKim
  */
-public class HomeController implements Controller {
+public class ForwardController implements Controller {
+
+    public ForwardController(String forwardUri) {
+        this.forwardUri = forwardUri;
+    }
+
+    private final String forwardUri;
 
     @Override
     public String handleRequest(HttpServletRequest request, HttpServletResponse response)
         throws Exception {
-        return "home";
+        return forwardUri;
     }
 }

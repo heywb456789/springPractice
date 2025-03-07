@@ -11,8 +11,9 @@ import org.minjae.mvc.repository.UserRepository;
  * @fileName : UserCreateController
  * @date : 2025-02-06
  * @description : ===========================================================
- * @DATE @AUTHOR       @NOTE ----------------------------------------------------------- 2025-02-06
- * MinjaeKim       최초 생성
+ * @DATE : 2025-02-06
+ * @AUTHOR : MinjaeKim
+ * @NOTE : 최초 생성
  */
 public class UserCreateController implements Controller {
 
