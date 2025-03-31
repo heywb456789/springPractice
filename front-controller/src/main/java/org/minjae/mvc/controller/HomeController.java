@@ -2,6 +2,8 @@ package org.minjae.mvc.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.minjae.mvc.annotation.Controller;
+import org.minjae.mvc.annotation.RequestMapping;
 
 /**
  * @author : MinjaeKim
@@ -12,9 +14,11 @@ import javax.servlet.http.HttpServletResponse;
  * @DATE @AUTHOR       @NOTE ----------------------------------------------------------- 2025-02-06
  * MinjaeKim       최초 생성
  */
-public class HomeController implements Controller {
+//public class HomeController implements Controller {
+@Controller
+public class HomeController {
 
-    @Override
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     public String handleRequest(HttpServletRequest request, HttpServletResponse response)
         throws Exception {
         return "home";

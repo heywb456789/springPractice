@@ -21,6 +21,8 @@ dependencies {
     //JSP
     implementation 'javax.servlet:jstl:1.2'
 
+    implementation 'org.reflections:reflections:0.9.12'
+
     //log
     implementation 'ch.qos.logback:logback-classic:1.2.3'
 

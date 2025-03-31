@@ -1,17 +1,13 @@
 package org.minjae.mvc;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.minjae.mvc.controller.Controller;
 import org.minjae.mvc.controller.HandlerKey;
 import org.minjae.mvc.controller.RequestMethod;
 import org.minjae.mvc.view.JspViewResolever;
@@ -37,7 +33,7 @@ public class DispatcherServlet extends HttpServlet {
 
 //    private RequestMappingHandler requestMappingHandler;
     //Interface로
-    private HandlerMapping handlerMapping;
+    private List<HandlerMapping> handlerMappings;
     private List<ViewResolver> viewResolvers;
 
     private List<HandlerAdapter> handlerAdapters;
@@ -46,9 +42,12 @@ public class DispatcherServlet extends HttpServlet {
     public void init() throws ServletException {
         RequestMappingHandler requestMappingHandler = new RequestMappingHandler();
         requestMappingHandler.init();
-        handlerMapping = requestMappingHandler;
 
-        handlerAdapters= List.of(new SimpleControllerHandlerAdapter());
+        AnnorarionHandlerMapping ahm = new AnnorarionHandlerMapping("org.minjae");
+        ahm.initialize();
+
+        handlerMappings = List.of(requestMappingHandler, ahm);
+        handlerAdapters= List.of(new SimpleControllerHandlerAdapter(), new AnnotationHandlerAdapter());
         viewResolvers = Collections.singletonList(new JspViewResolever());
     }
 
@@ -56,12 +55,18 @@ public class DispatcherServlet extends HttpServlet {
     protected void service(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         log.info("Dispatching request...");
-
+        String requestUrI = request.getRequestURI();
+        RequestMethod requestMethod = RequestMethod.valueOf(request.getMethod());
         try {
             //핸들러 서치
 //            Controller handler = handlerMapping.findHandler(new HandlerKey(RequestMethod.valueOf(request.getMethod()), request.getRequestURI()));
             //service 에서 Object로 바꾸고 Anootation도 받을수 있도록 변경
-            Controller handler = handlerMapping.findHandler(new HandlerKey(RequestMethod.valueOf(request.getMethod()), request.getRequestURI()));
+            Object handler = handlerMappings.stream()
+                .filter(hm -> hm.findHandler(new HandlerKey(requestMethod, requestUrI)) != null)
+                .map(hm -> hm.findHandler(new HandlerKey(requestMethod, requestUrI)))
+                .findFirst()
+                .orElseThrow(() -> new ServletException("no Handler"));
+//            findHandler(new HandlerKey(RequestMethod.valueOf(request.getMethod()), request.getRequestURI()));
 //            String viewName = handler.handleRequest(request, response);
 
 //            RequestDispatcher requestDispatcher = request.getRequestDispatcher(viewName);
