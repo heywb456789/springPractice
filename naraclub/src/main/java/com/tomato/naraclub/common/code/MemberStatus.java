@@ -1,4 +1,4 @@
-package com.tomato.naraclub.domain;
+package com.tomato.naraclub.common.code;
 
 public enum MemberStatus {
     BLOCKED,

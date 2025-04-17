@@ -1,5 +1,7 @@
 package com.tomato.naraclub.common.exception;
 
+import com.tomato.naraclub.common.dto.CustomFieldError;
+import com.tomato.naraclub.common.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

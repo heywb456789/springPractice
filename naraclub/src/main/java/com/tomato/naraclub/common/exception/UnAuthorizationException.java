@@ -1,6 +1,6 @@
 package com.tomato.naraclub.common.exception;
 
-import me.bread.common.code.ResponseStatus;
+import com.tomato.naraclub.common.code.ResponseStatus;
 
 public class UnAuthorizationException extends RuntimeException {
 

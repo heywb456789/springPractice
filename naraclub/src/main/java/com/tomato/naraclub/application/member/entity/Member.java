@@ -1,15 +1,14 @@
-package com.tomato.naraclub.domain;
+package com.tomato.naraclub.application.member.entity;
 
+import com.tomato.naraclub.common.code.MemberStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "tb_members")
 @Getter
-@NoArgsConstructor
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class Member {
@@ -26,6 +25,10 @@ public class Member {
 
     @Column(nullable = false, length = 10)
     private String inviteCode;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private MemberStatus status;
 
 
 }
