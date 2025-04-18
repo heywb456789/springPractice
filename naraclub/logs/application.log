@@ -17384,3 +17384,825 @@ java.lang.IllegalArgumentException: Name for argument of type [java.lang.String]
 2025-04-18 16:43:26.210 INFO  [SpringApplicationShutdownHook] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2025-04-18 16:43:26.211 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Shutdown initiated...
 2025-04-18 16:43:26.212 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Shutdown completed.
+2025-04-18 16:43:31.428 INFO  [restartedMain] c.t.naraclub.NaraclubApplication - Starting NaraclubApplication using Java 21.0.6 with PID 17704 (C:\workspace.samplecode\springPractice\naraclub\out\production\classes started by MinjaeKim in C:\workspace.samplecode\springPractice\naraclub)
+2025-04-18 16:43:31.429 DEBUG [restartedMain] c.t.naraclub.NaraclubApplication - Running with Spring Boot v3.3.11-SNAPSHOT, Spring v6.1.19
+2025-04-18 16:43:31.430 INFO  [restartedMain] c.t.naraclub.NaraclubApplication - The following 1 profile is active: "local"
+2025-04-18 16:43:31.473 INFO  [restartedMain] o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-18 16:43:31.473 INFO  [restartedMain] o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-18 16:43:32.526 INFO  [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-18 16:43:32.685 INFO  [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 153 ms. Found 1 JPA repository interface.
+2025-04-18 16:43:33.358 INFO  [restartedMain] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-04-18 16:43:33.369 INFO  [restartedMain] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-04-18 16:43:33.369 INFO  [restartedMain] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.40]
+2025-04-18 16:43:33.434 INFO  [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-04-18 16:43:33.435 INFO  [restartedMain] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1962 ms
+2025-04-18 16:43:33.681 INFO  [restartedMain] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-18 16:43:33.736 INFO  [restartedMain] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.5.3.Final
+2025-04-18 16:43:33.769 INFO  [restartedMain] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-04-18 16:43:34.098 INFO  [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-04-18 16:43:34.126 INFO  [restartedMain] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Starting...
+2025-04-18 16:43:34.199 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.executeSql(PoolBase.java:579)
+1. SELECT 1
+
+2025-04-18 16:43:34.202 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.executeSql(PoolBase.java:579)
+1. SELECT 1
+ {executed in 3 msec}
+2025-04-18 16:43:34.203 INFO  [restartedMain] com.zaxxer.hikari.pool.HikariPool - narasarang-pool - Added connection net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy@1802f3c4
+2025-04-18 16:43:34.204 INFO  [restartedMain] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Start completed.
+2025-04-18 16:43:34.218 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:110)
+1. SELECT @@character_set_database, @@sql_mode
+
+2025-04-18 16:43:34.218 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:110)
+1. SELECT @@character_set_database, @@sql_mode
+ {executed in 0 msec}
+2025-04-18 16:43:34.230 WARN  [restartedMain] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-04-18 16:43:35.097 INFO  [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-04-18 16:43:35.114 DEBUG [restartedMain] org.hibernate.SQL - 
+    alter table t_member 
+       drop 
+       foreign key FKe7vhmq9mm9t5hyqj1c3069edn
+2025-04-18 16:43:35.115 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+
+2025-04-18 16:43:35.115 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+ {executed in 0 msec}
+2025-04-18 16:43:35.115 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       drop 
+       foreign key FKe7vhmq9mm9t5hyqj1c3069edn
+
+2025-04-18 16:43:35.132 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       drop 
+       foreign key FKe7vhmq9mm9t5hyqj1c3069edn
+ {executed in 16 msec}
+2025-04-18 16:43:35.133 DEBUG [restartedMain] org.hibernate.SQL - 
+    drop table if exists t_member
+2025-04-18 16:43:35.133 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. drop table if exists t_member
+
+2025-04-18 16:43:35.142 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. drop table if exists t_member
+ {executed in 9 msec}
+2025-04-18 16:43:35.148 DEBUG [restartedMain] org.hibernate.SQL - 
+    create table t_member (
+        verified bit not null comment '신원인증 여부',
+        created_at datetime(6) comment '등록일시',
+        id bigint not null auto_increment,
+        inviter_id bigint,
+        last_access_at datetime(6) comment '마지막 접속 시간',
+        updated_at datetime(6) comment '수정일시',
+        invite_code varchar(10) not null comment '초대코드 - 가입시 자동생성',
+        phone_number varchar(20) comment '폰번호',
+        name varchar(50) not null comment '사용자 명',
+        created_by varchar(100) comment '등록자',
+        email varchar(100) comment '이메일',
+        password varchar(100) comment 'tongtongPasswd',
+        updated_by varchar(100) comment '수정자',
+        user_key varchar(100) comment 'tongtongOneId',
+        profile_img varchar(255) comment '프로필 이미지',
+        role enum ('ADMIN','USER_ACTIVE','USER_INACTIVE') not null comment '유저 롤',
+        status enum ('ACTIVE','BLOCKED','DELETED','TEMPORARY_INVITE','TEMPORARY_PASS') not null comment '유저 상태',
+        primary key (id)
+    ) engine=InnoDB
+2025-04-18 16:43:35.149 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. create table t_member (
+        verified bit not null comment '신원인증 여부',
+        created_at datetime(6) comment '등록일시',
+        id bigint not null auto_increment,
+        inviter_id bigint,
+        last_access_at datetime(6) comment '마지막 접속 시간',
+        updated_at datetime(6) comment '수정일시',
+        invite_code varchar(10) not null comment '초대코드 - 가입시 자동생성',
+        phone_number varchar(20) comment '폰번호',
+        name varchar(50) not null comment '사용자 명',
+        created_by varchar(100) comment '등록자',
+        email varchar(100) comment '이메일',
+        password varchar(100) comment 'tongtongPasswd',
+        updated_by varchar(100) comment '수정자',
+        user_key varchar(100) comment 'tongtongOneId',
+        profile_img varchar(255) comment '프로필 이미지',
+        role enum ('ADMIN','USER_ACTIVE','USER_INACTIVE') not null comment '유저 롤',
+        status enum ('ACTIVE','BLOCKED','DELETED','TEMPORARY_INVITE','TEMPORARY_PASS') not null comment '유저 상태',
+        primary key (id)
+    ) engine=InnoDB
+
+2025-04-18 16:43:35.157 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. create table t_member (
+        verified bit not null comment '신원인증 여부',
+        created_at datetime(6) comment '등록일시',
+        id bigint not null auto_increment,
+        inviter_id bigint,
+        last_access_at datetime(6) comment '마지막 접속 시간',
+        updated_at datetime(6) comment '수정일시',
+        invite_code varchar(10) not null comment '초대코드 - 가입시 자동생성',
+        phone_number varchar(20) comment '폰번호',
+        name varchar(50) not null comment '사용자 명',
+        created_by varchar(100) comment '등록자',
+        email varchar(100) comment '이메일',
+        password varchar(100) comment 'tongtongPasswd',
+        updated_by varchar(100) comment '수정자',
+        user_key varchar(100) comment 'tongtongOneId',
+        profile_img varchar(255) comment '프로필 이미지',
+        role enum ('ADMIN','USER_ACTIVE','USER_INACTIVE') not null comment '유저 롤',
+        status enum ('ACTIVE','BLOCKED','DELETED','TEMPORARY_INVITE','TEMPORARY_PASS') not null comment '유저 상태',
+        primary key (id)
+    ) engine=InnoDB
+ {executed in 7 msec}
+2025-04-18 16:43:35.157 DEBUG [restartedMain] org.hibernate.SQL - 
+    alter table t_member 
+       add constraint UKnm99qmbenr55unxyhmgfinflm unique (user_key)
+2025-04-18 16:43:35.157 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       add constraint UKnm99qmbenr55unxyhmgfinflm unique (user_key)
+
+2025-04-18 16:43:35.173 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       add constraint UKnm99qmbenr55unxyhmgfinflm unique (user_key)
+ {executed in 16 msec}
+2025-04-18 16:43:35.173 DEBUG [restartedMain] org.hibernate.SQL - 
+    alter table t_member 
+       add constraint FKe7vhmq9mm9t5hyqj1c3069edn 
+       foreign key (inviter_id) 
+       references t_member (id)
+2025-04-18 16:43:35.173 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       add constraint FKe7vhmq9mm9t5hyqj1c3069edn 
+       foreign key (inviter_id) 
+       references t_member (id)
+
+2025-04-18 16:43:35.199 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       add constraint FKe7vhmq9mm9t5hyqj1c3069edn 
+       foreign key (inviter_id) 
+       references t_member (id)
+ {executed in 25 msec}
+2025-04-18 16:43:35.202 INFO  [restartedMain] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-18 16:43:35.520 DEBUG [restartedMain] c.t.n.a.s.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2025-04-18 16:43:35.884 INFO  [restartedMain] o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name daoAuthenticationProvider
+2025-04-18 16:43:35.884 WARN  [restartedMain] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used for username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider.
+2025-04-18 16:43:36.260 INFO  [restartedMain] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2025-04-18 16:43:36.515 WARN  [restartedMain] o.s.b.a.t.ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2025-04-18 16:43:36.925 INFO  [restartedMain] o.s.b.d.a.OptionalLiveReloadServer - LiveReload server is running on port 35729
+2025-04-18 16:43:36.990 INFO  [restartedMain] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-04-18 16:43:36.998 INFO  [restartedMain] c.t.naraclub.NaraclubApplication - Started NaraclubApplication in 6.067 seconds (process running for 6.784)
+2025-04-18 16:43:37.471 INFO  [RMI TCP Connection(3)-192.168.56.1] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-18 16:43:37.472 DEBUG [RMI TCP Connection(2)-192.168.56.1] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+
+2025-04-18 16:43:37.472 INFO  [RMI TCP Connection(3)-192.168.56.1] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-04-18 16:43:37.473 DEBUG [RMI TCP Connection(2)-192.168.56.1] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+ {executed in 0 msec}
+2025-04-18 16:43:37.474 INFO  [RMI TCP Connection(3)-192.168.56.1] o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-04-18 16:43:37.479 DEBUG [RMI TCP Connection(2)-192.168.56.1] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:110)
+1. SELECT 1
+
+2025-04-18 16:43:37.480 DEBUG [RMI TCP Connection(2)-192.168.56.1] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:110)
+1. SELECT 1
+ {executed in 1 msec}
+2025-04-18 16:43:37.482 INFO  [RMI TCP Connection(2)-192.168.56.1] jdbc.resultsettable - 
+|--|
+|1 |
+|--|
+|1 |
+|--|
+
+2025-04-18 16:43:41.712 DEBUG [http-nio-8080-exec-1] org.hibernate.SQL - 
+    /* <criteria> */ select
+        m1_0.id,
+        m1_0.created_at,
+        m1_0.created_by,
+        m1_0.email,
+        m1_0.invite_code,
+        m1_0.inviter_id,
+        m1_0.last_access_at,
+        m1_0.name,
+        m1_0.password,
+        m1_0.phone_number,
+        m1_0.profile_img,
+        m1_0.role,
+        m1_0.status,
+        m1_0.updated_at,
+        m1_0.updated_by,
+        m1_0.user_key,
+        m1_0.verified 
+    from
+        t_member m1_0 
+    where
+        m1_0.user_key=?
+2025-04-18 16:43:41.713 DEBUG [http-nio-8080-exec-1] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+
+2025-04-18 16:43:41.714 DEBUG [http-nio-8080-exec-1] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+ {executed in 0 msec}
+2025-04-18 16:43:41.722 DEBUG [http-nio-8080-exec-1] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id,m1_0.created_at,m1_0.created_by,m1_0.email,m1_0.invite_code,m1_0.inviter_id,m1_0.last_access_at,m1_0.name,m1_0.password,m1_0.phone_number,m1_0.profile_img,m1_0.role,m1_0.status,m1_0.updated_at,m1_0.updated_by,m1_0.user_key,m1_0.verified from t_member m1_0 where m1_0.user_key='1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975'
+
+2025-04-18 16:43:41.725 DEBUG [http-nio-8080-exec-1] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id,m1_0.created_at,m1_0.created_by,m1_0.email,m1_0.invite_code,m1_0.inviter_id,m1_0.last_access_at,m1_0.name,m1_0.password,m1_0.phone_number,m1_0.profile_img,m1_0.role,m1_0.status,m1_0.updated_at,m1_0.updated_by,m1_0.user_key,m1_0.verified from t_member m1_0 where m1_0.user_key='1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975'
+ {executed in 3 msec}
+2025-04-18 16:43:41.726 INFO  [http-nio-8080-exec-1] jdbc.resultsettable - 
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+|id |created_at |created_by |email |invite_code |inviter_id |last_access_at |name |password |phone_number |profile_img |role |status |updated_at |updated_by |user_key |verified |
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+
+2025-04-18 16:43:41.734 ERROR [http-nio-8080-exec-1] o.a.c.c.C.[.[.[.[dispatcherServlet] - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception
+org.springframework.security.core.userdetails.UsernameNotFoundException: User not found: 1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975
+	at com.tomato.naraclub.application.security.MemberUserDetailsService.lambda$loadUserByUsername$0(MemberUserDetailsService.java:19)
+	at java.base/java.util.Optional.orElseThrow(Optional.java:403)
+	at com.tomato.naraclub.application.security.MemberUserDetailsService.loadUserByUsername(MemberUserDetailsService.java:19)
+	at com.tomato.naraclub.application.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:39)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:230)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:113)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2025-04-18 16:44:01.710 DEBUG [reactor-http-nio-2] org.hibernate.SQL - 
+    /* <criteria> */ select
+        m1_0.id,
+        m1_0.created_at,
+        m1_0.created_by,
+        m1_0.email,
+        m1_0.invite_code,
+        m1_0.inviter_id,
+        m1_0.last_access_at,
+        m1_0.name,
+        m1_0.password,
+        m1_0.phone_number,
+        m1_0.profile_img,
+        m1_0.role,
+        m1_0.status,
+        m1_0.updated_at,
+        m1_0.updated_by,
+        m1_0.user_key,
+        m1_0.verified 
+    from
+        t_member m1_0 
+    where
+        m1_0.user_key=?
+2025-04-18 16:44:01.711 DEBUG [reactor-http-nio-2] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+
+2025-04-18 16:44:01.711 DEBUG [reactor-http-nio-2] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+ {executed in 0 msec}
+2025-04-18 16:44:01.711 DEBUG [reactor-http-nio-2] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id,m1_0.created_at,m1_0.created_by,m1_0.email,m1_0.invite_code,m1_0.inviter_id,m1_0.last_access_at,m1_0.name,m1_0.password,m1_0.phone_number,m1_0.profile_img,m1_0.role,m1_0.status,m1_0.updated_at,m1_0.updated_by,m1_0.user_key,m1_0.verified from t_member m1_0 where m1_0.user_key='1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975'
+
+2025-04-18 16:44:01.712 DEBUG [reactor-http-nio-2] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id,m1_0.created_at,m1_0.created_by,m1_0.email,m1_0.invite_code,m1_0.inviter_id,m1_0.last_access_at,m1_0.name,m1_0.password,m1_0.phone_number,m1_0.profile_img,m1_0.role,m1_0.status,m1_0.updated_at,m1_0.updated_by,m1_0.user_key,m1_0.verified from t_member m1_0 where m1_0.user_key='1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975'
+ {executed in 1 msec}
+2025-04-18 16:44:01.712 INFO  [reactor-http-nio-2] jdbc.resultsettable - 
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+|id |created_at |created_by |email |invite_code |inviter_id |last_access_at |name |password |phone_number |profile_img |role |status |updated_at |updated_by |user_key |verified |
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+
+2025-04-18 16:44:01.783 DEBUG [reactor-http-nio-2] org.hibernate.SQL - 
+    /* <criteria> */ select
+        m1_0.id 
+    from
+        t_member m1_0 
+    where
+        m1_0.invite_code=? 
+    limit
+        ?
+2025-04-18 16:44:01.784 DEBUG [reactor-http-nio-2] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id from t_member m1_0 where m1_0.invite_code='9O96Q52' limit 1
+
+2025-04-18 16:44:01.784 DEBUG [reactor-http-nio-2] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id from t_member m1_0 where m1_0.invite_code='9O96Q52' limit 1
+ {executed in 0 msec}
+2025-04-18 16:44:01.784 INFO  [reactor-http-nio-2] jdbc.resultsettable - 
+|---|
+|id |
+|---|
+|---|
+
+2025-04-18 16:44:01.808 DEBUG [reactor-http-nio-2] org.hibernate.SQL - 
+    /* insert for
+        com.tomato.naraclub.application.member.entity.Member */insert 
+    into
+        t_member (created_at, created_by, email, invite_code, inviter_id, last_access_at, name, password, phone_number, profile_img, role, status, updated_at, updated_by, user_key, verified) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-04-18 16:44:01.811 DEBUG [reactor-http-nio-2] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+1. /* insert for com.tomato.naraclub.application.member.entity.Member */insert into t_member (created_at,created_by,email,invite_code,inviter_id,last_access_at,name,password,phone_number,profile_img,role,status,updated_at,updated_by,user_key,verified) values ('04/18/2025 16:44:01.785',NULL,NULL,'9O96Q52',NULL,NULL,'김민재','$2a$10$Bt.qJEZplpWSqXOiNkatNOY6se6QO02vzoLBzSarYLcj8ZmP5IQGS','01089754896','','USER_INACTIVE','TEMPORARY_INVITE','04/18/2025 16:44:01.785',NULL,'1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975',0)
+
+2025-04-18 16:44:01.812 DEBUG [reactor-http-nio-2] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+1. /* insert for com.tomato.naraclub.application.member.entity.Member */insert into t_member (created_at,created_by,email,invite_code,inviter_id,last_access_at,name,password,phone_number,profile_img,role,status,updated_at,updated_by,user_key,verified) values ('04/18/2025 16:44:01.785',NULL,NULL,'9O96Q52',NULL,NULL,'김민재','$2a$10$Bt.qJEZplpWSqXOiNkatNOY6se6QO02vzoLBzSarYLcj8ZmP5IQGS','01089754896','','USER_INACTIVE','TEMPORARY_INVITE','04/18/2025 16:44:01.785',NULL,'1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975',0)
+ {executed in 1 msec}
+2025-04-18 16:44:01.813 DEBUG [reactor-http-nio-2] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.getGeneratedKeys(ProxyStatement.java:229)
+1. getGeneratedKeys on query: /* insert for com.tomato.naraclub.application.member.entity.Member */insert into t_member (created_at,created_by,email,invite_code,inviter_id,last_access_at,name,password,phone_number,profile_img,role,status,updated_at,updated_by,user_key,verified) values ('04/18/2025 16:44:01.785',NULL,NULL,'9O96Q52',NULL,NULL,'김민재','$2a$10$Bt.qJEZplpWSqXOiNkatNOY6se6QO02vzoLBzSarYLcj8ZmP5IQGS','01089754896','','USER_INACTIVE','TEMPORARY_INVITE','04/18/2025 16:44:01.785',NULL,'1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975',0)
+ {executed in 1 msec}
+2025-04-18 16:44:01.819 INFO  [reactor-http-nio-2] jdbc.resultsettable - 
+|----------|
+|insert_id |
+|----------|
+|1         |
+|----------|
+
+2025-04-18 16:44:04.726 DEBUG [http-nio-8080-exec-2] org.hibernate.SQL - 
+    /* <criteria> */ select
+        m1_0.id,
+        m1_0.created_at,
+        m1_0.created_by,
+        m1_0.email,
+        m1_0.invite_code,
+        m1_0.inviter_id,
+        m1_0.last_access_at,
+        m1_0.name,
+        m1_0.password,
+        m1_0.phone_number,
+        m1_0.profile_img,
+        m1_0.role,
+        m1_0.status,
+        m1_0.updated_at,
+        m1_0.updated_by,
+        m1_0.user_key,
+        m1_0.verified 
+    from
+        t_member m1_0 
+    where
+        m1_0.user_key=?
+2025-04-18 16:44:04.726 DEBUG [http-nio-8080-exec-2] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+
+2025-04-18 16:44:04.726 DEBUG [http-nio-8080-exec-2] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+ {executed in 0 msec}
+2025-04-18 16:44:04.727 DEBUG [http-nio-8080-exec-2] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id,m1_0.created_at,m1_0.created_by,m1_0.email,m1_0.invite_code,m1_0.inviter_id,m1_0.last_access_at,m1_0.name,m1_0.password,m1_0.phone_number,m1_0.profile_img,m1_0.role,m1_0.status,m1_0.updated_at,m1_0.updated_by,m1_0.user_key,m1_0.verified from t_member m1_0 where m1_0.user_key='1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975'
+
+2025-04-18 16:44:04.727 DEBUG [http-nio-8080-exec-2] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id,m1_0.created_at,m1_0.created_by,m1_0.email,m1_0.invite_code,m1_0.inviter_id,m1_0.last_access_at,m1_0.name,m1_0.password,m1_0.phone_number,m1_0.profile_img,m1_0.role,m1_0.status,m1_0.updated_at,m1_0.updated_by,m1_0.user_key,m1_0.verified from t_member m1_0 where m1_0.user_key='1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975'
+ {executed in 0 msec}
+2025-04-18 16:44:04.733 INFO  [http-nio-8080-exec-2] jdbc.resultsettable - 
+|---|---------------------------|-----------|------|------------|-----------|---------------|-----|-------------------------------------------------------------|-------------|------------|--------------|-----------------|---------------------------|-----------|----------------------------------------------------|---------|
+|id |created_at                 |created_by |email |invite_code |inviter_id |last_access_at |name |password                                                     |phone_number |profile_img |role          |status           |updated_at                 |updated_by |user_key                                            |verified |
+|---|---------------------------|-----------|------|------------|-----------|---------------|-----|-------------------------------------------------------------|-------------|------------|--------------|-----------------|---------------------------|-----------|----------------------------------------------------|---------|
+|1  |2025-04-18 16:44:01.785233 |null       |null  |9O96Q52     |[null]     |null           |김민재  |$2a$10$Bt.qJEZplpWSqXOiNkatNOY6se6QO02vzoLBzSarYLcj8ZmP5IQGS |01089754896  |            |USER_INACTIVE |TEMPORARY_INVITE |2025-04-18 16:44:01.785233 |null       |1706749733!usr-8e1d9ab1-faee-4692-a014-691b2e864975 |false    |
+|---|---------------------------|-----------|------|------------|-----------|---------------|-----|-------------------------------------------------------------|-------------|------------|--------------|-----------------|---------------------------|-----------|----------------------------------------------------|---------|
+
+2025-04-18 16:44:04.740 DEBUG [http-nio-8080-exec-2] org.hibernate.SQL - 
+    /* <criteria> */ select
+        m1_0.id,
+        m1_0.created_at,
+        m1_0.created_by,
+        m1_0.email,
+        m1_0.invite_code,
+        m1_0.inviter_id,
+        m1_0.last_access_at,
+        m1_0.name,
+        m1_0.password,
+        m1_0.phone_number,
+        m1_0.profile_img,
+        m1_0.role,
+        m1_0.status,
+        m1_0.updated_at,
+        m1_0.updated_by,
+        m1_0.user_key,
+        m1_0.verified 
+    from
+        t_member m1_0 
+    where
+        m1_0.invite_code=?
+2025-04-18 16:44:04.741 DEBUG [http-nio-8080-exec-2] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id,m1_0.created_at,m1_0.created_by,m1_0.email,m1_0.invite_code,m1_0.inviter_id,m1_0.last_access_at,m1_0.name,m1_0.password,m1_0.phone_number,m1_0.profile_img,m1_0.role,m1_0.status,m1_0.updated_at,m1_0.updated_by,m1_0.user_key,m1_0.verified from t_member m1_0 where m1_0.invite_code='1111111'
+
+2025-04-18 16:44:04.741 DEBUG [http-nio-8080-exec-2] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52)
+1. /* <criteria> */ select m1_0.id,m1_0.created_at,m1_0.created_by,m1_0.email,m1_0.invite_code,m1_0.inviter_id,m1_0.last_access_at,m1_0.name,m1_0.password,m1_0.phone_number,m1_0.profile_img,m1_0.role,m1_0.status,m1_0.updated_at,m1_0.updated_by,m1_0.user_key,m1_0.verified from t_member m1_0 where m1_0.invite_code='1111111'
+ {executed in 0 msec}
+2025-04-18 16:44:04.742 INFO  [http-nio-8080-exec-2] jdbc.resultsettable - 
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+|id |created_at |created_by |email |invite_code |inviter_id |last_access_at |name |password |phone_number |profile_img |role |status |updated_at |updated_by |user_key |verified |
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+|---|-----------|-----------|------|------------|-----------|---------------|-----|---------|-------------|------------|-----|-------|-----------|-----------|---------|---------|
+
+2025-04-18 16:44:04.747 ERROR [http-nio-8080-exec-2] c.t.n.c.e.GlobalExceptionAdvice - [APIException: BadRequestException]
+com.tomato.naraclub.common.exception.BadRequestException: 존재하지 않는 초대 코드입니다. 다시 시도해주세요.
+	at com.tomato.naraclub.application.member.service.MemberServiceImpl.lambda$enrollInviteCode$0(MemberServiceImpl.java:25)
+	at java.base/java.util.Optional.orElseThrow(Optional.java:403)
+	at com.tomato.naraclub.application.member.service.MemberServiceImpl.enrollInviteCode(MemberServiceImpl.java:25)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:355)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:769)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:379)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:769)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:721)
+	at com.tomato.naraclub.application.member.service.MemberServiceImpl$$SpringCGLIB$$0.enrollInviteCode(<generated>)
+	at com.tomato.naraclub.application.member.controller.MemberController.enrollInviteCode(MemberController.java:20)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:479)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:340)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:82)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:128)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at com.tomato.naraclub.application.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:46)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:195)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:230)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:113)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2025-04-18 16:44:04.754 WARN  [http-nio-8080-exec-2] o.s.w.s.m.m.a.ExceptionHandlerExceptionResolver - Resolved [com.tomato.naraclub.common.exception.BadRequestException: 존재하지 않는 초대 코드입니다. 다시 시도해주세요.]
+2025-04-18 16:44:45.935 INFO  [SpringApplicationShutdownHook] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-18 16:44:45.938 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Shutdown initiated...
+2025-04-18 16:44:45.939 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Shutdown completed.
+2025-04-18 16:44:58.182 INFO  [restartedMain] c.t.naraclub.NaraclubApplication - Starting NaraclubApplication using Java 21.0.6 with PID 22920 (C:\workspace.samplecode\springPractice\naraclub\out\production\classes started by MinjaeKim in C:\workspace.samplecode\springPractice\naraclub)
+2025-04-18 16:44:58.183 DEBUG [restartedMain] c.t.naraclub.NaraclubApplication - Running with Spring Boot v3.3.11-SNAPSHOT, Spring v6.1.19
+2025-04-18 16:44:58.183 INFO  [restartedMain] c.t.naraclub.NaraclubApplication - The following 1 profile is active: "local"
+2025-04-18 16:44:58.224 INFO  [restartedMain] o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-18 16:44:58.224 INFO  [restartedMain] o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-18 16:44:59.432 INFO  [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-18 16:44:59.599 INFO  [restartedMain] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 160 ms. Found 1 JPA repository interface.
+2025-04-18 16:45:00.375 INFO  [restartedMain] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-04-18 16:45:00.390 INFO  [restartedMain] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-04-18 16:45:00.390 INFO  [restartedMain] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.40]
+2025-04-18 16:45:00.460 INFO  [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-04-18 16:45:00.460 INFO  [restartedMain] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2235 ms
+2025-04-18 16:45:00.752 INFO  [restartedMain] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-18 16:45:00.807 INFO  [restartedMain] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.5.3.Final
+2025-04-18 16:45:00.847 INFO  [restartedMain] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-04-18 16:45:01.143 INFO  [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-04-18 16:45:01.172 INFO  [restartedMain] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Starting...
+2025-04-18 16:45:01.246 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.executeSql(PoolBase.java:579)
+1. SELECT 1
+
+2025-04-18 16:45:01.249 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.executeSql(PoolBase.java:579)
+1. SELECT 1
+ {executed in 3 msec}
+2025-04-18 16:45:01.250 INFO  [restartedMain] com.zaxxer.hikari.pool.HikariPool - narasarang-pool - Added connection net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy@d0aaf44
+2025-04-18 16:45:01.252 INFO  [restartedMain] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Start completed.
+2025-04-18 16:45:01.265 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:110)
+1. SELECT @@character_set_database, @@sql_mode
+
+2025-04-18 16:45:01.265 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:110)
+1. SELECT @@character_set_database, @@sql_mode
+ {executed in 0 msec}
+2025-04-18 16:45:01.280 WARN  [restartedMain] org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-04-18 16:45:02.177 INFO  [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-04-18 16:45:02.193 DEBUG [restartedMain] org.hibernate.SQL - 
+    alter table t_member 
+       drop 
+       foreign key FKe7vhmq9mm9t5hyqj1c3069edn
+2025-04-18 16:45:02.194 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+
+2025-04-18 16:45:02.194 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+ {executed in 0 msec}
+2025-04-18 16:45:02.195 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       drop 
+       foreign key FKe7vhmq9mm9t5hyqj1c3069edn
+
+2025-04-18 16:45:02.211 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       drop 
+       foreign key FKe7vhmq9mm9t5hyqj1c3069edn
+ {executed in 16 msec}
+2025-04-18 16:45:02.212 DEBUG [restartedMain] org.hibernate.SQL - 
+    drop table if exists t_member
+2025-04-18 16:45:02.212 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. drop table if exists t_member
+
+2025-04-18 16:45:02.221 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. drop table if exists t_member
+ {executed in 9 msec}
+2025-04-18 16:45:02.227 DEBUG [restartedMain] org.hibernate.SQL - 
+    create table t_member (
+        verified bit not null comment '신원인증 여부',
+        created_at datetime(6) comment '등록일시',
+        id bigint not null auto_increment,
+        inviter_id bigint,
+        last_access_at datetime(6) comment '마지막 접속 시간',
+        updated_at datetime(6) comment '수정일시',
+        invite_code varchar(10) not null comment '초대코드 - 가입시 자동생성',
+        phone_number varchar(20) comment '폰번호',
+        name varchar(50) not null comment '사용자 명',
+        created_by varchar(100) comment '등록자',
+        email varchar(100) comment '이메일',
+        password varchar(100) comment 'tongtongPasswd',
+        updated_by varchar(100) comment '수정자',
+        user_key varchar(100) comment 'tongtongOneId',
+        profile_img varchar(255) comment '프로필 이미지',
+        role enum ('ADMIN','USER_ACTIVE','USER_INACTIVE') not null comment '유저 롤',
+        status enum ('ACTIVE','BLOCKED','DELETED','TEMPORARY_INVITE','TEMPORARY_PASS') not null comment '유저 상태',
+        primary key (id)
+    ) engine=InnoDB
+2025-04-18 16:45:02.227 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. create table t_member (
+        verified bit not null comment '신원인증 여부',
+        created_at datetime(6) comment '등록일시',
+        id bigint not null auto_increment,
+        inviter_id bigint,
+        last_access_at datetime(6) comment '마지막 접속 시간',
+        updated_at datetime(6) comment '수정일시',
+        invite_code varchar(10) not null comment '초대코드 - 가입시 자동생성',
+        phone_number varchar(20) comment '폰번호',
+        name varchar(50) not null comment '사용자 명',
+        created_by varchar(100) comment '등록자',
+        email varchar(100) comment '이메일',
+        password varchar(100) comment 'tongtongPasswd',
+        updated_by varchar(100) comment '수정자',
+        user_key varchar(100) comment 'tongtongOneId',
+        profile_img varchar(255) comment '프로필 이미지',
+        role enum ('ADMIN','USER_ACTIVE','USER_INACTIVE') not null comment '유저 롤',
+        status enum ('ACTIVE','BLOCKED','DELETED','TEMPORARY_INVITE','TEMPORARY_PASS') not null comment '유저 상태',
+        primary key (id)
+    ) engine=InnoDB
+
+2025-04-18 16:45:02.236 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. create table t_member (
+        verified bit not null comment '신원인증 여부',
+        created_at datetime(6) comment '등록일시',
+        id bigint not null auto_increment,
+        inviter_id bigint,
+        last_access_at datetime(6) comment '마지막 접속 시간',
+        updated_at datetime(6) comment '수정일시',
+        invite_code varchar(10) not null comment '초대코드 - 가입시 자동생성',
+        phone_number varchar(20) comment '폰번호',
+        name varchar(50) not null comment '사용자 명',
+        created_by varchar(100) comment '등록자',
+        email varchar(100) comment '이메일',
+        password varchar(100) comment 'tongtongPasswd',
+        updated_by varchar(100) comment '수정자',
+        user_key varchar(100) comment 'tongtongOneId',
+        profile_img varchar(255) comment '프로필 이미지',
+        role enum ('ADMIN','USER_ACTIVE','USER_INACTIVE') not null comment '유저 롤',
+        status enum ('ACTIVE','BLOCKED','DELETED','TEMPORARY_INVITE','TEMPORARY_PASS') not null comment '유저 상태',
+        primary key (id)
+    ) engine=InnoDB
+ {executed in 8 msec}
+2025-04-18 16:45:02.236 DEBUG [restartedMain] org.hibernate.SQL - 
+    alter table t_member 
+       add constraint UKnm99qmbenr55unxyhmgfinflm unique (user_key)
+2025-04-18 16:45:02.236 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       add constraint UKnm99qmbenr55unxyhmgfinflm unique (user_key)
+
+2025-04-18 16:45:02.253 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       add constraint UKnm99qmbenr55unxyhmgfinflm unique (user_key)
+ {executed in 17 msec}
+2025-04-18 16:45:02.254 DEBUG [restartedMain] org.hibernate.SQL - 
+    alter table t_member 
+       add constraint FKe7vhmq9mm9t5hyqj1c3069edn 
+       foreign key (inviter_id) 
+       references t_member (id)
+2025-04-18 16:45:02.254 DEBUG [restartedMain] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       add constraint FKe7vhmq9mm9t5hyqj1c3069edn 
+       foreign key (inviter_id) 
+       references t_member (id)
+
+2025-04-18 16:45:02.277 DEBUG [restartedMain] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:94)
+1. alter table t_member 
+       add constraint FKe7vhmq9mm9t5hyqj1c3069edn 
+       foreign key (inviter_id) 
+       references t_member (id)
+ {executed in 23 msec}
+2025-04-18 16:45:02.280 INFO  [restartedMain] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-18 16:45:02.625 DEBUG [restartedMain] c.t.n.a.s.JwtAuthenticationFilter - Filter 'jwtAuthenticationFilter' configured for use
+2025-04-18 16:45:03.049 INFO  [restartedMain] o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name daoAuthenticationProvider
+2025-04-18 16:45:03.049 WARN  [restartedMain] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used for username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider.
+2025-04-18 16:45:03.458 INFO  [restartedMain] o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2025-04-18 16:45:03.680 WARN  [restartedMain] o.s.b.a.t.ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2025-04-18 16:45:04.114 INFO  [restartedMain] o.s.b.d.a.OptionalLiveReloadServer - LiveReload server is running on port 35729
+2025-04-18 16:45:04.184 INFO  [restartedMain] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-04-18 16:45:04.194 INFO  [restartedMain] c.t.naraclub.NaraclubApplication - Started NaraclubApplication in 6.556 seconds (process running for 7.277)
+2025-04-18 16:45:04.698 INFO  [RMI TCP Connection(3)-192.168.56.1] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-18 16:45:04.698 INFO  [RMI TCP Connection(3)-192.168.56.1] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-04-18 16:45:04.699 DEBUG [RMI TCP Connection(2)-192.168.56.1] jdbc.sqlonly -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+
+2025-04-18 16:45:04.699 INFO  [RMI TCP Connection(3)-192.168.56.1] o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+2025-04-18 16:45:04.700 DEBUG [RMI TCP Connection(2)-192.168.56.1] jdbc.sqltiming -  com.zaxxer.hikari.pool.PoolBase.isConnectionDead(PoolBase.java:165)
+1. SELECT 1
+ {executed in 1 msec}
+2025-04-18 16:45:04.704 DEBUG [RMI TCP Connection(2)-192.168.56.1] jdbc.sqlonly -  com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:110)
+1. SELECT 1
+
+2025-04-18 16:45:04.704 DEBUG [RMI TCP Connection(2)-192.168.56.1] jdbc.sqltiming -  com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:110)
+1. SELECT 1
+ {executed in 0 msec}
+2025-04-18 16:45:04.706 INFO  [RMI TCP Connection(2)-192.168.56.1] jdbc.resultsettable - 
+|--|
+|1 |
+|--|
+|1 |
+|--|
+
+2025-04-18 17:40:03.659 INFO  [SpringApplicationShutdownHook] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-18 17:40:03.659 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Shutdown initiated...
+2025-04-18 17:40:03.659 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - narasarang-pool - Shutdown completed.
