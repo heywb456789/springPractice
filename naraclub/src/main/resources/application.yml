@@ -1,27 +1,47 @@
 spring:
-  datasource:
-    url: jdbc:mariadb://localhost:3306/naraclub?useSSL=false&serverTimezone=UTC
-    username: root
-    password: password
+  profiles:
+    active: local
+  application:
+    name: narasarang
+  output:
+    ansi:
+      enabled: always
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql:
+      naming:
+        physical-strategy: com.tomato.naraclub.common.strategy.PhysicalNamingStrategy
+  mvc:
+    format:
+      date: yyyy-MM-dd
+      date-time: yyyy-MM-dd HH:mm:ss
+      time: HH:mm:ss
   security:
     jwt:
-      secret: r0b1u6A8wVy9XkP5jYl3Zr7qNp4Dk8fGx0R1Ld9ZsQ=
+      secret: MDEyMzQ1Njc4OWNiZmFnZDEyMzQ1Njc4OWNiZmFnZA==
       expiration: 3600000
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false  # 개발 중엔 false, 운영에선 true 권장
+
 server:
-  port: 8080
-  servlet:
-    context-path: /
+  port: ${SERVER_PORT:8080}
 
 # Springdoc ?? (???)
+
 springdoc:
+  packages-to-scan: kr.texture.bread
+  paths-to-match: /**
   swagger-ui:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+inbound-logging: ${INBOUND_LOGGING:true}
+
+one-id:
+  base-url: https://api.otongtong.net
+  login : /v1/api/external/PASSTONG/plain/login

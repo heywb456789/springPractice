@@ -1,34 +1,78 @@
 package com.tomato.naraclub.application.member.entity;
 
+import com.tomato.naraclub.common.audit.Audit;
 import com.tomato.naraclub.common.code.MemberStatus;
+import com.tomato.naraclub.common.code.MemberRole;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Comment;
 
-@Entity
-@Table(name = "tb_members")
+@Table
 @Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@SuperBuilder
+@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Member {
+public class Member extends Audit {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long member_no;
+    @Comment("tongtongOneId")
+    @Column(unique = true, length = 100)
+    private String userKey;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String oneId;
+    @Comment("tongtongPasswd")
+    @Column(length = 100)
+    private String password;
 
-    @Column(nullable = false, length = 20)
+    @Comment("폰번호")
+    @Column(length = 20)
     private String phoneNumber;
 
+    @Comment("초대코드 - 가입시 자동생성")
     @Column(nullable = false, length = 10)
     private String inviteCode;
 
+    @Comment("유저 상태")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 20)
     private MemberStatus status;
 
+    @Comment("유저 롤")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private MemberRole role;
 
+    @Comment("이메일")
+    @Column(length = 100)
+    private String email;
+
+    @Comment("사용자 명")
+    @Column(length = 50, nullable = false)
+    private String name;
+
+    @Comment("마지막 접속 시간")
+    @Column
+    private LocalDateTime lastAccessAt;
+
+    @Comment("신원인증 여부")
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean verified = false;
+
+    @Comment("프로필 이미지")
+    @Column
+    private String profileImg;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inviter_id")
+    private Member inviter;    // 추천인
+
+    public void setStatus(MemberStatus status) {
+        this.status = status;
+    }
+
+    public void setInviter(Member inviter) {
+        this.inviter = inviter;
+    }
 }

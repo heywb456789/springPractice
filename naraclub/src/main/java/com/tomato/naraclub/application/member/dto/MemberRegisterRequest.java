@@ -6,8 +6,10 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class MemberRegisterRequest {
     @NotBlank
-    private String oneId;
+    private String userKey;
 
     @NotBlank
     private String phoneNumber;
+
+    private String inviteCode;
 }

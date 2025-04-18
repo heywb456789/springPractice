@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +20,8 @@ public class JwtTokenProvider {
             @Value("${spring.security.jwt.expiration}") long validityInMillis) {
 
         // Base64로 인코딩된 문자열을 SecretKey 객체로 변환
-        byte[] decodedKey = Base64.getDecoder().decode(secret);
-        this.key = Keys.hmacShaKeyFor(decodedKey);
-        this.validityInMillis = validityInMillis;
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    this.validityInMillis = validityInMillis;
     }
 
     public String createToken(String subject) {

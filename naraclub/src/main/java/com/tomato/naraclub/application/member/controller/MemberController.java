@@ -12,27 +12,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class MemberController {
+
     private final MemberService memberService;
 
-    @PostMapping
-    public ResponseEntity<MemberResponse> register(@RequestBody @Valid MemberRegisterRequest req) {
-        var member = memberService.register(req.getOneId(), req.getPhoneNumber());
-        return ResponseEntity.ok(new MemberResponse(
-                member.getMember_no(),
-                member.getOneId(),
-                member.getPhoneNumber(),
-                member.getStatus().name()
-        ));
+    @PostMapping("/invite")
+    public ResponseEntity<MemberResponse> enrollInviteCode(@RequestBody MemberRegisterRequest request) {
+        return ResponseEntity.ok(memberService.enrollInviteCode(request.getInviteCode()));
     }
 
-    @PostMapping("/{id}/verify")
-    public ResponseEntity<MemberResponse> verify(@PathVariable Long id) {
-        var member = memberService.verify(id);
-        return ResponseEntity.ok(new MemberResponse(
-                member.getMember_no(),
-                member.getOneId(),
-                member.getPhoneNumber(),
-                member.getStatus().name()
-        ));
-    }
 }
