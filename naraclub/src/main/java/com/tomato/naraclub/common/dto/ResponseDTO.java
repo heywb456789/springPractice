@@ -23,45 +23,45 @@ public class ResponseDTO<T> {
 
   public static <T> ResponseDTO<T> ok(T response) {
     return (ResponseDTO<T>) ResponseDTO.builder()
-        .status(ResponseStatus.OK)
-        .response(response)
-        .build();
+            .status(ResponseStatus.OK)
+            .response(response)
+            .build();
   }
 
   public static <T> ResponseDTO<T> ok() {
     return (ResponseDTO<T>) ResponseDTO.builder()
-        .status(ResponseStatus.OK)
-        .build();
+            .status(ResponseStatus.OK)
+            .build();
   }
 
   public static <T> ResponseDTO<T> error(ResponseStatus responseStatus) {
     return (ResponseDTO<T>) ResponseDTO.builder()
-        .status(responseStatus)
-        .build();
+            .status(responseStatus)
+            .build();
   }
 
   public static <T> ResponseDTO<T> unauthorized() {
     return (ResponseDTO<T>) ResponseDTO.builder()
-        .status(ResponseStatus.UNAUTHORIZED)
-        .build();
+            .status(ResponseStatus.UNAUTHORIZED)
+            .build();
   }
 
   public static <T> ResponseDTO<T> forbidden() {
     return (ResponseDTO<T>) ResponseDTO.builder()
-        .status(ResponseStatus.UNAUTHORIZED)
-        .build();
+            .status(ResponseStatus.UNAUTHORIZED)
+            .build();
   }
 
   public static <T> ResponseDTO<T> badRequest(T response) {
     return (ResponseDTO<T>) ResponseDTO.builder()
-        .status(ResponseStatus.BAD_REQUEST)
-        .response(response)
-        .build();
+            .status(ResponseStatus.BAD_REQUEST)
+            .response(response)
+            .build();
   }
 
   public static <T> ResponseDTO<T> internalServerError() {
     return (ResponseDTO<T>) ResponseDTO.builder()
-        .status(ResponseStatus.INTERNAL_SERVER_ERROR)
-        .build();
+            .status(ResponseStatus.INTERNAL_SERVER_ERROR)
+            .build();
   }
 }

@@ -18,7 +18,9 @@ spring:
   security:
     jwt:
       secret: MDEyMzQ1Njc4OWNiZmFnZDEyMzQ1Njc4OWNiZmFnZA==
-      expiration: 3600000
+      access-token-expiration: 3600000       # 액세스 토큰 1시간 (밀리초 단위)
+      refresh-token-expiration: 1209600000   # 리프레시 토큰 2주
+      auto-login-expiration: 31536000000      # 자동 로그인 (1년)
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html

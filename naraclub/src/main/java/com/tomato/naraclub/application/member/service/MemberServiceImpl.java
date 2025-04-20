@@ -1,10 +1,11 @@
 package com.tomato.naraclub.application.member.service;
 
-import com.tomato.naraclub.application.member.dto.MemberResponse;
+import com.tomato.naraclub.application.member.dto.MemberDTO;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.exception.BadRequestException;
+import com.tomato.naraclub.common.exception.UnAuthorizationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public MemberResponse enrollInviteCode(String inviteCode) {
+    public MemberDTO enrollInviteCode(String inviteCode) {
         // 1) 초대 코드로 추천인(Member) 조회
         Member inviter = memberRepository.findByInviteCode(inviteCode)
             .orElseThrow(() -> new BadRequestException("존재하지 않는 초대 코드입니다. 다시 시도해주세요."));
@@ -28,7 +29,7 @@ public class MemberServiceImpl implements MemberService {
         String currentUserKey = SecurityContextHolder.getContext()
             .getAuthentication().getName();
         Member current = memberRepository.findByUserKey(currentUserKey)
-            .orElseThrow(() -> new BadRequestException("유저 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UnAuthorizationException("유저의 정보를 찾을 수 없습니다."));
 
         // 3) 이미 초대 코드가 등록된 경우 예외
         if (current.getStatus() == MemberStatus.ACTIVE) {
@@ -40,6 +41,6 @@ public class MemberServiceImpl implements MemberService {
         current.setInviter(inviter);
 
         // 5) 응답 DTO 반환
-        return MemberResponse.from(current);
+        return current.convertDTO();
     }
 }

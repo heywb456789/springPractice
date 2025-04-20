@@ -1,37 +1,65 @@
 package com.tomato.naraclub.application.security;
 
+import com.tomato.naraclub.application.member.entity.Member;
+import com.tomato.naraclub.common.exception.UnAuthorizationException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import java.nio.charset.StandardCharsets;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JwtTokenProvider {
     private final SecretKey key;
-    private final long validityInMillis;
+    private final long accessTokenValidityInMillis;
+    private final long refreshTokenValidityInMillis;
+    private final long autoLoginValidityInMillis;
 
     public JwtTokenProvider(
             @Value("${spring.security.jwt.secret}") String secret,
-            @Value("${spring.security.jwt.expiration}") long validityInMillis) {
+            @Value("${spring.security.jwt.access-token-expiration}") long accessTokenValidityInMillis,
+            @Value("${spring.security.jwt.refresh-token-expiration}") long refreshTokenValidityInMillis,
+            @Value("${spring.security.jwt.auto-login-expiration}") long autoLoginValidityInMillis) {
 
-        // Base64로 인코딩된 문자열을 SecretKey 객체로 변환
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    this.validityInMillis = validityInMillis;
+        this.accessTokenValidityInMillis = accessTokenValidityInMillis;
+        this.refreshTokenValidityInMillis = refreshTokenValidityInMillis;
+        this.autoLoginValidityInMillis = autoLoginValidityInMillis;
     }
 
-    public String createToken(String subject) {
-        Date now = new Date();
-        Date exp = new Date(now.getTime() + validityInMillis);
+    public SecretKey getKey() {
+        return this.key;
+    }
+
+    // 액세스 토큰 생성
+    public String createAccessToken(Member member) {
+        return createToken(member, accessTokenValidityInMillis);
+    }
+
+    // 리프레시 토큰 생성
+    public String createRefreshToken(Member member, boolean autoLogin) {
+        long validity = autoLogin ? autoLoginValidityInMillis : refreshTokenValidityInMillis;
+        return createToken(member, validity);
+    }
+
+    private String createToken(Member member, long validityInMillis) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiration = now.plusNanos(validityInMillis * 1_000_000);
 
         return Jwts.builder()
-                .setSubject(subject)
-                .setIssuedAt(now)
-                .setExpiration(exp)
+                .setSubject(String.valueOf(member.getId()))
+                .claim("email", member.getEmail())
+                .claim("role", member.getRole().name())
+                .claim("status", member.getStatus().name())
+                .setIssuedAt(toDate(now))
+                .setExpiration(toDate(expiration))
                 .signWith(key)
                 .compact();
     }
@@ -47,13 +75,47 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public LocalDateTime getExpirationDate(String token) {
+        Date expiration = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
+
+        return LocalDateTime.ofInstant(expiration.toInstant(), ZoneId.systemDefault());
+    }
+
+    public Map<String, Object> getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public String extractToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        throw new UnAuthorizationException("로그인 정보가 없습니다.");
+    }
+
+    // LocalDateTime -> Date 변환 유틸 메서드
+    private Date toDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    // Date -> LocalDateTime 변환 유틸 메서드 (필요시 사용)
+    private LocalDateTime toLocalDateTime(Date date) {
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 }

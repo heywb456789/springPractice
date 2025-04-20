@@ -14,8 +14,9 @@ public class MemberUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String userKey) throws UsernameNotFoundException {
-        return memberRepository.findByUserKey(userKey)
-            .map(MemberUserDetails::new)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userKey));
+        return memberRepository.findById(Long.valueOf(userKey))  // 여기서도 형변환 필요
+                .map(MemberUserDetails::new)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userKey));
     }
+
 }

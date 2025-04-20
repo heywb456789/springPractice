@@ -5,6 +5,7 @@ import com.tomato.naraclub.common.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -30,10 +31,11 @@ public class GlobalExceptionAdvice {
   }
 
   @ExceptionHandler(APIException.class)
-  @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-  protected ResponseDTO<Object> apiServerError(APIException e) {
+  protected ResponseEntity<ResponseDTO<Object>> handleApiException(APIException e) {
     log("APIException", e);
-    return ResponseDTO.error(e.getStatus());
+    return ResponseEntity
+            .status(e.getStatus().getHttpStatus()) // 💡 enum에서 직접 HttpStatus 추출
+            .body(ResponseDTO.error(e.getStatus()));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

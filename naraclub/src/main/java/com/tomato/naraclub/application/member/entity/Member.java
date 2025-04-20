@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.member.entity;
 
+import com.tomato.naraclub.application.member.dto.MemberDTO;
 import com.tomato.naraclub.common.audit.Audit;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.MemberRole;
@@ -74,5 +75,22 @@ public class Member extends Audit {
 
     public void setInviter(Member inviter) {
         this.inviter = inviter;
+    }
+
+    public MemberDTO convertDTO(){
+        return MemberDTO.builder()
+                .id(id)
+                .createdAt(createdAt)
+                .password(password)
+                .phoneNumber(phoneNumber)
+                .inviteCode(inviteCode)
+                .status(status.name())
+                .role(role.name())
+                .email(email)
+                .name(name)
+                .lastAccessAt(lastAccessAt)
+                .verified(verified)
+                .profileImg(profileImg)
+                .build();
     }
 }

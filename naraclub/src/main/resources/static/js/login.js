@@ -1,7 +1,7 @@
 // src/main/resources/static/js/login.js
 
-let inviteModal;           // Bootstrap Modal 인스턴스
-let isNoInviteFlow = false; // “초대코드 없음” 플래그
+let inviteModal;
+let isNoInviteFlow = false;
 
 // 초기화 함수
 const initLoginPage = () => {
@@ -11,7 +11,6 @@ const initLoginPage = () => {
   console.log('로그인 페이지가 초기화되었습니다.');
 };
 
-// DOM 요소를 선택하는 함수
 const selectElements = () => ({
   phoneInput: document.querySelector('.phone-input'),
   passwordInput: document.getElementById('password'),
@@ -27,15 +26,12 @@ const selectElements = () => ({
   inviteModalEl: document.getElementById('inviteModal')
 });
 
-// 모든 이벤트 리스너 등록 함수
 const registerEventListeners = (elements) => {
   elements.phoneInput.addEventListener('input', (e) => handlePhoneInput(e, elements));
   elements.passwordInput.addEventListener('input', () => handlePasswordInput(elements));
   elements.loginButton.addEventListener('click', () => handleLogin(elements));
   elements.registerButton.addEventListener('click', handleRegister);
   elements.backButton.addEventListener('click', handleBack);
-
-  // 초대 코드 모달 관련
   elements.inviteSubmitBtn.addEventListener('click', () => handleInviteSubmit(elements));
   elements.noInviteLink.addEventListener('click', (e) => {
     e.preventDefault();
@@ -43,7 +39,7 @@ const registerEventListeners = (elements) => {
   });
 };
 
-// 로그인 버튼 클릭 이벤트 핸들러
+// 로그인 처리 (서버 응답에 따른 처리 변경)
 const handleLogin = async (elements) => {
   const loginData = {
     phoneNumber: elements.phoneInput.value.trim(),
@@ -51,9 +47,13 @@ const handleLogin = async (elements) => {
     autoLogin: elements.autoLoginCheckbox.checked
   };
   try {
-    const { token } = await jwtLogin(loginData);
-    localStorage.setItem('jwtToken', token);
-    // 모달 인스턴스 생성 및 표시
+    const res = await jwtLogin(loginData);
+
+    // 서버 응답 형식에 맞춰 토큰 저장
+    localStorage.setItem('accessToken', res.response.token);
+    localStorage.setItem('refreshToken', res.response.refreshToken);
+    localStorage.setItem('memberInfo', JSON.stringify(res.response.member)); // 회원 정보 저장
+
     inviteModal = new bootstrap.Modal(elements.inviteModalEl);
     inviteModal.show();
   } catch (err) {
@@ -61,7 +61,7 @@ const handleLogin = async (elements) => {
   }
 };
 
-// 초대 코드 확인 핸들러
+// 초대 코드 확인 및 제출
 const handleInviteSubmit = async (elements) => {
   if (isNoInviteFlow) {
     window.location.href = '../main/main.html';
@@ -75,8 +75,7 @@ const handleInviteSubmit = async (elements) => {
   }
   elements.inviteError.style.display = 'none';
   try {
-    const token = localStorage.getItem('jwtToken');
-    await submitInviteCode(code, token);
+    await submitInviteCode(code);
     alert('초대 코드 등록이 완료되었습니다. 메인 페이지로 이동합니다.');
     window.location.href = '../main/main.html';
   } catch (err) {
@@ -85,12 +84,10 @@ const handleInviteSubmit = async (elements) => {
   }
 };
 
-// “초대코드가 없습니까?” 핸들러
 const handleNoInvite = (elements) => {
   isNoInviteFlow = true;
   const titleEl = elements.inviteModalEl.querySelector('.modal-title');
   titleEl.textContent = '운영진 검토가 진행중입니다.';
-  // 숨기기
   elements.inviteCodeInput.style.display = 'none';
   elements.inviteError.style.display = 'none';
   elements.noInviteLink.style.display = 'none';
@@ -98,20 +95,22 @@ const handleNoInvite = (elements) => {
   elements.inviteSubmitBtn.textContent = '확인';
 };
 
-// JWT 로그인 요청 (내부 API 호출)
-async function jwtLogin({ phoneNumber, password }) {
-  const res = await fetch('/api/auth/login', {
+// JWT 로그인 API 호출 개선 (응답 구조 반영)
+async function jwtLogin({ phoneNumber, password, autoLogin }) {
+  const res = await fetch(`/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({"phoneNumber": phoneNumber, "password":password })
+    body: JSON.stringify({ phoneNumber, password, autoLogin })
   });
+  if (res.status === 401) throw new Error('로그인 정보가 올바르지 않습니다.');
   if (!res.ok) throw new Error('로그인 실패: ' + res.statusText);
-  return res.json();
+  return res.json(); // 서버 응답 구조 전체 반환
 }
 
-// 초대 코드 제출 요청
-async function submitInviteCode(code, token) {
-  const res = await fetch('/api/members/invite', {
+// 초대 코드 제출 요청 (Refresh Token 활용하여 401 대응)
+async function submitInviteCode(code) {
+  const token = localStorage.getItem('accessToken');
+  let res = await fetch('/api/members/invite', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -119,25 +118,55 @@ async function submitInviteCode(code, token) {
     },
     body: JSON.stringify({ inviteCode: code })
   });
-  if (!res.ok) throw new Error('초대 코드 등록 실패');
+
+  // Access Token 만료 시 Refresh Token으로 재발급 후 재요청
+  if (res.status === 401) {
+    await handleTokenRefresh();
+    const newToken = localStorage.getItem('accessToken');
+    res = await fetch('/api/members/invite', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${newToken}`
+      },
+      body: JSON.stringify({ inviteCode: code })
+    });
+  }
+
+  if (!res.ok) throw new Error('초대 코드 등록 실패: ' + res.statusText);
 }
 
-// 뒤로가기 버튼 클릭 핸들러
+// Refresh Token을 사용하여 새로운 Access Token 발급
+async function handleTokenRefresh() {
+  const refreshToken = localStorage.getItem('refreshToken');
+  const res = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  if (!res.ok) {
+    localStorage.clear(); // 토큰 만료 시 강제 로그아웃 처리
+    window.location.href = '../login/login.html';
+    throw new Error('세션이 만료되었습니다. 다시 로그인 해주세요.');
+  }
+
+  const data = await res.json();
+  localStorage.setItem('accessToken', data.response.token); // 새 Access Token 저장
+}
+
+// 기타 이벤트 처리 (변경 없음)
 const handleBack = () => window.history.back();
 
-// 전화번호 입력 핸들러
 const handlePhoneInput = (e, elements) => {
   e.target.value = e.target.value.replace(/\D/g, '');
   validateForm(elements);
 };
 
-// 비밀번호 입력 핸들러
 const handlePasswordInput = (elements) => validateForm(elements);
 
-// 회원가입 버튼 핸들러
 const handleRegister = () => window.location.href = '../login/signup.html';
 
-// 폼 검증
 const validateForm = (elements) => {
   const isPhoneValid = /^01[0-9]{8,9}$/.test(elements.phoneInput.value);
   const isPasswordValid = elements.passwordInput.value.length >= 4;

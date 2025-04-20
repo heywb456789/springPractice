@@ -34,6 +34,14 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+	// QueryDSL core
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+
+	// QueryDSL annotation processor
+	annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+	annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+	annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+
 	// log
     implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4.1:1.16'
 
@@ -62,6 +70,22 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+def generated = layout.buildDirectory.dir("generated/querydsl")
+
+sourceSets {
+	main {
+		java {
+			srcDirs += generated.get().asFile
+		}
+	}
 }
+
+tasks.withType(JavaCompile).configureEach {
+	options.annotationProcessorGeneratedSourcesDirectory = generated.get().asFile
+}
+
+tasks.named('test') {
+//	useJUnitPlatform()
+	enabled = false
+}
+
