@@ -64,4 +64,10 @@ public class ResponseDTO<T> {
             .status(ResponseStatus.INTERNAL_SERVER_ERROR)
             .build();
   }
+
+  public static <T> ResponseDTO<T> noContent() {
+    return (ResponseDTO<T>) ResponseDTO.builder()
+            .status(ResponseStatus.NO_CHANGE_DATA)
+            .build();
+  }
 }

@@ -15,14 +15,20 @@ import java.util.Arrays;
 public enum ResponseStatus {
   OK("OK_0000", "정상 처리되었습니다.", HttpStatus.OK),
   DATA_NOT_FOUND("ER_0001", "데이터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-  NO_CHANGE_DATA("ER_0002", "수정된 데이터가 없습니다.", HttpStatus.BAD_REQUEST),
+  NO_CHANGE_DATA("ER_0002", "수정된 데이터가 없습니다.", HttpStatus.NO_CONTENT),
   BAD_REQUEST("ER_0003", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
   UNPROCESSABLE_ENTITY("ER_9998", "처리할 수 없는 요청입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
   INTERNAL_SERVER_ERROR("ER_9999", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   EXIST_USER("ER_1001", "이미 가입된 계정입니다.", HttpStatus.BAD_REQUEST),
   WITHDRAWAL_USER("ER_1002", "탈퇴한 회원입니다. 재가입 해주세요.", HttpStatus.UNAUTHORIZED),
   FORBIDDEN("ER_1003", "권한이 없는 사용자입니다.", HttpStatus.FORBIDDEN),
-  UNAUTHORIZED("ER_1004", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
+  UNAUTHORIZED("ER_1004", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
+
+  BOARD_POST_NOT_EXIST("ER_2001", "게시글이 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+
+  USER_NOT_EXIST("ER_2001", "회원 정보를 찾을수가 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  ;
 
   @JsonProperty("code")
   private final String code;

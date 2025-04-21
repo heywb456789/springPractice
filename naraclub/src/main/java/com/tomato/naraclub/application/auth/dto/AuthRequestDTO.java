@@ -12,4 +12,14 @@ public class AuthRequestDTO {
     private String password;
 
     private boolean autoLogin;
+
+    private String verificationCode;
+
+    @NotBlank
+    private String userKey;
+
+    @NotBlank
+    private String name;
+
+    private Boolean marketingAgree;
 }

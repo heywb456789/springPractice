@@ -1,10 +1,14 @@
 // src/main/resources/static/js/login.js
+import {checkAuthAndRedirect} from './common.js'
 
 let inviteModal;
 let isNoInviteFlow = false;
 
 // 초기화 함수
 const initLoginPage = () => {
+  console.log("zdkajldkjaslkdjalsdjl");
+  checkAuthAndRedirect({ redirectUrl: '../main/main.html' });
+
   const elements = selectElements();
   registerEventListeners(elements);
   validateForm(elements);
@@ -52,10 +56,25 @@ const handleLogin = async (elements) => {
     // 서버 응답 형식에 맞춰 토큰 저장
     localStorage.setItem('accessToken', res.response.token);
     localStorage.setItem('refreshToken', res.response.refreshToken);
-    localStorage.setItem('memberInfo', JSON.stringify(res.response.member)); // 회원 정보 저장
 
-    inviteModal = new bootstrap.Modal(elements.inviteModalEl);
-    inviteModal.show();
+    console.log(res.response.member)
+
+    switch(res.response.member.status) {
+      case 'TEMPORARY_INVITE' :
+        inviteModal = new bootstrap.Modal(elements.inviteModalEl);
+        inviteModal.show();
+        break;
+      case 'TEMPORARY_PASS':
+        window.location.href = 'login.js'; // PASS 도입되면 그쪽으로
+        break;
+      case 'ACTIVE' :
+            window.location.href = '../main/main.html';
+        break;
+      default :
+        alert("회원님의 계정이 삭제 되었거나. 임시 정지 되었습니다. 고객센터에 문의 부탁드립니다.");
+        break;
+    }
+
   } catch (err) {
     alert(err.message);
   }

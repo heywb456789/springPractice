@@ -1,10 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>토마토 뉴스</title>
+  <link href="/bootstrap/css/bootstrap.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="/css/main.css" rel="stylesheet"/>
+  <link href="/css/main-video.css" rel="stylesheet"/>
+  <script src="/bootstrap/js/bootstrap.bundle.js"></script>
+  <script src="/js/main.js" type="module"></script>
 </head>
 <body>
-<h4>Main 인디요오오오오오</h4>
+  <!-- 메뉴 오버레이 -->
+  <div class="menu-overlay"></div>
+
+  <!-- 사이드 메뉴 -->
+  <div class="side-menu">
+    <div class="side-menu-header">
+      <div class="side-menu-logo">
+        <img src="/api/placeholder/24/24" alt="로고" />
+        <span>나라 걱정 클럽</span>
+      </div>
+    </div>
+    <div class="side-menu-content">
+      <div class="side-menu-item active">인기글 게제</div>
+      <div class="side-menu-item">게시물 작성</div>
+      <div class="side-menu-item">게시판(뉴스)</div>
+      <div class="side-menu-item">게시판(커뮤니티)</div>
+      <div class="side-menu-item">환전계 보도</div>
+    </div>
+  </div>
+
+  <div class="main-container">
+
+    <!-- 헤더 (로고 & 아이콘) -->
+    <div class="header">
+      <button class="menu-button">
+        <i class="fas fa-bars"></i>
+      </button>
+      <a href="#" class="logo">
+        <img src="/api/placeholder/24/24" alt="로고" />
+        <span>나라 걱정 클럽</span>
+      </a>
+      <div class="right-icons">
+        <button class="search-button">
+          <i class="fas fa-search"></i>
+        </button>
+        <button class="profile-button">
+          <i class="fas fa-user"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 탭 메뉴 (공통 요소) -->
+    <div class="tab-menu">
+      <div class="tab-item active">공식홈</div>
+      <div class="tab-item">오리지널</div>
+      <div class="tab-item">최근게시글</div>
+      <div class="tab-item">주요공지</div>
+    </div>
+
+    <!-- 첫 번째 화면: 핫토픽 & 뉴스 목록 -->
+    <div class="news-container">
+      <!-- 핫토픽 섹션 -->
+      <div class="news-section">
+        <div class="section-header">
+          <div class="section-title">뉴스토마토 오리지널 콘텐츠</div>
+          <a href="#" class="more-link">더보기 ></a>
+        </div>
+
+        <div class="hot-topic with-video">
+          <!-- 동영상 로딩 중 표시 -->
+          <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            동영상을 불러오는 중...
+          </div>
+        </div>
+      </div>
+
+      <!-- 주요 기사 섹션 -->
+      <div class="news-section">
+        <div class="section-header">
+          <div class="section-title">자유 게시판</div>
+          <a href="#" class="more-link">더보기 ></a>
+        </div>
+
+        <div class="news-list">
+          <div class="news-item">
+            <div class="news-title">코로나바이러스 관련 경제적 우려가 커질 것</div>
+            <div class="news-comment">
+              <i class="far fa-comment comment-icon"></i>
+              <span class="comment-count">10</span>
+            </div>
+          </div>
+
+          <div class="news-item">
+            <div class="news-title">정치권은 빅데이터 활용법을 습득해야 합니다</div>
+            <div class="news-comment">
+              <i class="far fa-comment comment-icon"></i>
+              <span class="comment-count">7</span>
+            </div>
+          </div>
+
+          <div class="news-item">
+            <div class="news-title">워런 버핏은 언제까지 잘할까요?</div>
+            <div class="news-comment">
+              <i class="far fa-comment comment-icon"></i>
+              <span class="comment-count">4</span>
+            </div>
+          </div>
+
+          <div class="news-item">
+            <div class="news-title">가계수지 구명밖</div>
+            <div class="news-comment">
+              <i class="far fa-comment comment-icon"></i>
+              <span class="comment-count">11</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 두 번째 화면: 투표 섹션 -->
+      <div class="poll-section">
+        <div class="section-header">
+          <div class="section-title">투표 공간</div>
+          <a href="#" class="more-link">더보기 ></a>
+        </div>
+
+        <div class="poll-list">
+          <div class="poll-item">
+            <div class="poll-title">요즘에 새벽 서울 운전하고 놀라지 않나요?</div>
+            <div class="poll-status">
+              <div class="poll-icon poll-active">N</div>
+              <span class="comment-count">10</span>
+            </div>
+          </div>
+
+          <div class="poll-item">
+            <div class="poll-title">금요 아침 날씨가 맑아서 장관이네요 같이 공감되나요?</div>
+            <div class="poll-status">
+              <div class="poll-icon poll-closed">Y</div>
+              <span class="comment-count">4</span>
+            </div>
+          </div>
+
+          <div class="poll-item">
+            <div class="poll-title">금리 인상, 추가 인상 동의하시나요?</div>
+            <div class="poll-status">
+              <i class="far fa-comment comment-icon"></i>
+              <span class="comment-count">8</span>
+            </div>
+          </div>
+
+          <div class="poll-item">
+            <div class="poll-title">대선지원 철폐하여 소도 동물권이 보장되어야 한다고 생각하시나요?</div>
+            <div class="poll-status">
+              <i class="far fa-comment comment-icon"></i>
+              <span class="comment-count">11</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 포인트 섹션 -->
+        <div class="point-section">
+          <div class="point-info">
+            <div class="point-icon">R</div>
+            <div>
+              <div class="point-value">30 TTR</div>
+            </div>
+          </div>
+          <button class="point-button">교환</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

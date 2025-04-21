@@ -5,6 +5,7 @@ import com.tomato.naraclub.application.security.MemberUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -14,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -40,31 +42,44 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors // CORS 필터 등록
+            .cors(cors -> cors
                 .configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())
             )
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(daoAuthenticationProvider())
             .authorizeHttpRequests(auth -> auth
-                // 정적 리소스 접근 허용
+                // 1) validate는 토큰이 유효해야만 접근 허용
+                .requestMatchers("/api/auth/validate").authenticated()
+
+                // 2) 로그인·리프레시는 누구나 (토큰 없어도) 허용
+                .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+
+                // 3) swagger, 정적 리소스 등
+                .requestMatchers("/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(
-                    "/login/**",
-                    "/main/**",
-                    "/bootstrap/**",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/favicon.ico"
-                )
-                .permitAll()
-                // 인증 없이 열어둘 엔드포인트
-              .requestMatchers("/api/auth/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                    "/login/**", "/main/**", "/board/**",
+                    "/bootstrap/**", "/css/**", "/js/**", "/images/**", "/favicon.ico"
+                ).permitAll()
+
+                // 4) 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            // JWT 필터 (위에서 인증이 필요한 경로에는 이 필터가 동작)
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+
+            // 예외 처리
+            .exceptionHandling(ex -> ex
+                // 인증 실패시 401
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                // 인가 실패시 403
+                .accessDeniedHandler((req, res, denied) ->
+                    res.sendError(HttpStatus.FORBIDDEN.value(), "Forbidden"))
+            );
+
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)

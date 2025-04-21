@@ -10,7 +10,12 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
-@Table
+@Table(
+    name = "t_member",
+    indexes = {
+        @Index(name = "idx01_t_member", columnList = "created_at") // 최신순 정렬용
+    }
+)
 @Getter
 @Entity
 @SuperBuilder

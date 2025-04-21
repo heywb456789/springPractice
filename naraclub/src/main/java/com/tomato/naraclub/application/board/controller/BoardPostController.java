@@ -1,47 +1,55 @@
 package com.tomato.naraclub.application.board.controller;
 
-import com.tomato.naraclub.application.board.dto.BoardPostDetailResponse;
-import com.tomato.naraclub.application.board.dto.BoardPostRequest;
-import com.tomato.naraclub.application.board.dto.BoardPostSummaryResponse;
+import com.tomato.naraclub.application.board.dto.*;
 import com.tomato.naraclub.application.board.service.BoardPostService;
-import com.tomato.naraclub.common.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.*;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/board")
+@RequestMapping("/api/board/posts")
 @RequiredArgsConstructor
 public class BoardPostController {
-
-    private final BoardPostService boardPostService;
-
-    @PostMapping
-    public ResponseDTO<Long> create(@RequestBody BoardPostRequest request) {
-        return ResponseDTO.ok(boardPostService.createPost(request));
-    }
+    private final BoardPostService service;
 
     @GetMapping
-    public ResponseDTO<List<BoardPostSummaryResponse>> list() {
-        return ResponseDTO.ok(boardPostService.getAllPosts());
+    public Page<BoardPostResponse> list(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        return service.listPosts(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 
     @GetMapping("/{id}")
-    public ResponseDTO<BoardPostDetailResponse> detail(@PathVariable Long id) {
-        return ResponseDTO.ok(boardPostService.getPostDetail(id));
+    public BoardPostResponse detail(@PathVariable Long id) {
+        return service.getPost(id);
     }
 
-    @PostMapping("/{id}/like")
-    public ResponseDTO<Void> like(@PathVariable Long id) {
-        boardPostService.likePost(id);
-        return ResponseDTO.ok();
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BoardPostResponse> create(@ModelAttribute CreateBoardPostRequest req) {
+        BoardPostResponse res = service.createPost(req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
+    }
+
+    @PutMapping("/{id}")
+    public BoardPostResponse update(
+        @PathVariable Long id,
+        @RequestBody UpdateBoardPostRequest req
+    ) {
+        return service.updatePost(id, req);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseDTO<Void> delete(@PathVariable Long id) {
-        boardPostService.deletePost(id);
-        return ResponseDTO.ok();
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.deletePost(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Integer> like(@PathVariable Long id) {
+        int likes = service.likePost(id);
+        return ResponseEntity.ok(likes);
     }
 }

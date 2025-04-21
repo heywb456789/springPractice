@@ -11,6 +11,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(
+    name = "t_refresh_token",
+    indexes = {
+        @Index(name = "idx01_t_refresh_token_created_at", columnList = "created_at"), // 최신순 정렬용// 조회수 기반 핫 마커 계산용
+    }
+)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

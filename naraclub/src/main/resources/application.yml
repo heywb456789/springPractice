@@ -7,9 +7,10 @@ spring:
     ansi:
       enabled: always
   jpa:
-    hibernate:
-      naming:
-        physical-strategy: com.tomato.naraclub.common.strategy.PhysicalNamingStrategy
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+
   mvc:
     format:
       date: yyyy-MM-dd
@@ -47,3 +48,13 @@ inbound-logging: ${INBOUND_LOGGING:true}
 one-id:
   base-url: https://api.otongtong.net
   login : /v1/api/external/PASSTONG/plain/login
+  sendSmsCert: /v1/api/external/{apptype}/join/certi
+  verifySmsCert : /v1/api/external/{apptype}/join/certicheck
+  register: /v1/api/external/{apptype}/join
+  nation : KR
+  appType : newstong
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client.ExchangeFilterFunctions: DEBUG
+    reactor.netty.http.client.HttpClient: DEBUG

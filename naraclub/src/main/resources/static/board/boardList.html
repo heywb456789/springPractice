@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>자유게시판 - 토마토 뉴스</title>
+  <link href="/bootstrap/css/bootstrap.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="/css/boardCommon.css" rel="stylesheet"/>
+  <link href="/css/boardList.css" rel="stylesheet"/>
+  <script src="/bootstrap/js/bootstrap.bundle.js"></script>
+  <script src="/js/boardList.js" type="module"></script>
+</head>
+<body>
+  <div class="main-container">
+    <!-- 상단 상태바 -->
+    <div class="status-bar">
+      <div class="time">9:05</div>
+      <div class="website">club1.newstomato.com</div>
+      <div class="indicators">
+        <span><i class="fas fa-signal"></i> LTE</span>
+        <span><i class="fas fa-battery-full"></i></span>
+      </div>
+    </div>
+
+    <!-- 헤더 (로고 & 아이콘) -->
+    <div class="header">
+      <button class="menu-button">
+        <i class="fas fa-bars"></i>
+      </button>
+      <a href="#" class="logo">
+        <img src="/api/placeholder/24/24" alt="로고" />
+        <span>나라 걱정 클럽</span>
+      </a>
+      <div class="right-icons">
+        <button class="search-button">
+          <i class="fas fa-search"></i>
+        </button>
+        <button class="profile-button">
+          <i class="fas fa-user"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 탭 메뉴 (공통 요소) -->
+    <div class="tab-menu">
+      <div class="tab-item">공식홈</div>
+      <div class="tab-item">오리지널</div>
+      <div class="tab-item active">자유게시판</div>
+      <div class="tab-item">주요공지</div>
+    </div>
+
+    <!-- 자유게시판 검색 -->
+    <div class="search-container">
+      <div class="search-form">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="검색어 입력">
+      </div>
+    </div>
+
+    <!-- 게시판 목록 -->
+    <div class="board-list">
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">2030세대는 왜 정치에 냉소적일까?</div>
+          <div class="board-info">
+            <span class="badge new">N</span>
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">팬데믹 이후 의료계 동향은?</div>
+          <div class="board-info">
+            <span class="badge hot">H</span>
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">올리버박사....</div>
+          <div class="board-info">
+            <span class="badge best">B</span>
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">금은 대세가 가는 거야?</div>
+          <div class="board-info">
+            <span class="badge hot">H</span>
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">뉴스 보이시나요</div>
+          <div class="board-info">
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">방자영의 문화공간 누가더봄?</div>
+          <div class="board-info">
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">일단금여 살만한가 요즘?</div>
+          <div class="board-info">
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">가재눈~~ 구별법</div>
+          <div class="board-info">
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">연대생들 성향 분석</div>
+          <div class="board-info">
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-item">
+        <div class="board-content">
+          <div class="board-title">정치 mbti 결과 ㄱㄱ</div>
+          <div class="board-info">
+            <span class="board-comments">10</span>
+            <span class="board-views">11</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <div class="pagination-container">
+      <div class="pagination">
+        <span class="pagination-item prev">
+          <i class="fas fa-chevron-left"></i>
+        </span>
+        <span class="pagination-item active">1</span>
+        <span class="pagination-item">2</span>
+        <span class="pagination-item">3</span>
+        <span class="pagination-item dots">...</span>
+        <span class="pagination-item">65</span>
+        <span class="pagination-item next">
+          <i class="fas fa-chevron-right"></i>
+        </span>
+      </div>
+      <button class="write-button">글쓰기</button>
+    </div>
+  </div>
+</body>
+</html>
