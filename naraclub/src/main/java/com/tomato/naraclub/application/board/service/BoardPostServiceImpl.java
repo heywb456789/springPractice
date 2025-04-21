@@ -6,11 +6,11 @@ import com.tomato.naraclub.application.board.repository.*;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 
 import com.tomato.naraclub.common.code.ResponseStatus;
+import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.exception.APIException;
 import com.tomato.naraclub.common.util.ImageStorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -21,29 +21,29 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class BoardPostServiceImpl implements BoardPostService {
-    private final BoardPostRepository repo;
-    private final MemberRepository memberRepo;
+    private final BoardPostRepository boardPostRepository;
+    private final MemberRepository memberRepository;
     private final ImageStorageService imageService;
 
     @Override
-    public Page<BoardPostResponse> listPosts(Pageable pageable) {
-        return repo.findAll(pageable).map(this::toDto);
+    public ListDTO<BoardPostResponse> listPosts(BoardListRequest request, Pageable pageable) {
+        return boardPostRepository.getBoardPostList(request, pageable);
     }
 
     @Override
     @Transactional
     public BoardPostResponse getPost(Long id) {
-        BoardPost p = repo.findById(id)
+        BoardPost p = boardPostRepository.findById(id)
             .orElseThrow(() -> new APIException(ResponseStatus.BOARD_POST_NOT_EXIST));
         p.setViews(p.getViews() + 1);
-        repo.save(p);
+        boardPostRepository.save(p);
         return toDto(p);
     }
 
     @Override
     @Transactional
     public BoardPostResponse createPost(CreateBoardPostRequest req) {
-        var author = memberRepo.findById(req.getAuthorId())
+        var author = memberRepository.findById(req.getAuthorId())
             .orElseThrow(() -> new APIException(ResponseStatus.USER_NOT_EXIST));
         BoardPost post = BoardPost.builder()
             .author(author)
@@ -68,40 +68,40 @@ public class BoardPostServiceImpl implements BoardPostService {
                 .collect(Collectors.toList());
             post.setImages(imgs);
         }
-        return toDto(repo.save(post));
+        return toDto(boardPostRepository.save(post));
     }
 
     @Override
     @Transactional
     public BoardPostResponse updatePost(Long id, UpdateBoardPostRequest req) {
-        BoardPost post = repo.findById(id)
+        BoardPost post = boardPostRepository.findById(id)
             .orElseThrow(() -> new APIException(ResponseStatus.BOARD_POST_NOT_EXIST));
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
         post.setNew(false);
-        return toDto(repo.save(post));
+        return toDto(boardPostRepository.save(post));
     }
 
     @Override
     public void deletePost(Long id) {
-        if (!repo.existsById(id)) {
+        if (!boardPostRepository.existsById(id)) {
             throw new APIException(ResponseStatus.BOARD_POST_NOT_EXIST);
         }
-        repo.deleteById(id);
+        boardPostRepository.deleteById(id);
     }
 
     @Override
     @Transactional
     public int likePost(Long id) {
-        BoardPost post = repo.findById(id)
+        BoardPost post = boardPostRepository.findById(id)
             .orElseThrow(() -> new APIException(ResponseStatus.BOARD_POST_NOT_EXIST));
         post.setLikes(post.getLikes() + 1);
-        return repo.save(post).getLikes();
+        return boardPostRepository.save(post).getLikes();
     }
 
     private BoardPostResponse toDto(BoardPost p) {
         return BoardPostResponse.builder()
-            .id(p.getId())
+            .boardId(p.getId())
             .authorId(p.getAuthor().getId())
             .title(p.getTitle())
             .content(p.getContent())

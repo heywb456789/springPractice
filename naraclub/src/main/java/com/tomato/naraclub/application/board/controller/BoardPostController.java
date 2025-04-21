@@ -2,8 +2,11 @@ package com.tomato.naraclub.application.board.controller;
 
 import com.tomato.naraclub.application.board.dto.*;
 import com.tomato.naraclub.application.board.service.BoardPostService;
+import com.tomato.naraclub.common.dto.ListDTO;
+import com.tomato.naraclub.common.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,11 +18,8 @@ public class BoardPostController {
     private final BoardPostService service;
 
     @GetMapping
-    public Page<BoardPostResponse> list(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
-    ) {
-        return service.listPosts(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+    public ResponseDTO<ListDTO<BoardPostResponse>> list(BoardListRequest request, @PageableDefault(value = 50, sort = "boardId") Pageable pageable) {
+        return ResponseDTO.ok(service.listPosts(request, pageable));
     }
 
     @GetMapping("/{id}")

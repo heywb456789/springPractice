@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class BoardPostResponse {
-    private Long id;
+    private Long boardId;
     private Long authorId;
     private String title;
     private String content;
