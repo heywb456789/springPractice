@@ -5,13 +5,13 @@
  */
 
 // 페이지 로드 완료 시 실행
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // 공통 요소 로드
   loadCommonComponents().then(() => {
     // 공통 요소 로드 후 이벤트 초기화
     initSideMenu();
     initTabMenu();
-    
+
     // 현재 페이지 URL에 따라 활성 탭/메뉴 설정
     setActiveItems();
   });
@@ -26,18 +26,18 @@ async function loadCommonComponents() {
   try {
     // 사이드 메뉴 및 오버레이
     await loadComponent('side-menu-container', '/components/side-menu.html');
-    
+
     // 헤더 (로고 및 아이콘)
     await loadComponent('header-container', '/components/header.html');
-    
+
     // 탭 메뉴
     await loadComponent('tab-menu-container', '/components/tab-menu.html');
-    
+
     console.log('모든 공통 컴포넌트 로드 완료');
     return true;
   } catch (error) {
     console.error('공통 컴포넌트 로드 중 오류 발생:', error);
-    
+
     // 오류 발생 시 기본 컴포넌트 직접 삽입
     injectDefaultComponents();
     return false;
@@ -53,14 +53,14 @@ async function loadCommonComponents() {
 async function loadComponent(containerId, componentUrl) {
   return new Promise((resolve, reject) => {
     const container = document.getElementById(containerId);
-    
+
     // 컨테이너가 없으면 무시
     if (!container) {
       console.warn(`${containerId} 컨테이너를 찾을 수 없습니다.`);
       resolve();
       return;
     }
-    
+
     // 컴포넌트 HTML 가져오기
     fetch(componentUrl)
       .then(response => {
@@ -108,7 +108,7 @@ function injectDefaultComponents() {
       </div>
     `;
   }
-  
+
   // 헤더 기본 HTML
   const headerContainer = document.getElementById('header-container');
   if (headerContainer) {
@@ -132,7 +132,7 @@ function injectDefaultComponents() {
       </div>
     `;
   }
-  
+
   // 탭 메뉴 기본 HTML
   const tabMenuContainer = document.getElementById('tab-menu-container');
   if (tabMenuContainer) {
@@ -152,23 +152,23 @@ function injectDefaultComponents() {
  */
 function setActiveItems() {
   const currentPath = window.location.pathname;
-  
+
   // 사이드 메뉴 활성화
   const sideMenuItems = document.querySelectorAll('.side-menu-item');
   sideMenuItems.forEach(item => {
     item.classList.remove('active');
-    
+
     const page = item.getAttribute('data-page');
     if (matchPathToPage(currentPath, page)) {
       item.classList.add('active');
     }
   });
-  
+
   // 탭 메뉴 활성화
   const tabItems = document.querySelectorAll('.tab-item');
   tabItems.forEach(item => {
     item.classList.remove('active');
-    
+
     const page = item.getAttribute('data-page');
     if (matchPathToPage(currentPath, page)) {
       item.classList.add('active');
@@ -194,7 +194,7 @@ function matchPathToPage(path, page) {
     'community': ['/boardList.html'],
     'exchange': ['/exchange.html']
   };
-  
+
   return pathMap[page] && pathMap[page].some(p => path.endsWith(p));
 }
 
@@ -205,23 +205,23 @@ function initSideMenu() {
   const menuButton = document.querySelector('.menu-button');
   const sideMenu = document.querySelector('.side-menu');
   const overlay = document.querySelector('.menu-overlay');
-  
+
   // 햄버거 메뉴 클릭 이벤트
   if (menuButton && sideMenu && overlay) {
-    menuButton.addEventListener('click', function() {
+    menuButton.addEventListener('click', function () {
       sideMenu.classList.add('active');
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
     });
-    
+
     // 오버레이 클릭 시 메뉴 닫기
-    overlay.addEventListener('click', function() {
+    overlay.addEventListener('click', function () {
       sideMenu.classList.remove('active');
       overlay.classList.remove('active');
       document.body.style.overflow = '';
     });
   }
-  
+
   // 메뉴 항목 클릭 이벤트
   initSideMenuItems();
 }
@@ -233,20 +233,20 @@ function initSideMenuItems() {
   const menuItems = document.querySelectorAll('.side-menu-item');
   const sideMenu = document.querySelector('.side-menu');
   const overlay = document.querySelector('.menu-overlay');
-  
+
   menuItems.forEach(item => {
-    item.addEventListener('click', function() {
+    item.addEventListener('click', function () {
       const page = this.getAttribute('data-page');
-      
+
       // 현재 활성화된 메뉴 아이템 비활성화
       document.querySelector('.side-menu-item.active')?.classList.remove('active');
-      
+
       // 클릭한 메뉴 아이템 활성화
       this.classList.add('active');
-      
+
       // 페이지 이동
       navigateToPage(page);
-      
+
       // 메뉴 닫기
       sideMenu.classList.remove('active');
       overlay.classList.remove('active');
@@ -260,19 +260,19 @@ function initSideMenuItems() {
  */
 function initTabMenu() {
   const tabItems = document.querySelectorAll('.tab-item');
-  
+
   tabItems.forEach(tab => {
-    tab.addEventListener('click', function() {
+    tab.addEventListener('click', function () {
       const page = this.getAttribute('data-page');
-      
+
       // 모든 탭 비활성화
       tabItems.forEach(item => {
         item.classList.remove('active');
       });
-      
+
       // 클릭한 탭 활성화
       this.classList.add('active');
-      
+
       // 페이지 이동 또는 컨텐츠 변경
       handleTabChange(page);
     });
@@ -292,7 +292,7 @@ function navigateToPage(page) {
     'community': '/boardList.html',
     'exchange': '/exchange.html'
   };
-  
+
   // 해당 페이지로 이동
   if (pageUrls[page]) {
     window.location.href = pageUrls[page];
@@ -311,7 +311,7 @@ function handleTabChange(page) {
     'board': '/board/boardList.html',
     'vote': '/voteList.html'
   };
-  
+
   // 해당 페이지로 이동
   if (pageUrls[page]) {
     window.location.href = pageUrls[page];
@@ -322,40 +322,3 @@ function handleTabChange(page) {
 window.loadCommonComponents = loadCommonComponents;
 window.initSideMenu = initSideMenu;
 window.initTabMenu = initTabMenu;
-
-
-export async function checkAuthAndRedirect(redirectUrl, validatePath = '/api/auth/validate') {
-  try {
-    const token = localStorage.getItem('accessToken');
-    const res = await fetch(validatePath, {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` }  // 토큰 헤더 방식일 때
-    });
-    // 204 No Content 면 인증 완료 상태
-    if (res.status === 204) {
-      window.location.replace(redirectUrl);
-    }
-    // 401 등은 아무 동작 안함 → 로그인 페이지 계속 보여줌
-  } catch (err) {
-    console.error('Auth check failed:', err);
-    // 네트워크 오류도 그냥 무시
-  }
-}
-
-export async function handleTokenRefresh() {
-  const refreshToken = localStorage.getItem('refreshToken');
-  const res = await fetch('/api/auth/refresh', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken })
-  });
-
-  if (!res.ok) {
-    localStorage.clear();
-    window.location.href = '../login/login.html';
-    throw new Error('세션이 만료되었습니다. 다시 로그인 해주세요.');
-  }
-
-  const data = await res.json();
-  localStorage.setItem('accessToken', data.response.token);
-}

@@ -20,7 +20,6 @@ import java.util.List;
     indexes = {
         @Index(name = "idx01_t_board_post_created_at", columnList = "created_at"), // 최신순 정렬용
         @Index(name = "idx02_t_board_post_views", columnList = "views")
-        // 조회수 기반 핫 마커 계산용
     }
 )
 @Getter

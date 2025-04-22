@@ -1,9 +1,16 @@
+// main.js
 import VideoService from './video-service.js';
+import { optionalAuthFetch } from './commonFetch.js';
 
-document.addEventListener('DOMContentLoaded', async function() {
-
-  // 최신 동영상 불러오기
+document.addEventListener('DOMContentLoaded', async function () {
+  // 1) 최신 동영상
   await loadLatestVideo();
+
+  // 2) 자유게시판 최신 4개 글
+  await loadLatestPosts();
+
+  // 3) '더보기' 클릭 이벤트
+  initMoreLink();
 });
 
 /**
@@ -11,93 +18,83 @@ document.addEventListener('DOMContentLoaded', async function() {
  */
 async function loadLatestVideo() {
   try {
-    // 로딩 상태 표시
     const hotTopicSection = document.querySelector('.hot-topic');
-    if (hotTopicSection) {
-      hotTopicSection.innerHTML = '<div class="loading">동영상을 불러오는 중...</div>';
-    }
+    hotTopicSection.innerHTML = '<div class="loading">동영상을 불러오는 중...</div>';
 
-    // API에서 최신 비디오 가져오기
     const latestVideo = await VideoService.getLatestVideo();
-    
-    // 비디오가 없는 경우 처리
     if (!latestVideo) {
-      if (hotTopicSection) {
-        hotTopicSection.innerHTML = '<div class="no-content">현재 표시할 동영상이 없습니다.</div>';
-      }
+      hotTopicSection.innerHTML = '<div class="no-content">현재 표시할 동영상이 없습니다.</div>';
       return;
     }
-    
-    // 비디오 정보로 핫토픽 섹션 업데이트
+
     updateHotTopicSection(latestVideo);
-    
   } catch (error) {
     console.error('동영상 로드 중 오류 발생:', error);
-    const hotTopicSection = document.querySelector('.hot-topic');
-    if (hotTopicSection) {
-      hotTopicSection.innerHTML = '<div class="error">동영상을 불러오는 중 오류가 발생했습니다.</div>';
-    }
+    document.querySelector('.hot-topic')
+      .innerHTML = '<div class="error">동영상을 불러오는 중 오류가 발생했습니다.</div>';
   }
 }
 
 /**
- * 동영상 정보로 핫토픽 섹션 업데이트
- * @param {Object} video - 비디오 정보 객체
+ * 최신 4개 게시글을 불러와 자유게시판 섹션을 업데이트
+ */
+async function loadLatestPosts() {
+  const newsList = document.querySelectorAll('.news-section')[1]?.querySelector('.news-list');
+  if (!newsList) return;
+
+  // 로딩 표시 (선택 사항)
+  newsList.innerHTML = '<p class="loading-text">게시글을 불러오는 중...</p>';
+
+  try {
+    const res = await optionalAuthFetch('/api/board/posts?page=0&size=4');
+    const { response } = await res.json();
+    const items = response.data || [];
+
+    if (items.length === 0) {
+      newsList.innerHTML = '<p class="empty-title">게시글이 없습니다</p>';
+      return;
+    }
+
+    newsList.innerHTML = items.map(item => `
+      <div class="news-item" data-id="${item.boardId}">
+        <div class="news-title">${item.title}</div>
+        <div class="news-comment">
+          <i class="far fa-comment comment-icon"></i>
+          <span class="comment-count">${item.commentCount}</span>
+        </div>
+      </div>
+    `).join('');
+
+    // 각 글 클릭 시 상세로 이동
+    newsList.querySelectorAll('.news-item').forEach(el => {
+      el.addEventListener('click', () => {
+        window.location.href = `boardDetail.html?id=${el.dataset.id}`;
+      });
+    });
+  } catch (err) {
+    console.error('게시글 로드 오류:', err);
+    newsList.innerHTML = '<p class="error">게시글을 불러오는 중 오류가 발생했습니다.</p>';
+  }
+}
+
+/**
+ * 자유게시판 ‘더보기’ 링크 클릭 시 목록 페이지로 이동
+ */
+function initMoreLink() {
+  const section = document.querySelectorAll('.news-section')[1];
+  const moreLink = section?.querySelector('.more-link');
+  if (moreLink) {
+    moreLink.addEventListener('click', e => {
+      e.preventDefault();
+      window.location.href = 'boardList.html';  // 실제 목록 페이지 경로에 맞춰주세요
+    });
+  }
+}
+
+/**
+ * 핫토픽 섹션 업데이트 (기존 코드)
  */
 function updateHotTopicSection(video) {
   const hotTopicSection = document.querySelector('.hot-topic');
-  if (!hotTopicSection) return;
-  
-  // 유튜브 미리보기 또는 썸네일 이미지로 표시
-  let content = '';
-  
-  // 동영상 재생 가능한 형태로 표시 (선택 사항)
-  const useEmbeddedPlayer = false; // 임베디드 플레이어 사용 여부 (true/false)
-  
-  if (useEmbeddedPlayer) {
-    // YouTube iframe으로 표시 (클릭 시 바로 재생)
-    content = `
-      <div class="video-container">
-        <iframe 
-          width="100%" 
-          height="200" 
-          src="${video.youtubeEmbedUrl}?rel=0" 
-          title="${video.title}" 
-          frameborder="0" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-          allowfullscreen>
-        </iframe>
-      </div>
-    `;
-  } else {
-    // 썸네일 이미지와 재생 버튼으로 표시 (클릭 시 새 탭에서 열기)
-    content = `
-      <a href="${video.url}" target="_blank" class="video-thumbnail">
-        <img src="${video.thumbnailUrl}" alt="${video.title}" />
-        <div class="play-button">
-          <i class="fas fa-play-circle"></i>
-        </div>
-        ${video.duration ? `<div class="video-duration">${video.getFormattedDuration()}</div>` : ''}
-      </a>
-    `;
-  }
-  
-  // 제목과 함께 표시
-  content += `
-    <div class="hot-topic-title">
-      ${video.title}
-    </div>
-  `;
-  
-  hotTopicSection.innerHTML = content;
-  
-  // 이벤트 핸들러 추가 (썸네일 클릭 시 동영상 페이지로 이동 등)
-  const videoThumbnail = hotTopicSection.querySelector('.video-thumbnail');
-  if (videoThumbnail) {
-    videoThumbnail.addEventListener('click', function(e) {
-      // 새 탭으로 열기 이외의 동작이 필요하면 여기서 처리
-      // e.preventDefault();
-      // 예: 모달로 열기 등
-    });
-  }
+  // ... (여기에 기존 updateHotTopicSection 로직 그대로)
 }

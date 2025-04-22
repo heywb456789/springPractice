@@ -31,9 +31,8 @@ public class BoardPostController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BoardPostResponse> create(@ModelAttribute CreateBoardPostRequest req, @AuthenticationPrincipal MemberUserDetails userDetails) {
-        BoardPostResponse res = service.createPost(req, userDetails);
-        return ResponseEntity.status(HttpStatus.CREATED).body(res);
+    public ResponseDTO<BoardPostResponse> create(@ModelAttribute CreateBoardPostRequest req, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        return ResponseDTO.ok(service.createPost(req, userDetails));
     }
 
     @PutMapping("/{id}")

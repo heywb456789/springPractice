@@ -2,7 +2,8 @@
  * 게시글 상세 페이지 스크립트
  */
 
-import {handleTokenRefresh} from './common.js'
+import { authFetch, optionalAuthFetch, handleTokenRefresh } from './commonFetch.js';
+
 document.addEventListener('DOMContentLoaded', function () {
   // 뒤로가기 버튼 이벤트
   initBackButton();
@@ -64,25 +65,25 @@ function sharePost() {
       title: title,
       url: shareUrl
     })
-    .then(() => console.log('공유 성공'))
-    .catch((error) => console.log('공유 실패:', error));
+      .then(() => console.log('공유 성공'))
+      .catch((error) => console.log('공유 실패:', error));
   } else {
     // 지원되지 않는 경우 URL 복사
     navigator.clipboard.writeText(shareUrl)
-    .then(() => {
-      alert('게시글 주소가 복사되었습니다.');
-    })
-    .catch(err => {
-      console.error('URL 복사 실패:', err);
-      // 대체 방법: 임시 요소 생성하여 복사
-      const tempInput = document.createElement('input');
-      document.body.appendChild(tempInput);
-      tempInput.value = shareUrl;
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      alert('게시글 주소가 복사되었습니다.');
-    });
+      .then(() => {
+        alert('게시글 주소가 복사되었습니다.');
+      })
+      .catch(err => {
+        console.error('URL 복사 실패:', err);
+        // 대체 방법: 임시 요소 생성하여 복사
+        const tempInput = document.createElement('input');
+        document.body.appendChild(tempInput);
+        tempInput.value = shareUrl;
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        alert('게시글 주소가 복사되었습니다.');
+      });
   }
 }
 
@@ -98,55 +99,17 @@ function getPostIdFromUrl() {
 /**
  * 게시글 데이터 로드
  */
-
 async function loadPostData() {
   const postId = getPostIdFromUrl();
-
-  if (!postId) {
-    console.error('게시글 ID를 찾을 수 없습니다.');
-    return;
-  }
-
-  const url = `/api/board/posts/${postId}`
-
-  // 실제 요청 로직
-  async function getPostDetail() {
-    return fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-      },
-      credentials: 'include' // if your API uses cookies
-    });
-  }
-
   try {
-    let res = await getPostDetail();
+    const res = await optionalAuthFetch(`/api/board/posts/${postId}`);
+    const { response: post } = await res.json();
+    updatePostUI(post);
+    // 좋아요 초기화
 
-    // 1차 호출에서 401이면, refresh 시도 후 재호출
-    if (res.status === 401) {
-      try {
-        await handleTokenRefresh();
-      } catch (refreshErr) {
-        throw new Error('세션이 만료되어 다시 로그인해주세요.');
-      }
-      // 재호출
-      res = await getPostDetail();
-    }
-    if (!res.ok) {
-      throw new Error(`status ${res.status}`);
-    }
-    const data = await res.json();
+    const likeBtn = document.querySelector('.like-button');
+    likeBtn.classList.toggle('active', post.like);
 
-    updatePostUI(data.response);
-    // 좋아요 초기 상태
-    const likeButton = document.querySelector('.like-button');
-    if (data.response.like) {
-      likeButton.classList.add('active');
-    } else {
-      likeButton.classList.remove('active');
-    }
   } catch (err) {
     console.error('게시글 로드 오류:', err);
     alert('게시글을 불러오는 중 오류가 발생했습니다.');
@@ -203,14 +166,14 @@ function updatePostUI(postData) {
 
   // 좋아요 수 업데이트
   const likeCountElement = document.querySelector(
-      '.action-button:nth-child(3) span');
+    '.action-button:nth-child(3) span');
   if (likeCountElement) {
     likeCountElement.textContent = postData.likes || 0;
   }
 
   // 조회수 업데이트
   const viewCountElement = document.querySelector(
-      '.action-button:nth-child(2) span');
+    '.action-button:nth-child(2) span');
   if (viewCountElement) {
     viewCountElement.textContent = postData.views || 0;
   }
@@ -218,54 +181,21 @@ function updatePostUI(postData) {
 }
 
 async function toggleLike(button) {
-  const postId = getPostIdFromUrl();
-  if (!postId) {
-    return;
-  }
-
-  const isActive = button.classList.contains('active');
-  const url = `/api/board/posts/${postId}/like`;
-  const method = isActive ? 'DELETE' : 'POST';
-
-  // 실제 요청 로직
-  async function doLikeRequest() {
-    return fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-      },
-      credentials: 'include' // if your API uses cookies
-    });
-  }
-
+  const id = getPostIdFromUrl();
+  const method = button.classList.contains('active') ? 'DELETE' : 'POST';
   try {
-    let res = await doLikeRequest();
-
-    // 1차 호출에서 401이면, refresh 시도 후 재호출
-    if (res.status === 401) {
-      try {
-        await handleTokenRefresh();
-      } catch (refreshErr) {
-        throw new Error('세션이 만료되어 다시 로그인해주세요.');
-      }
-      // 재호출
-      res = await doLikeRequest();
-    }
-
-    // 최종 응답 확인
-    if (!res.ok) {
-      throw new Error(`status ${res.status}`);
-    }
-    const result = await res.json();
-
-    // UI 업데이트
-    const newCount = result.response;
-    button.querySelector('span').textContent = newCount;
-    button.classList.toggle('active', !isActive);
-
+    const res = await authFetch(`/api/board/posts/${id}/like`, { method });
+    const { likes } = await res.json();
+    button.querySelector('span').textContent = likes;
+    button.classList.toggle('active');
   } catch (err) {
-    console.error('좋아요 처리 오류:', err);
-    alert(err.message || '좋아요 처리 중 오류가 발생했습니다.');
+    if (err.message.includes('Unauthorized')) {
+      // 로그인 페이지로 이동
+      alert('로그인이 필요한 기능입니다.')
+      location.href = '/login/login.html';
+    } else {
+      alert('좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+
   }
 }

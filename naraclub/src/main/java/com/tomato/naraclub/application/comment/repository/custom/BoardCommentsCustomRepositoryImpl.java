@@ -33,7 +33,7 @@ public class BoardCommentsCustomRepositoryImpl implements BoardCommentsCustomRep
     @Transactional(readOnly = true)
     public ListDTO<CommentResponse> getBoardPostsComments(Long postId, MemberUserDetails user, Pageable pageable) {
         QBoardComments comment = QBoardComments.boardComments;
-        Long userId = user.getMember().getId();
+        Long userId = user==null ? 0L : user.getMember().getId();
         BooleanExpression condition = comment.boardPost.id.eq(postId);
 
         // count 쿼리

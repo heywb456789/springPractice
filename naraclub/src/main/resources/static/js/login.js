@@ -1,5 +1,5 @@
 // src/main/resources/static/js/login.js
-import {checkAuthAndRedirect, handleTokenRefresh} from './common.js'
+import { checkAuthAndRedirect, handleTokenRefresh } from './commonFetch.js'
 
 let inviteModal;
 let isNoInviteFlow = false;
@@ -59,18 +59,18 @@ const handleLogin = async (elements) => {
 
     console.log(res.response.member)
 
-    switch(res.response.member.status) {
-      case 'TEMPORARY_INVITE' :
+    switch (res.response.member.status) {
+      case 'TEMPORARY_INVITE':
         inviteModal = new bootstrap.Modal(elements.inviteModalEl);
         inviteModal.show();
         break;
       case 'TEMPORARY_PASS':
         window.location.href = 'login.js'; // PASS 도입되면 그쪽으로
         break;
-      case 'ACTIVE' :
-            window.location.href = '../main/main.html';
+      case 'ACTIVE':
+        window.location.href = '../main/main.html';
         break;
-      default :
+      default:
         alert("회원님의 계정이 삭제 되었거나. 임시 정지 되었습니다. 고객센터에 문의 부탁드립니다.");
         break;
     }

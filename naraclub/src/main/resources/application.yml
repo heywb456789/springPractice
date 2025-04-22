@@ -23,6 +23,10 @@ spring:
       access-token-expiration: 10000       # 만료 테스트 10초
       refresh-token-expiration: 1209600000   # 리프레시 토큰 2주
       auto-login-expiration: 31536000000      # 자동 로그인 (1년)
+  web:
+    resources:
+      cache:
+        period: 0
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
@@ -35,7 +39,7 @@ server:
 # Springdoc ?? (???)
 
 springdoc:
-  packages-to-scan: kr.texture.bread
+  packages-to-scan: com.tomato.naraclub
   paths-to-match: /**
   swagger-ui:
     path: /swagger-ui.html

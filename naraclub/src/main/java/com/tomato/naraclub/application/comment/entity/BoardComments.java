@@ -28,19 +28,16 @@ import org.hibernate.annotations.Comment;
 @SuperBuilder
 public class BoardComments extends Audit {
 
-    /** 댓글 작성자(Many-to-One) */
     @Comment("댓글 작성자")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private Member author;
 
-    /** 댓글 내용 */
     @Comment("댓글 내용")
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
 
-    /** 소속 게시글 */
     @Comment("게시글")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_post_id", nullable = false)

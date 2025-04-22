@@ -1,10 +1,12 @@
+import { optionalAuthFetch } from './commonFetch.js';
+
 /**
  * 게시판 목록을 API에서 불러와 동적으로 구성하는 함수
  * @param {number} page - 페이지 번호 (기본값: 1)
- * @param {number} limit - 한 페이지당 게시글 수 (기본값: 10)
+ * @param {number} size - 한 페이지당 게시글 수 (기본값: 10)
  * @param {string} keyword - 검색어 (기본값: 빈 문자열)
  */
-async function loadBoardList(page = 0, limit = 10, keyword = '') {
+async function loadBoardList(page = 0, size = 10, keyword = '') {
   // 로딩 상태 표시
   const boardListContainer = document.querySelector('.board-list');
   if (!boardListContainer) {
@@ -26,24 +28,11 @@ async function loadBoardList(page = 0, limit = 10, keyword = '') {
     <p class="loading-subtext">잠시만 기다려주세요...</p>
   </div>
 `;
-
+  const apiUrl = `/api/board/posts?page=${page}&size=${size}` +
+    (keyword ? `&searchType=BOARD_TITLE_CONTENT&keyword=${encodeURIComponent(keyword)}` : '');
   try {
-    // API 요청 URL 구성
-    let apiUrl = `/api/board/posts?page=${page}&size=${limit}`;
-    if (keyword) {
-      apiUrl += `&searchType=BOARD_TITLE_CONTENT&keyword=${encodeURIComponent(keyword)}`;
-    }
-
-    // API 호출
-    const response = await fetch(apiUrl);
-
-    // 응답 확인
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // JSON 데이터 파싱
-    const data = await response.json();
+    const res = await optionalAuthFetch(apiUrl);
+    const data = await res.json();
 
     // 페이지네이션 정보 업데이트
     updatePagination(data.response.pagination);
@@ -52,31 +41,31 @@ async function loadBoardList(page = 0, limit = 10, keyword = '') {
     if (!data.response.data || data.response.data.length === 0) {
       // 게시글이 없는 경우
       boardListContainer.innerHTML = `
-  <div class="empty-state">
-    <div class="empty-icon">
-      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M19 5V19H5V5H19ZM21 3H3V21H21V3Z" fill="#adb5bd"/>
-        <path d="M14 17H6V15H14V17Z" fill="#adb5bd"/>
-        <path d="M14 13H6V11H14V13Z" fill="#adb5bd"/>
-        <path d="M18 9H6V7H18V9Z" fill="#adb5bd"/>
-      </svg>
-    </div>
-    <p class="empty-title">게시글이 없습니다</p>
-    <p class="empty-message">첫 번째 게시글을 작성해 보세요</p>
-    <button class="write-post-button" onclick="window.location.href='boardWrite.html'">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="white"/>
-      </svg>
-      새 글 작성하기
-    </button>
-  </div>
-`;
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 5V19H5V5H19ZM21 3H3V21H21V3Z" fill="#adb5bd"/>
+              <path d="M14 17H6V15H14V17Z" fill="#adb5bd"/>
+              <path d="M14 13H6V11H14V13Z" fill="#adb5bd"/>
+              <path d="M18 9H6V7H18V9Z" fill="#adb5bd"/>
+            </svg>
+          </div>
+          <p class="empty-title">게시글이 없습니다</p>
+          <p class="empty-message">첫 번째 게시글을 작성해 보세요</p>
+          <button class="write-post-button" onclick="window.location.href='boardWrite.html'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="white"/>
+            </svg>
+            새 글 작성하기
+          </button>
+        </div>
+      `;
       return;
     }
 
     // 게시글 목록 HTML 생성
     const boardListHTML = data.response.data.map(
-        item => createBoardItemHTML(item)).join('');
+      item => createBoardItemHTML(item)).join('');
 
     // 생성된 HTML을 컨테이너에 삽입
     boardListContainer.innerHTML = boardListHTML;
@@ -89,30 +78,30 @@ async function loadBoardList(page = 0, limit = 10, keyword = '') {
 
     // 오류 메시지 표시
     boardListContainer.innerHTML = `
-  <div class="error-state">
-    <div class="error-icon">
-      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" stroke="#ff6b6b" stroke-width="2"/>
-        <path d="M12 8V13" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="12" cy="16" r="1" fill="#ff6b6b"/>
-      </svg>
-    </div>
-    <p class="error-title">게시글을 불러오는 데 실패했습니다</p>
-    <p class="error-message">네트워크 연결을 확인하시거나 잠시 후 다시 시도해 주세요</p>
-    <button class="retry-button">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4.01 7.58 4.01 12C4.01 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="#4263eb"/>
-      </svg>
-      다시 시도하기
-    </button>
-  </div>
-`;
+        <div class="error-state">
+          <div class="error-icon">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" stroke="#ff6b6b" stroke-width="2"/>
+              <path d="M12 8V13" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="12" cy="16" r="1" fill="#ff6b6b"/>
+            </svg>
+          </div>
+          <p class="error-title">게시글을 불러오는 데 실패했습니다</p>
+          <p class="error-message">네트워크 연결을 확인하시거나 잠시 후 다시 시도해 주세요</p>
+          <button class="retry-button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4.01 7.58 4.01 12C4.01 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="#4263eb"/>
+            </svg>
+            다시 시도하기
+          </button>
+        </div>
+      `;
 
     // 다시 시도 버튼에 이벤트 연결
     const retryButton = boardListContainer.querySelector('.retry-button');
     if (retryButton) {
       retryButton.addEventListener('click',
-          () => loadBoardList(page, limit, keyword));
+        () => loadBoardList(page, limit, keyword));
     }
   }
 }
@@ -234,7 +223,7 @@ function updatePagination(pagination) {
  */
 function initPaginationClick() {
   const paginationItems = document.querySelectorAll(
-      '.pagination-item:not(.dots):not(.disabled)');
+    '.pagination-item:not(.dots):not(.disabled)');
 
   paginationItems.forEach(item => {
     item.addEventListener('click', function () {
@@ -248,7 +237,7 @@ function initPaginationClick() {
       const keyword = searchInput ? searchInput.value.trim() : '';
 
       // 게시글 목록 다시 로드
-      loadBoardList(page -1, 10, keyword);
+      loadBoardList(page - 1, 10, keyword);
     });
   });
 }

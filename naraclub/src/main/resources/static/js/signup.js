@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const minutes = Math.floor(remainingSeconds / 60);
     const seconds = remainingSeconds % 60;
     elements.timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0'
-        : ''}${seconds}`;
+      : ''}${seconds}`;
   };
 
   // 타이머 중지 함수
@@ -91,8 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // 1-2) API 호출
       const res = await fetch('/api/auth/smsCert/send', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({phoneNumber: elements.phoneNumber.value})
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: elements.phoneNumber.value })
       });
 
       if (!res.ok) {
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 2-1) 검증 API 호출
       const res = await fetch('/api/auth/smsCert/verify', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phoneNumber: elements.phoneNumber.value,
           verificationCode: code,
@@ -237,13 +237,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 개별 약관 체크박스 처리
   [elements.agreeService, elements.agreePrivacy,
-    elements.agreeMarketing].forEach(checkbox => {
+  elements.agreeMarketing].forEach(checkbox => {
     checkbox.addEventListener('change', () => {
       // 모든 약관이 체크되었는지 확인
       elements.agreeAll.checked =
-          elements.agreeService.checked &&
-          elements.agreePrivacy.checked &&
-          elements.agreeMarketing.checked;
+        elements.agreeService.checked &&
+        elements.agreePrivacy.checked &&
+        elements.agreeMarketing.checked;
       validateForm(elements);
     });
   });
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2-1) 검증 API 호출
         const res = await fetch('/api/auth/register', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(signupData)
         });
 
@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 입력 필드 이벤트 등록
   elements.fullName.addEventListener('input', () => validateName(elements));
   elements.verificationCode.addEventListener('input',
-      () => validateVerificationCode(elements));
+    () => validateVerificationCode(elements));
 
   // 모든 입력 필드에 대한 검증 이벤트 등록
   const allInputs = [
@@ -365,7 +365,7 @@ const validateVerificationCode = (elements) => {
 const validatePassword = (elements) => {
   // 영문, 숫자, 특수문자 조합 8-20자
   const isValid = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()]).{8,20}$/.test(
-      elements.password.value);
+    elements.password.value);
   elements.passwordError.style.display = isValid ? 'none' : 'block';
   return isValid;
 };
@@ -395,12 +395,12 @@ const validateForm = (elements) => {
   const isConfirmPasswordValid = validateConfirmPassword(elements);
   const isEmailValid = validateEmail(elements);
   const isTermsValid = elements.agreeService.checked
-      && elements.agreePrivacy.checked;
+    && elements.agreePrivacy.checked;
 
   // 모든 필드가 유효할 때만 버튼 활성화
   const isFormValid = isNameValid && isPhoneValid && isCodeValid &&
-      isPasswordValid && isConfirmPasswordValid &&
-      isEmailValid && isTermsValid;
+    isPasswordValid && isConfirmPasswordValid &&
+    isEmailValid && isTermsValid;
 
   elements.signupButton.disabled = !isFormValid;
 
