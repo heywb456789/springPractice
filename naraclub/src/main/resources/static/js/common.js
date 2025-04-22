@@ -1,88 +1,361 @@
 /**
- * 로그인 상태(토큰 유효성)를 확인하고,
- * 살아있다면 지정된 URL로 리다이렉트합니다.
- *
- * @param {string} redirectUrl   인증됐을 때 이동할 URL
- * @param {string} validatePath  (선택) 인증 확인용 엔드포인트 경로, 기본 '/api/auth/validate'
+ * 공통 기능 자바스크립트 파일
+ * 사이드바, 헤더, 탭 메뉴 등 공통 요소에 대한 이벤트와 기능
+ * 공통 컴포넌트 로드 및 관리
  */
 
-export async function checkAuthAndRedirect({
-  redirectUrl,
-  validatePath = '/api/auth/validate',
-  refreshPath  = '/api/auth/refresh',
-  loginPage    = '/login/login.html'
-}) {
-  const accessToken  = localStorage.getItem('accessToken');
-  const refreshToken = localStorage.getItem('refreshToken');
-
-  // 1) 토큰 둘 다 없으면 → 로그인 페이지 유지
-  if (!accessToken && !refreshToken) {
-    return;
-  }
-
-  try {
-    // 2) 액세스 토큰만 없으면 → 리프레시 시도
-    if (!accessToken && refreshToken) {
-      const refreshed = await tryRefresh(refreshPath, refreshToken, loginPage);
-      if (refreshed) {
-        window.location.replace(redirectUrl);
-      }
-      return;
-    }
-
-    // 3) 액세스 토큰이 있으면 → 검증 시도
-    let res = await fetch(validatePath, {
-      headers: { 'Authorization': `Bearer ${accessToken}` }
-    });
-
-    if (res.status === 204) {
-      // 유효한 액세스 토큰
-      window.location.replace(redirectUrl);
-      return;
-    }
-
-    if (res.status === 401 && refreshToken) {
-      // 액세스 토큰 만료 → 리프레시 시도
-      const refreshed = await tryRefresh(refreshPath, refreshToken, loginPage);
-      if (refreshed) {
-        window.location.replace(redirectUrl);
-      }
-    }
-    // 그 외 상태(예: 403)는 로그인 페이지 유지
-  } catch (err) {
-    console.error('Auth check failed:', err);
-    // 네트워크 오류 등은 로그인 페이지 유지
-  }
-}
+// 페이지 로드 완료 시 실행
+document.addEventListener('DOMContentLoaded', function() {
+  // 공통 요소 로드
+  loadCommonComponents().then(() => {
+    // 공통 요소 로드 후 이벤트 초기화
+    initSideMenu();
+    initTabMenu();
+    
+    // 현재 페이지 URL에 따라 활성 탭/메뉴 설정
+    setActiveItems();
+  });
+});
 
 /**
- * 리프레시 토큰으로 액세스 토큰 재발급 시도
- * @returns {Promise<boolean>} 재발급 성공 시 true, 아니면 false
+ * 공통 컴포넌트 로드 함수
+ * 헤더, 사이드바, 탭 메뉴 등을 동적으로 삽입
+ * @returns {Promise} 모든 컴포넌트 로드 완료 Promise
  */
-async function tryRefresh(refreshPath, refreshToken, loginPage) {
+async function loadCommonComponents() {
   try {
-    const refreshRes = await fetch(refreshPath, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ refreshToken })
-    });
-    if (!refreshRes.ok) {
-      // 재발급 실패 → 강제 로그아웃
-      localStorage.clear();
-      window.location.replace(loginPage);
-      return false;
-    }
-    const { response: auth } = await refreshRes.json();
-    localStorage.setItem('accessToken', auth.token);
-    if (auth.refreshToken) {
-      localStorage.setItem('refreshToken', auth.refreshToken);
-    }
+    // 사이드 메뉴 및 오버레이
+    await loadComponent('side-menu-container', '/components/side-menu.html');
+    
+    // 헤더 (로고 및 아이콘)
+    await loadComponent('header-container', '/components/header.html');
+    
+    // 탭 메뉴
+    await loadComponent('tab-menu-container', '/components/tab-menu.html');
+    
+    console.log('모든 공통 컴포넌트 로드 완료');
     return true;
-  } catch (e) {
-    console.error('Refresh failed:', e);
-    localStorage.clear();
-    window.location.replace(loginPage);
+  } catch (error) {
+    console.error('공통 컴포넌트 로드 중 오류 발생:', error);
+    
+    // 오류 발생 시 기본 컴포넌트 직접 삽입
+    injectDefaultComponents();
     return false;
   }
 }
 
+/**
+ * 개별 컴포넌트 로드 함수
+ * @param {string} containerId - 컴포넌트를 삽입할 컨테이너 ID
+ * @param {string} componentUrl - 컴포넌트 HTML 파일 URL
+ * @returns {Promise} 컴포넌트 로드 완료 Promise
+ */
+async function loadComponent(containerId, componentUrl) {
+  return new Promise((resolve, reject) => {
+    const container = document.getElementById(containerId);
+    
+    // 컨테이너가 없으면 무시
+    if (!container) {
+      console.warn(`${containerId} 컨테이너를 찾을 수 없습니다.`);
+      resolve();
+      return;
+    }
+    
+    // 컴포넌트 HTML 가져오기
+    fetch(componentUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP 오류: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(html => {
+        // 컨테이너에 HTML 삽입
+        container.innerHTML = html;
+        resolve();
+      })
+      .catch(error => {
+        console.error(`${componentUrl} 로드 중 오류:`, error);
+        reject(error);
+      });
+  });
+}
+
+/**
+ * 오류 시 기본 컴포넌트 삽입 함수
+ * 컴포넌트 로드 실패 시 기본 HTML 삽입
+ */
+function injectDefaultComponents() {
+  // 사이드 메뉴 & 오버레이 기본 HTML
+  const sideMenuContainer = document.getElementById('side-menu-container');
+  if (sideMenuContainer) {
+    sideMenuContainer.innerHTML = `
+      <div class="menu-overlay"></div>
+      <div class="side-menu">
+        <div class="side-menu-header">
+          <div class="side-menu-logo">
+            <img src="/images/logo.svg" alt="로고"/>
+            <span>나라 걱정 클럽</span>
+          </div>
+        </div>
+        <div class="side-menu-content">
+          <div class="side-menu-item" data-page="popular">인기글 게제</div>
+          <div class="side-menu-item" data-page="write">게시물 작성</div>
+          <div class="side-menu-item" data-page="news">게시판(뉴스)</div>
+          <div class="side-menu-item" data-page="community">게시판(커뮤니티)</div>
+          <div class="side-menu-item" data-page="exchange">환전계 보도</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // 헤더 기본 HTML
+  const headerContainer = document.getElementById('header-container');
+  if (headerContainer) {
+    headerContainer.innerHTML = `
+      <div class="header">
+        <button class="menu-button">
+          <i class="fas fa-bars"></i>
+        </button>
+        <a href="/" class="logo">
+          <img src="/images/logo.svg" alt="로고"/>
+          <span>나라 걱정 클럽</span>
+        </a>
+        <div class="right-icons">
+          <button class="search-button">
+            <i class="fas fa-search"></i>
+          </button>
+          <button class="profile-button">
+            <i class="fas fa-user"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  
+  // 탭 메뉴 기본 HTML
+  const tabMenuContainer = document.getElementById('tab-menu-container');
+  if (tabMenuContainer) {
+    tabMenuContainer.innerHTML = `
+      <div class="tab-menu">
+        <div class="tab-item" data-page="home">공식홈</div>
+        <div class="tab-item" data-page="original">오리지널</div>
+        <div class="tab-item" data-page="board">최근게시글</div>
+        <div class="tab-item" data-page="vote">투표광장</div>
+      </div>
+    `;
+  }
+}
+
+/**
+ * 현재 페이지 URL에 따라 활성 탭/메뉴 설정
+ */
+function setActiveItems() {
+  const currentPath = window.location.pathname;
+  
+  // 사이드 메뉴 활성화
+  const sideMenuItems = document.querySelectorAll('.side-menu-item');
+  sideMenuItems.forEach(item => {
+    item.classList.remove('active');
+    
+    const page = item.getAttribute('data-page');
+    if (matchPathToPage(currentPath, page)) {
+      item.classList.add('active');
+    }
+  });
+  
+  // 탭 메뉴 활성화
+  const tabItems = document.querySelectorAll('.tab-item');
+  tabItems.forEach(item => {
+    item.classList.remove('active');
+    
+    const page = item.getAttribute('data-page');
+    if (matchPathToPage(currentPath, page)) {
+      item.classList.add('active');
+    }
+  });
+}
+
+/**
+ * 경로와 페이지 키 매칭 함수
+ * @param {string} path - 현재 URL 경로
+ * @param {string} page - 페이지 키
+ * @returns {boolean} 매칭 여부
+ */
+function matchPathToPage(path, page) {
+  const pathMap = {
+    'home': ['/main/main.html'],
+    'original': ['/original/original.html'],
+    'board': ['/board/boardList.html'],
+    'vote': ['/vote/voteList.html'],
+    'popular': ['/popular.html'],
+    'write': ['/boardWrite.html'],
+    'news': ['/newsList.html'],
+    'community': ['/boardList.html'],
+    'exchange': ['/exchange.html']
+  };
+  
+  return pathMap[page] && pathMap[page].some(p => path.endsWith(p));
+}
+
+/**
+ * 사이드 메뉴 관련 기능 초기화
+ */
+function initSideMenu() {
+  const menuButton = document.querySelector('.menu-button');
+  const sideMenu = document.querySelector('.side-menu');
+  const overlay = document.querySelector('.menu-overlay');
+  
+  // 햄버거 메뉴 클릭 이벤트
+  if (menuButton && sideMenu && overlay) {
+    menuButton.addEventListener('click', function() {
+      sideMenu.classList.add('active');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+    });
+    
+    // 오버레이 클릭 시 메뉴 닫기
+    overlay.addEventListener('click', function() {
+      sideMenu.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  }
+  
+  // 메뉴 항목 클릭 이벤트
+  initSideMenuItems();
+}
+
+/**
+ * 사이드 메뉴 항목 클릭 이벤트 초기화
+ */
+function initSideMenuItems() {
+  const menuItems = document.querySelectorAll('.side-menu-item');
+  const sideMenu = document.querySelector('.side-menu');
+  const overlay = document.querySelector('.menu-overlay');
+  
+  menuItems.forEach(item => {
+    item.addEventListener('click', function() {
+      const page = this.getAttribute('data-page');
+      
+      // 현재 활성화된 메뉴 아이템 비활성화
+      document.querySelector('.side-menu-item.active')?.classList.remove('active');
+      
+      // 클릭한 메뉴 아이템 활성화
+      this.classList.add('active');
+      
+      // 페이지 이동
+      navigateToPage(page);
+      
+      // 메뉴 닫기
+      sideMenu.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  });
+}
+
+/**
+ * 탭 메뉴 초기화
+ */
+function initTabMenu() {
+  const tabItems = document.querySelectorAll('.tab-item');
+  
+  tabItems.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const page = this.getAttribute('data-page');
+      
+      // 모든 탭 비활성화
+      tabItems.forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // 클릭한 탭 활성화
+      this.classList.add('active');
+      
+      // 페이지 이동 또는 컨텐츠 변경
+      handleTabChange(page);
+    });
+  });
+}
+
+/**
+ * 페이지 이동 함수
+ * @param {string} page - 이동할 페이지 키
+ */
+function navigateToPage(page) {
+  // 페이지별 URL 매핑
+  const pageUrls = {
+    'popular': '/popular.html',
+    'write': '/boardWrite.html',
+    'news': '/newsList.html',
+    'community': '/boardList.html',
+    'exchange': '/exchange.html'
+  };
+  
+  // 해당 페이지로 이동
+  if (pageUrls[page]) {
+    window.location.href = pageUrls[page];
+  }
+}
+
+/**
+ * 탭 변경 처리
+ * @param {string} page - 선택된 탭 페이지 키
+ */
+function handleTabChange(page) {
+  // 페이지별 URL 매핑
+  const pageUrls = {
+    'home': '/main/main.html',
+    'original': '/original.html',
+    'board': '/board/boardList.html',
+    'vote': '/voteList.html'
+  };
+  
+  // 해당 페이지로 이동
+  if (pageUrls[page]) {
+    window.location.href = pageUrls[page];
+  }
+}
+
+// 외부에서 사용할 수 있도록 일부 함수 노출
+window.loadCommonComponents = loadCommonComponents;
+window.initSideMenu = initSideMenu;
+window.initTabMenu = initTabMenu;
+
+
+export async function checkAuthAndRedirect(redirectUrl, validatePath = '/api/auth/validate') {
+  try {
+    const token = localStorage.getItem('accessToken');
+    const res = await fetch(validatePath, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }  // 토큰 헤더 방식일 때
+    });
+    // 204 No Content 면 인증 완료 상태
+    if (res.status === 204) {
+      window.location.replace(redirectUrl);
+    }
+    // 401 등은 아무 동작 안함 → 로그인 페이지 계속 보여줌
+  } catch (err) {
+    console.error('Auth check failed:', err);
+    // 네트워크 오류도 그냥 무시
+  }
+}
+
+export async function handleTokenRefresh() {
+  const refreshToken = localStorage.getItem('refreshToken');
+  const res = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  if (!res.ok) {
+    localStorage.clear();
+    window.location.href = '../login/login.html';
+    throw new Error('세션이 만료되었습니다. 다시 로그인 해주세요.');
+  }
+
+  const data = await res.json();
+  localStorage.setItem('accessToken', data.response.token);
+}

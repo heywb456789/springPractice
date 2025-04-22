@@ -1,6 +1,7 @@
 package com.tomato.naraclub.application.comment.entity;
 
 import com.tomato.naraclub.application.board.entity.BoardPost;
+import com.tomato.naraclub.application.comment.dto.CommentResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
@@ -45,4 +46,13 @@ public class BoardComments extends Audit {
     @JoinColumn(name = "board_post_id", nullable = false)
     private BoardPost boardPost;
 
+    public CommentResponse convertDTO() {
+        return CommentResponse.builder()
+            .commentId(id)
+            .authorId(author.getId())
+            .authorName(author.getName())
+            .content(content)
+            .createdAt(createdAt)
+            .build();
+    }
 }

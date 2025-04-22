@@ -12,6 +12,7 @@ import java.util.List;
 public class BoardPostResponse {
     private Long boardId;
     private Long authorId;
+    private String authorName;
     private String title;
     private String content;
     private List<String> imageUrls;
@@ -22,4 +23,5 @@ public class BoardPostResponse {
     private boolean isNew;
     private boolean isHot;
     private LocalDateTime createdAt;
+    private boolean isLike;
 }

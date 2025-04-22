@@ -2,14 +2,14 @@ package com.tomato.naraclub.application.board.controller;
 
 import com.tomato.naraclub.application.board.dto.*;
 import com.tomato.naraclub.application.board.service.BoardPostService;
+import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/board/posts")
@@ -18,18 +18,21 @@ public class BoardPostController {
     private final BoardPostService service;
 
     @GetMapping
-    public ResponseDTO<ListDTO<BoardPostResponse>> list(BoardListRequest request, @PageableDefault(value = 50, sort = "boardId") Pageable pageable) {
+    public ResponseDTO<ListDTO<BoardPostResponse>> list(BoardListRequest request,
+        @RequestParam(name="page", defaultValue="0") int page,
+    @RequestParam(name="size", defaultValue="10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("boardId"));
         return ResponseDTO.ok(service.listPosts(request, pageable));
     }
 
     @GetMapping("/{id}")
-    public BoardPostResponse detail(@PathVariable Long id) {
-        return service.getPost(id);
+    public ResponseDTO<BoardPostResponse> detail(@PathVariable("id") Long id, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        return ResponseDTO.ok(service.getPost(id, userDetails));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BoardPostResponse> create(@ModelAttribute CreateBoardPostRequest req) {
-        BoardPostResponse res = service.createPost(req);
+    public ResponseEntity<BoardPostResponse> create(@ModelAttribute CreateBoardPostRequest req, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        BoardPostResponse res = service.createPost(req, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
@@ -48,8 +51,14 @@ public class BoardPostController {
     }
 
     @PostMapping("/{id}/like")
-    public ResponseEntity<Integer> like(@PathVariable Long id) {
-        int likes = service.likePost(id);
-        return ResponseEntity.ok(likes);
+    public ResponseDTO<Integer> like(@PathVariable("id") Long id, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        int likes = service.likePost(id, userDetails);
+        return ResponseDTO.ok(likes);
+    }
+
+    @DeleteMapping("/{id}/like")
+    public ResponseDTO<Integer> deleteLikePost(@PathVariable("id") Long id, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        int likes = service.deleteLikePost(id, userDetails);
+        return ResponseDTO.ok(likes);
     }
 }

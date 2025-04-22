@@ -3,13 +3,16 @@ package com.tomato.naraclub.common.config;
 import com.tomato.naraclub.application.security.JwtAuthenticationFilter;
 import com.tomato.naraclub.application.security.MemberUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,6 +43,13 @@ public class SecurityConfig {
     }
 
     @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring()
+            .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+            .requestMatchers("/uploads/**");
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors
@@ -49,17 +59,20 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(daoAuthenticationProvider())
             .authorizeHttpRequests(auth -> auth
-                // 1) validate는 토큰이 유효해야만 접근 허용
+                //1) 회원만 가능 리스트
+                .requestMatchers(HttpMethod.POST, "/api/board/posts").authenticated()
                 .requestMatchers("/api/auth/validate").authenticated()
 
                 // 2) 로그인·리프레시는 누구나 (토큰 없어도) 허용
-                .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/board/**")
+                .permitAll()
 
                 // 3) swagger, 정적 리소스 등
                 .requestMatchers("/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(
-                    "/login/**", "/main/**", "/board/**",
-                    "/bootstrap/**", "/css/**", "/js/**", "/images/**", "/favicon.ico"
+                    "/login/**", "/main/**", "/board/**", "/components/**",
+                    "/bootstrap/**", "/css/**", "/js/**", "/images/**",
+                    "/favicon.ico", "/uploads/**"
                 ).permitAll()
 
                 // 4) 그 외 모든 요청은 인증 필요

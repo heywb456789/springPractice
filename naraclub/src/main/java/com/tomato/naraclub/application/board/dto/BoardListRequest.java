@@ -16,13 +16,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.Objects;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * SearchTypeRequest 인터페이스를 상속 → searchType, searchText 조합에 따른 조건 쿼리 작성 기능 제공
- *
+ * <p>
  * 기간 검색 처리: YearMonth 기준 fromMonth ~ toMonth 검색
- *
- *
  */
 @Getter
 @Setter
@@ -37,12 +36,15 @@ public class BoardListRequest implements SearchTypeRequest {
     @Schema(description = "검색")
     private String searchText;
 
-    //YearMonth 타입을 활용하여 월 단위 검색 기간 설정
+
     @Schema(description = "정산기간 From")
+    @DateTimeFormat(pattern = "yyyy-MM")
     private YearMonth fromMonth;
 
     @Schema(description = "정산기간 To")
+    @DateTimeFormat(pattern = "yyyy-MM")
     private YearMonth toMonth;
+
 
     @Schema(description = "정렬 기준: LATEST, POPULAR, SHARED")
     private BoardSortType sortType;
@@ -56,7 +58,9 @@ public class BoardListRequest implements SearchTypeRequest {
     //ComparablePath<YearMonth>를 사용하여 QueryDSL에서 동적 조건 추가 가능
     @Hidden
     public BooleanExpression isPeriod(DateTimePath<LocalDateTime> dateTimePath) {
-        if (nullDate()) return null;
+        if (nullDate()) {
+            return null;
+        }
 
         LocalDateTime start = fromMonth.atDay(1).atStartOfDay();
         LocalDateTime end = toMonth.atEndOfMonth().atTime(LocalTime.MAX);

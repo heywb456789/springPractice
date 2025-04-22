@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.board.entity;
 
+import com.tomato.naraclub.application.board.dto.BoardPostResponse;
 import com.tomato.naraclub.application.comment.entity.BoardComments;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.common.audit.Audit;
@@ -11,16 +12,15 @@ import org.hibernate.annotations.Comment;
 import java.util.List;
 
 /**
- * 정치 관련 인사이트 게시글 엔티티
- * - 최신순 정렬, 댓글/조회수 표시, 좋아요 및 공유 기능 지원
- * - 신규(N) 및 핫(H) 마커 자동 처리
+ * 정치 관련 인사이트 게시글 엔티티 - 최신순 정렬, 댓글/조회수 표시, 좋아요 및 공유 기능 지원 - 신규(N) 및 핫(H) 마커 자동 처리
  */
 @Entity
 @Table(
     name = "t_board_post",
     indexes = {
         @Index(name = "idx01_t_board_post_created_at", columnList = "created_at"), // 최신순 정렬용
-        @Index(name = "idx02_t_board_post_views", columnList = "views")             // 조회수 기반 핫 마커 계산용
+        @Index(name = "idx02_t_board_post_views", columnList = "views")
+        // 조회수 기반 핫 마커 계산용
     }
 )
 @Getter
@@ -72,4 +72,53 @@ public class BoardPost extends Audit {
     @Comment("이미지 목록")
     @OneToMany(mappedBy = "boardPost", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardPostImage> images;
+
+    public BoardPostResponse convertDTO() {
+        return BoardPostResponse.builder()
+            .boardId(id)
+            .authorId(author.getId())
+            .title(title)
+            .content(content)
+            .authorName(author.getName())
+            .imageUrls(
+                images == null
+                    ? List.of()
+                    : images.stream()
+                        .map(BoardPostImage::getImageUrl)
+                        .toList()
+            )
+            .commentCount(commentCount)
+            .views(views)
+            .likes(likes)
+            .shareCount(shareCount)
+            .isNew(isNew)
+            .isHot(isHot)
+            .createdAt(createdAt)
+            .build();
+    }
+
+    public BoardPostResponse convertDTO(boolean isLike) {
+        return BoardPostResponse.builder()
+            .boardId(id)
+            .authorId(author.getId())
+            .title(title)
+            .content(content)
+            .authorName(author.getName())
+            .imageUrls(
+                images == null
+                    ? List.of()
+                    : images.stream()
+                        .map(BoardPostImage::getImageUrl)
+                        .toList()
+            )
+            .commentCount(commentCount)
+            .views(views)
+            .likes(likes)
+            .shareCount(shareCount)
+            .isNew(isNew)
+            .isHot(isHot)
+            .createdAt(createdAt)
+            .isLike(isLike)
+            .build();
+    }
 }

@@ -12,8 +12,12 @@ import java.util.function.Function;
 @AllArgsConstructor
 public enum BoardSearchType implements SearchTypeEnum {
 
-  BOARD_ID("정산 ID", s -> QBoardPost.boardPost.id.eq(Long.valueOf(s)))
-//  WORK_TITLE("작품 타이틀", QSettlement.settlement.workTitle::eq),
+  BOARD_ID("정산 ID", s -> QBoardPost.boardPost.id.eq(Long.valueOf(s))),
+  BOARD_TITLE_CONTENT("제목/내용", s -> {
+    String keyword = "%" + s.trim() + "%";
+    return QBoardPost.boardPost.title.likeIgnoreCase(keyword)
+           .or(QBoardPost.boardPost.content.likeIgnoreCase(keyword));
+  });
 //  WORK_ID("작품 ID", QSettlement.settlement.workId::eq),
 //  CONTRACT_ID("계약 ID", QSettlement.settlement.contractId::eq),
 //  CONTRACT_NAME("계약명", QSettlement.settlement.contractName::eq),

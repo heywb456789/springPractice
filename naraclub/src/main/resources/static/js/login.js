@@ -1,5 +1,5 @@
 // src/main/resources/static/js/login.js
-import {checkAuthAndRedirect} from './common.js'
+import {checkAuthAndRedirect, handleTokenRefresh} from './common.js'
 
 let inviteModal;
 let isNoInviteFlow = false;
@@ -155,24 +155,24 @@ async function submitInviteCode(code) {
   if (!res.ok) throw new Error('초대 코드 등록 실패: ' + res.statusText);
 }
 
-// Refresh Token을 사용하여 새로운 Access Token 발급
-async function handleTokenRefresh() {
-  const refreshToken = localStorage.getItem('refreshToken');
-  const res = await fetch('/api/auth/refresh', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken })
-  });
-
-  if (!res.ok) {
-    localStorage.clear(); // 토큰 만료 시 강제 로그아웃 처리
-    window.location.href = '../login/login.html';
-    throw new Error('세션이 만료되었습니다. 다시 로그인 해주세요.');
-  }
-
-  const data = await res.json();
-  localStorage.setItem('accessToken', data.response.token); // 새 Access Token 저장
-}
+// // Refresh Token을 사용하여 새로운 Access Token 발급
+// async function handleTokenRefresh() {
+//   const refreshToken = localStorage.getItem('refreshToken');
+//   const res = await fetch('/api/auth/refresh', {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ refreshToken })
+//   });
+//
+//   if (!res.ok) {
+//     localStorage.clear(); // 토큰 만료 시 강제 로그아웃 처리
+//     window.location.href = '../login/login.html';
+//     throw new Error('세션이 만료되었습니다. 다시 로그인 해주세요.');
+//   }
+//
+//   const data = await res.json();
+//   localStorage.setItem('accessToken', data.response.token); // 새 Access Token 저장
+// }
 
 // 기타 이벤트 처리 (변경 없음)
 const handleBack = () => window.history.back();

@@ -9,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateBoardPostRequest {
-    private Long authorId;
     private String title;
     private String content;
     private MultipartFile[] images;

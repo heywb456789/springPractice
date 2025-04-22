@@ -22,19 +22,42 @@ public class QBoardPost extends EntityPathBase<BoardPost> {
 
     public static final QBoardPost boardPost = new QBoardPost("boardPost");
 
+    public final com.tomato.naraclub.common.audit.QAudit _super = new com.tomato.naraclub.common.audit.QAudit(this);
+
     public final com.tomato.naraclub.application.member.entity.QMember author;
+
+    public final NumberPath<Long> commentCount = createNumber("commentCount", Long.class);
+
+    public final ListPath<com.tomato.naraclub.application.comment.entity.BoardComments, com.tomato.naraclub.application.comment.entity.QBoardComments> comments = this.<com.tomato.naraclub.application.comment.entity.BoardComments, com.tomato.naraclub.application.comment.entity.QBoardComments>createList("comments", com.tomato.naraclub.application.comment.entity.BoardComments.class, com.tomato.naraclub.application.comment.entity.QBoardComments.class, PathInits.DIRECT2);
 
     public final StringPath content = createString("content");
 
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
-    public final NumberPath<Long> id = createNumber("id", Long.class);
+    //inherited
+    public final StringPath createdBy = _super.createdBy;
 
-    public final ListPath<String, StringPath> imageUrls = this.<String, StringPath>createList("imageUrls", String.class, StringPath.class, PathInits.DIRECT2);
+    //inherited
+    public final NumberPath<Long> id = _super.id;
+
+    public final ListPath<BoardPostImage, QBoardPostImage> images = this.<BoardPostImage, QBoardPostImage>createList("images", BoardPostImage.class, QBoardPostImage.class, PathInits.DIRECT2);
+
+    public final BooleanPath isHot = createBoolean("isHot");
+
+    public final BooleanPath isNew = createBoolean("isNew");
 
     public final NumberPath<Integer> likes = createNumber("likes", Integer.class);
 
+    public final NumberPath<Integer> shareCount = createNumber("shareCount", Integer.class);
+
     public final StringPath title = createString("title");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+
+    //inherited
+    public final StringPath updatedBy = _super.updatedBy;
 
     public final NumberPath<Integer> views = createNumber("views", Integer.class);
 

@@ -16,52 +16,60 @@ import org.springframework.lang.NonNull;
 @AllArgsConstructor
 public class ListDTO<T> {
 
-  @Schema(description = "총 조회 건수")
-  private int total;
+  @Schema(description = "페이지 정보")
+    private Pagination pagination;
   @Schema(description = "조회 데이터")
   private List<T> data;
 
-  public static <T> ListDTO<T> of(Number total, List<T> response) {
-    return new ListDTO<>(setTotal(total), response);
-  }
+  /**
+     * JPAQuery<Long> countQuery : 전체 데이터 건수를 조회할 count 쿼리
+     * List<T> content        : 요청한 페이지만큼 조회된 데이터
+     * Pageable pageable      : 페이지 정보 (page, size)
+     */
+    public static <T> ListDTO<T> of(JPAQuery<Long> countQuery,
+                                    List<T> content,
+                                    Pageable pageable) {
+        long total = 0;
+        Long fetched = countQuery.fetchOne();
+        if (fetched != null) {
+            total = fetched;
+        }
 
-  public static <T> ListDTO<T> of(JPAQuery<Long> countQuery, List<T> response, Pageable pageable) {
-    if (pageable.isUnpaged() || pageable.getOffset() == 0) {
-      if (pageable.isUnpaged() || pageable.getPageSize() > response.size()) {
-        return new ListDTO<>(response.size(), response);
-      }
-      return new ListDTO<>(getCount(countQuery), response);
+        int pageSize = pageable.getPageSize();
+        // Spring Data Pageable pageIndex는 0-based, 화면에서는 1-based
+        int currentPage = pageable.isPaged() ? pageable.getPageNumber() + 1 : 1;
+        int totalPages = pageSize == 0
+            ? 1
+            : (int) Math.ceil((double) total / pageSize);
+
+        Pagination pg = new Pagination(currentPage, pageSize, totalPages, total);
+        return new ListDTO<>(content, pg);
     }
-    if (!response.isEmpty() && pageable.getPageSize() > response.size()) {
-      return new ListDTO<>((int) (pageable.getOffset() + response.size()), response);
+
+    /**
+     * Spring Data Page<T> 를 바로 변환
+     */
+    public static <R> ListDTO<R> of(Page<R> page) {
+        List<R> content = page.getContent();
+        int currentPage = page.getNumber() + 1;
+        int pageSize = page.getSize();
+        long total = page.getTotalElements();
+        int totalPages = page.getTotalPages();
+
+        Pagination pg = new Pagination(currentPage, pageSize, totalPages, total);
+        return new ListDTO<>(content, pg);
     }
-    return new ListDTO<>(getCount(countQuery), response);
-  }
 
-  public static <T> ListDTO<T> of(@NonNull List<T> response) {
-    return new ListDTO<>(response.size(), response);
-  }
-
-  public static <T extends Page<R>, R> ListDTO<R> of(T response) {
-    return new ListDTO<>(response.getTotalPages(), response.getContent());
-  }
-
-  public static <T extends Page<R>, R> ResponseDTO<ListDTO<R>> ok(T response) {
-    return ResponseDTO.ok(ListDTO.of(response));
-  }
-
-  private static int setTotal(Number numeric) {
-    if (Objects.isNull(numeric)) {
-      return 0;
+    /**
+     * ResponseDTO 래핑용
+     */
+    public static <R> ResponseDTO<ListDTO<R>> ok(Page<R> page) {
+        return ResponseDTO.ok(ListDTO.of(page));
     }
-    return numeric.intValue();
-  }
 
-  private static int getCount(JPAQuery<Long> countQuery) {
-    var result = countQuery.fetchOne();
-    if (Objects.isNull(result)) {
-      return 0;
+    // private 생성자
+    private ListDTO(List<T> items, Pagination pagination) {
+        this.data = items;
+        this.pagination = pagination;
     }
-    return result.intValue();
-  }
 }

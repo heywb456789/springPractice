@@ -1,51 +1,6 @@
 import VideoService from './video-service.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
-  // 탭 메뉴 클릭 이벤트
-  const tabItems = document.querySelectorAll('.tab-item');
-  
-  tabItems.forEach(tab => {
-    tab.addEventListener('click', function() {
-      // 모든 탭 비활성화
-      tabItems.forEach(item => {
-        item.classList.remove('active');
-      });
-      
-      // 클릭한 탭 활성화
-      this.classList.add('active');
-    });
-  });
-
-  // 햄버거 메뉴 클릭 이벤트
-  const menuButton = document.querySelector('.menu-button');
-  const sideMenu = document.querySelector('.side-menu');
-  const overlay = document.querySelector('.menu-overlay');
-  
-  menuButton.addEventListener('click', function() {
-    sideMenu.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
-  });
-  
-  // 오버레이 클릭 시 메뉴 닫기
-  overlay.addEventListener('click', function() {
-    sideMenu.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-  });
-  
-  // 메뉴 항목 클릭 이벤트
-  const menuItems = document.querySelectorAll('.side-menu-item');
-  menuItems.forEach(item => {
-    item.addEventListener('click', function() {
-      console.log('메뉴 항목 클릭:', this.textContent);
-      
-      // 메뉴 닫기
-      sideMenu.classList.remove('active');
-      overlay.classList.remove('active');
-      document.body.style.overflow = '';
-    });
-  });
 
   // 최신 동영상 불러오기
   await loadLatestVideo();
