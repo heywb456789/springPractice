@@ -24,13 +24,17 @@ public enum ResponseStatus {
   FORBIDDEN("ER_1003", "권한이 없는 사용자입니다.", HttpStatus.FORBIDDEN),
   UNAUTHORIZED("ER_1004", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
 
-  BOARD_POST_NOT_EXIST("ER_2001", "게시글이 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  BOARD_POST_NOT_EXIST("ER_2001", "게시글이 없습니다. 잘못 된 요청입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   ALREADY_LIKED("ER_2002","이미 좋아요 처리가 되었습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
   ALREADY_DELETED_LIKE("ER_2003","좋아요 취소 처리가 이미 완료되었습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
 
 
   USER_NOT_EXIST("ER_3001", "회원 정보를 찾을수가 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-  USER_NOT_ACTIVE("ER_3002", "인증된 회원이 아닙니다.", HttpStatus.INTERNAL_SERVER_ERROR)
+  USER_NOT_ACTIVE("ER_3002", "인증된 회원이 아닙니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+  VOTE_POST_NOT_EXIST("ER_4001", "투표 게시글이 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  VOTE_POST_OPTIONS_NOT_EXIST("ER_4002", "투표 옵션이 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  ALREADY_VOTED("ER_4003","이미 투표 처리가 완료되었습니다.", HttpStatus.INTERNAL_SERVER_ERROR )
   ;
   @JsonProperty("code")
   private final String code;

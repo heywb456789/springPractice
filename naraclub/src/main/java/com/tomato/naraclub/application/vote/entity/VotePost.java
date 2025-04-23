@@ -2,8 +2,12 @@ package com.tomato.naraclub.application.vote.entity;
 
 import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.member.entity.Member;
+import com.tomato.naraclub.application.vote.dto.VoteOptionDTO;
+import com.tomato.naraclub.application.vote.dto.VotePostResponse;
 import com.tomato.naraclub.common.audit.Audit;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import java.util.stream.Collectors;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
@@ -12,10 +16,10 @@ import java.util.List;
 
 @Entity
 @Table(
-        name = "t_vote_post",
-        indexes = {
-                @Index(name = "idx01_t_vote_post_created_at", columnList = "created_at") // 최신순 정렬용
-        }
+    name = "t_vote_post",
+    indexes = {
+        @Index(name = "idx01_t_vote_post_created_at", columnList = "created_at") // 최신순 정렬용
+    }
 )
 @Getter
 @Setter
@@ -45,9 +49,44 @@ public class VotePost extends Audit {
 
     @Comment("조회수")
     @Column(nullable = false)
-    private int views;
+    private long viewCount;
+
+    @Comment("투표수")
+    @Column(nullable = false)
+    private long voteCount;
+
+
+    @Comment("공유수")
+    @Column(nullable = false)
+    private long shareCount;
 
     @Comment("신규 여부")
     @Column(name = "is_new", nullable = false, columnDefinition = "TINYINT(1) default 0")
     private boolean isNew;
+
+    public VotePostResponse convertDTO(Boolean isVoted, Long votedId) {
+        List<VoteOptionDTO> optionDTOs = voteOptions.stream()
+        .map(opt -> VoteOptionDTO.builder()
+            .optionId(opt.getId())
+            .optionName(opt.getOptionName())
+            .voteCount(opt.getVoteCount())
+            .build()
+        )
+        .collect(Collectors.toList());
+
+        return VotePostResponse.builder()
+            .votePostId(id)
+            .authorId(author.getId())
+            .question(question)
+            .commentCount(commentCount)
+            .viewCount(viewCount)
+            .isNew(isNew)
+            .isVoted(isVoted != null && isVoted)
+            .isVoted(votedId != null && votedId > 0)
+            .voteCount(voteCount)
+            .voteOptions(optionDTOs)
+            .createdAt(createdAt)
+            .updatedAt(updatedAt)
+            .build();
+    }
 }

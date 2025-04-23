@@ -26,7 +26,7 @@ public class VoteOption extends Audit {
 
   @Comment("찬성/ 반대 등 의 선택지")
   @Column(nullable = false, length = 50)
-  private String label;
+  private String optionName;
 
   @Comment("총 투표수 기록")
   @Column(nullable = false)
@@ -34,7 +34,7 @@ public class VoteOption extends Audit {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "vote_post_id", nullable = false)
-  private VotePost topic;
+  private VotePost votePost;
 
   public void increment() {
     this.voteCount++;

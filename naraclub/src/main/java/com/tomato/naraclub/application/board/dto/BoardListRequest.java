@@ -37,11 +37,11 @@ public class BoardListRequest implements SearchTypeRequest {
     private String searchText;
 
 
-    @Schema(description = "정산기간 From")
+    @Schema(description = "기간 From")
     @DateTimeFormat(pattern = "yyyy-MM")
     private YearMonth fromMonth;
 
-    @Schema(description = "정산기간 To")
+    @Schema(description = "기간 To")
     @DateTimeFormat(pattern = "yyyy-MM")
     private YearMonth toMonth;
 

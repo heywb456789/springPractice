@@ -27,11 +27,11 @@ public class VoteRecord extends Audit {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "vote_post_id", nullable = false)
-  private VotePost topic;
+  private VotePost votePost;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "vote_option_id", nullable = false)
-  private VoteOption option;
+  private VoteOption voteOption;
 
   @Comment("투표자")
   @ManyToOne(fetch = FetchType.LAZY)

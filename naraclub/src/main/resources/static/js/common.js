@@ -307,9 +307,9 @@ function handleTabChange(page) {
   // 페이지별 URL 매핑
   const pageUrls = {
     'home': '/main/main.html',
-    'original': '/original.html',
+    'original': '/original/originalContent.html',
     'board': '/board/boardList.html',
-    'vote': '/voteList.html'
+    'vote': '/vote/voteList.html'
   };
 
   // 해당 페이지로 이동
