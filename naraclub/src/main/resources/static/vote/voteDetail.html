@@ -7,11 +7,12 @@
   <link href="/bootstrap/css/bootstrap.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="/css/common.css" rel="stylesheet"/>
-  <link href="/css/boardCommon.css" rel="stylesheet"/>
-  <link href="/css/voteDetail.css" rel="stylesheet"/>
+  <link href="/css/board/boardCommon.css" rel="stylesheet"/>
+  <link href="/css/vote/voteDetail.css" rel="stylesheet"/>
   <script src="/bootstrap/js/bootstrap.bundle.js"></script>
   <script src="/js/common.js" type="module"></script>
-  <script src="/js/voteDetail.js" type="module"></script>
+  <script src="/js/vote/voteDetail.js" type="module"></script>
+  <script src="/js/vote/voteComment.js" type="module"></script>
 </head>
 <body>
   <!-- 공통 컴포넌트 컨테이너 -->
@@ -76,11 +77,21 @@
           <p class="vote-warning">투표는 한 번 진행하면 변경할 수 없습니다.</p>
         </div>
 
-        <!-- 댓글 입력 -->
-        <div class="comment-input-section">
-          <input type="text" id="commentInput" class="comment-input" placeholder="댓글을 입력해주세요">
-          <button id="commentSubmitBtn" class="comment-submit-btn">등록</button>
+        <!-- 댓글 리스트  -->
+        <div class="comments-wrapper">
+          <div class="comments-container"></div>
+          <div class="no-comments">
+            <p>아직 댓글이 없습니다.</p>
+            <p>첫 댓글을 작성해보세요!</p>
+          </div>
         </div>
+
+        <!-- 댓글 입력 영역 (position: fixed) -->
+        <div class="comment-input-container">
+          <input type="text" class="comment-input" id="commentInput" placeholder="댓글을 입력하세요..."/>
+          <button class="btn btn-primary" id="submitCommentButton">등록</button>
+        </div>
+
       </div>
     </div>
   </div>

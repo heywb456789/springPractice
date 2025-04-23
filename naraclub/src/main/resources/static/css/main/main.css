@@ -1,0 +1,221 @@
+/* 메인 페이지 스타일 */
+
+/* 뉴스 목록 */
+.news-container {
+  padding: 15px;
+}
+
+.news-section {
+  margin-bottom: 25px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.more-link {
+  font-size: 12px;
+  color: #666;
+  text-decoration: none;
+}
+
+/* 핫토픽 */
+.hot-topic {
+  margin-bottom: 15px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hot-topic img {
+  width: 100%;
+  height: auto;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.hot-topic-title {
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  border-top: 1px solid #eee;
+}
+
+/* 주요 기사 */
+.news-list {
+  margin-bottom: 20px;
+}
+
+.news-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.news-title {
+  flex: 1;
+  font-size: 14px;
+}
+
+.news-comment {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #666;
+  font-size: 12px;
+}
+
+.comment-icon {
+  color: #888;
+  font-size: 14px;
+}
+
+.comment-count {
+  color: #666;
+}
+
+/* 투표 섹션 */
+.poll-section {
+  margin-top: 20px;
+}
+
+.poll-list {
+  margin-bottom: 20px;
+}
+
+.poll-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.poll-title {
+  flex: 1;
+  font-size: 14px;
+}
+
+.poll-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #666;
+  font-size: 12px;
+}
+
+.poll-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+  font-weight: bold;
+}
+
+.poll-active {
+  background-color: #34c759;
+}
+
+.poll-closed {
+  background-color: #8e8e93;
+}
+
+/* 포인트 섹션 */
+.point-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.point-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.point-icon {
+  width: 30px;
+  height: 30px;
+  background-color: #6c2dc7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.point-value {
+  font-weight: bold;
+  color: #333;
+}
+
+.point-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.point-button {
+  background-color: #6c7dfd;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 15px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.point-button:hover {
+  background-color: #5c6dfd;
+}
+
+/* 로딩 상태 */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0;
+  color: #adb5bd;
+  font-size: 14px;
+}
+
+.loading i {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+/* 반응형 조정 */
+@media (max-width: 480px) {
+  .news-container {
+    padding: 10px;
+  }
+
+  .section-title {
+    font-size: 15px;
+  }
+
+  .news-title,
+  .poll-title {
+    font-size: 13px;
+  }
+}

@@ -19,7 +19,13 @@ import com.tomato.naraclub.application.vote.dto.VotePostResponse;
 import com.tomato.naraclub.application.vote.entity.QVoteOption;
 import com.tomato.naraclub.application.vote.entity.QVotePost;
 import com.tomato.naraclub.common.dto.ListDTO;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
@@ -40,48 +46,76 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
     public ListDTO<VotePostResponse> getList(VoteListRequest request, Pageable pageable) {
         QVotePost vote = QVotePost.votePost;
         QVoteOption voteOption = QVoteOption.voteOption;
-        //1) 검색 기간
+
+        // 1) 검색·기간 조건
         Predicate condition = ExpressionUtils.allOf(
-            getSearchCondition(request, vote, voteOption),
-            request.isPeriod(vote.createdAt)
+                getSearchCondition(request, vote, voteOption),
+                request.isPeriod(vote.createdAt)
         );
 
-        //2)countQuery
-        JPAQuery<Long> countQuery = query.select(vote.count()).from(vote).where(condition);
+        // 2) 전체 개수(countQuery)
+        JPAQuery<Long> countQuery = query
+                .select(vote.count())
+                .from(vote)
+                .where(condition);
 
-        //3)리스트 데이터
+        // 3) 페이징용 ID만 먼저 조회 (포스트별로 한 행만)
+        List<Long> postIds = query
+                .select(vote.id)
+                .from(vote)
+                .where(condition)
+                .orderBy(getSortOrder(request))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        if (postIds.isEmpty()) {
+            // 조회할 포스트가 없으면 빈 리스트 반환
+            return ListDTO.of(countQuery, Collections.emptyList(), pageable);
+        }
+
+        // 4) 조회된 ID 기준으로 옵션(join) 포함 전체 데이터 재조회
         List<VotePostResponse> content = query
-            .from(vote)
-            .leftJoin(vote.voteOptions, voteOption)
-            .where(condition)
-            .orderBy(getSortOrder(request))
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .transform(
-                groupBy(vote.id).list(
-                    Projections.bean(
-                        VotePostResponse.class,
-                        vote.id.as("votePostId"),
-                        vote.author.id.as("authorId"),
-                        vote.question,
-                        list(
-                            Projections.bean(
-                                VoteOptionDTO.class,
-                                voteOption.id.as("optionId"),
-                                voteOption.optionName,
-                                voteOption.voteCount
-                            )
-                        ).as("voteOptions"),
-                        vote.commentCount,
-                        vote.viewCount,
-                        vote.isNew,
-                        vote.createdAt,
-                        vote.updatedAt
-                    )
-                )
-            );
+                .from(vote)
+                .leftJoin(vote.voteOptions, voteOption)
+                .where(vote.id.in(postIds))
+                .orderBy(getSortOrder(request))
+                .transform(
+                        groupBy(vote.id).list(
+                                Projections.bean(
+                                        VotePostResponse.class,
+                                        vote.id.as("votePostId"),
+                                        vote.author.id.as("authorId"),
+                                        vote.question,
+                                        list(
+                                                Projections.bean(
+                                                        VoteOptionDTO.class,
+                                                        voteOption.id.as("optionId"),
+                                                        voteOption.optionName,
+                                                        voteOption.voteCount,
+                                                        voteOption.createdAt,
+                                                        voteOption.updatedAt
+                                                )
+                                        ).as("voteOptions"),
+                                        vote.commentCount,
+                                        vote.viewCount,
+                                        vote.isNew.as("new"),
+                                        vote.createdAt,
+                                        vote.updatedAt
+                                )
+                        )
+                );
 
-        return ListDTO.of(countQuery, content, pageable);
+        // 5) 3)에서 가져온 순서(postIds)대로 정렬
+        Map<Long, VotePostResponse> mapById = content.stream()
+                .collect(Collectors.toMap(VotePostResponse::getVotePostId, Function.identity()));
+
+        List<VotePostResponse> sorted = postIds.stream()
+                .map(mapById::get)
+                .collect(Collectors.toList());
+
+        // 6) 최종 반환
+        return ListDTO.of(countQuery, sorted, pageable);
     }
 
     private QBean<VotePostResponse> getVotePostFields() {

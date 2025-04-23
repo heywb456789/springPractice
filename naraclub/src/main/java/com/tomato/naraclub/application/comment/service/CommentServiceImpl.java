@@ -69,7 +69,7 @@ public class CommentServiceImpl implements CommentService {
         //4) 댓글수 ++
         post.setCommentCount(post.getCommentCount() + 1);
 
-        return saved.convertDTO();
+        return saved.convertDTOWithMine();
     }
 
     /**

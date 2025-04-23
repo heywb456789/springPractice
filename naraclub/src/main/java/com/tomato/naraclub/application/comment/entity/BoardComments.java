@@ -52,4 +52,15 @@ public class BoardComments extends Audit {
             .createdAt(createdAt)
             .build();
     }
+
+    public CommentResponse convertDTOWithMine() {
+        return CommentResponse.builder()
+                .commentId(id)
+                .authorId(author.getId())
+                .authorName(author.getName())
+                .content(content)
+                .createdAt(createdAt)
+                .isMine(true)
+                .build();
+    }
 }

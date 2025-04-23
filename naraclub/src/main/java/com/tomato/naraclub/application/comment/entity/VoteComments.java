@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.comment.entity;
 
+import com.tomato.naraclub.application.comment.dto.CommentResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.vote.entity.VotePost;
 import com.tomato.naraclub.common.audit.Audit;
@@ -39,5 +40,24 @@ public class VoteComments extends Audit {
     @JoinColumn(name = "vote_post_id", nullable = false)
     private VotePost votePost;
 
+    public CommentResponse convertDTO() {
+        return CommentResponse.builder()
+                .commentId(id)
+                .authorId(author.getId())
+                .authorName(author.getName())
+                .content(content)
+                .createdAt(createdAt)
+                .build();
+    }
 
+    public CommentResponse convertDTOWithMine() {
+        return CommentResponse.builder()
+                .commentId(id)
+                .authorId(author.getId())
+                .authorName(author.getName())
+                .content(content)
+                .createdAt(createdAt)
+                .isMine(true)
+                .build();
+    }
 }
