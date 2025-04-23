@@ -116,8 +116,8 @@ public class VotePostServiceImpl implements VotePostService {
         );
 
         // 6) 카운트 증가
-        voteOption.setVoteCount(voteOption.getVoteCount() + 1);
-        votePost.setVoteCount(votePost.getVoteCount() + 1);   // 투표수만 증가
+        voteOption.increment();
+        votePost.increment();
 
         return votePost.getVoteCount();
     }

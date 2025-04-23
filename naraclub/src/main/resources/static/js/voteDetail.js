@@ -79,34 +79,24 @@ async function loadVoteData() {
  */
 function updateVoteUI(voteData) {
   // 질문 표시
-  const questionElement = document.getElementById('voteQuestion');
-  if (questionElement) {
-    questionElement.textContent = voteData.question;
-  }
+  document.getElementById('voteQuestion').textContent = voteData.question;
 
   // 총 투표수 표시
-  const totalVoteCountElement = document.getElementById('totalVoteCount');
-  const totalVotes = getTotalVotes(voteData.voteOptions);
-  if (totalVoteCountElement) {
-    totalVoteCountElement.textContent = totalVotes;
-  }
+  document.getElementById('totalVoteCount').textContent = getTotalVotes(voteData.voteOptions);
 
-  // 투표 옵션 표시
+  // 투표 옵션 표시 (votedId 기준으로 selected 처리)
   renderVoteOptions(voteData);
 
   // 투표 여부에 따라 결과 표시
   if (voteData.voted) {
-    // 이미 투표한 경우
     document.getElementById('voteMessage').textContent = '이미 투표에 참여하셨습니다.';
     showVoteResults(voteData.voteOptions);
   } else {
-    // 아직 투표하지 않은 경우
     document.getElementById('voteMessage').textContent = '투표에 참여해 주세요.';
-    // 결과 섹션 숨김
     document.getElementById('voteResultsSection').style.display = 'none';
   }
 
-  // 댓글 제출 버튼 이벤트
+  // 댓글 이벤트
   initCommentSubmit(voteData.votePostId);
 }
 
@@ -126,45 +116,37 @@ function getTotalVotes(options) {
  */
 function renderVoteOptions(voteData) {
   const optionsSection = document.getElementById('voteOptionsSection');
-  if (!optionsSection || !voteData.voteOptions || !voteData.voteOptions.length) return;
-
-  // 옵션 컨테이너 비우기
   optionsSection.innerHTML = '';
 
-  // 옵션이 2개인 경우 VS 형태로 표시
+  const isSelected = optionId => voteData.voted && voteData.votedId === optionId;
+
   if (voteData.voteOptions.length === 2) {
-    const optionRow = document.createElement('div');
-    optionRow.className = 'vote-option-row';
-
-    const leftOption = voteData.voteOptions[0];
-    const rightOption = voteData.voteOptions[1];
-
-    optionRow.innerHTML = `
-      <button class="vote-option-button option-left ${voteData.voted && voteData.votedOptionId === leftOption.optionId ? 'selected' : ''}" 
-              data-option-id="${leftOption.optionId}">
-        ${leftOption.optionName}
+    const [left, right] = voteData.voteOptions;
+    const row = document.createElement('div');
+    row.className = 'vote-option-row';
+    row.innerHTML = `
+      <button class="vote-option-button option-left ${isSelected(left.optionId) ? 'selected' : ''}"
+              data-option-id="${left.optionId}">
+        ${left.optionName}
       </button>
       <span class="vs-text">VS</span>
-      <button class="vote-option-button option-right ${voteData.voted && voteData.votedOptionId === rightOption.optionId ? 'selected' : ''}" 
-              data-option-id="${rightOption.optionId}">
-        ${rightOption.optionName}
+      <button class="vote-option-button option-right ${isSelected(right.optionId) ? 'selected' : ''}"
+              data-option-id="${right.optionId}">
+        ${right.optionName}
       </button>
     `;
-
-    optionsSection.appendChild(optionRow);
+    optionsSection.appendChild(row);
   } else {
-    // 옵션이 2개 이상인 경우 리스트 형태로 표시
-    voteData.voteOptions.forEach(option => {
-      const optionButton = document.createElement('button');
-      optionButton.className = `vote-option-button ${voteData.voted && voteData.votedOptionId === option.optionId ? 'selected' : ''}`;
-      optionButton.setAttribute('data-option-id', option.optionId);
-      optionButton.textContent = option.optionName;
-
-      optionsSection.appendChild(optionButton);
+    voteData.voteOptions.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = `vote-option-button ${isSelected(opt.optionId) ? 'selected' : ''}`;
+      btn.setAttribute('data-option-id', opt.optionId);
+      btn.textContent = opt.optionName;
+      optionsSection.appendChild(btn);
     });
   }
 
-  // 투표 버튼 이벤트
+  // 아직 투표 안 한 경우에만 클릭 이벤트 설정
   if (!voteData.voted) {
     initVoteButtons(voteData.votePostId);
   }
@@ -182,46 +164,41 @@ function initVoteButtons(voteId) {
       const optionId = this.getAttribute('data-option-id');
 
       try {
-        // 선택 상태 표시
-        optionButtons.forEach(btn => btn.classList.remove('selected'));
-        this.classList.add('selected');
+        // 버튼 중복 클릭 방지
+        optionButtons.forEach(btn => btn.disabled = true);
 
         // 투표 API 호출
-        const res = await authFetch(`/api/vote/posts/${voteId}/options/${optionId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
+        const res = await authFetch(
+          `/api/vote/posts/${voteId}/options/${optionId}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
           }
-        });
+        );
+        await res.json();
 
-        const { response: response } = await res.json();
-
-        // 투표 성공 메시지
+        // 투표 완료 메시지 표시
         document.getElementById('voteMessage').textContent = '투표에 참여해 주셔서 감사합니다.';
 
-        // 결과 표시
-        showVoteResults(updatedVoteData.voteOptions);
-
-        // 총 투표수 업데이트
-        const totalVotes = getTotalVotes(updatedVoteData.voteOptions);
-        document.getElementById('totalVoteCount').textContent = totalVotes;
+        // 다시 상세 조회해서 UI 전체 갱신
+        await loadVoteData();
 
       } catch (err) {
         console.error('투표 오류:', err);
-
         if (err.message && err.message.includes('Unauthorized')) {
           alert('로그인이 필요한 기능입니다.');
-          // 로그인 페이지로 이동
           window.location.href = '/login/login.html';
         } else {
           alert('투표 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-          // 선택 상태 제거
-          this.classList.remove('selected');
         }
+      } finally {
+        // 버튼 활성화
+        optionButtons.forEach(btn => btn.disabled = false);
       }
     });
   });
 }
+
 
 /**
  * 투표 결과 표시

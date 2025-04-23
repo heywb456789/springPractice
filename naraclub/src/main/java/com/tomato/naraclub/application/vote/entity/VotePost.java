@@ -64,6 +64,10 @@ public class VotePost extends Audit {
     @Column(name = "is_new", nullable = false, columnDefinition = "TINYINT(1) default 0")
     private boolean isNew;
 
+    public void increment() {
+        this.voteCount++;
+    }
+
     public VotePostResponse convertDTO(Boolean isVoted, Long votedId) {
         List<VoteOptionDTO> optionDTOs = voteOptions.stream()
         .map(opt -> VoteOptionDTO.builder()
@@ -82,7 +86,7 @@ public class VotePost extends Audit {
             .viewCount(viewCount)
             .isNew(isNew)
             .isVoted(isVoted != null && isVoted)
-            .isVoted(votedId != null && votedId > 0)
+            .votedId(votedId == null ? 0L : votedId)
             .voteCount(voteCount)
             .voteOptions(optionDTOs)
             .createdAt(createdAt)
