@@ -9,9 +9,10 @@ import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.ResponseStatus;
+import com.tomato.naraclub.common.code.StorageCategory;
 import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.exception.APIException;
-import com.tomato.naraclub.common.util.ImageStorageService;
+import com.tomato.naraclub.common.util.FileStorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,7 @@ public class BoardPostServiceImpl implements BoardPostService {
     private final BoardPostRepository boardPostRepository;
     private final BoardPostLikeRepository postLikeRepository;
     private final MemberRepository memberRepository;
-    private final ImageStorageService imageService;
+    private final FileStorageService imageService;
 
     @Override
     public ListDTO<BoardPostResponse> listPosts(BoardListRequest request, Pageable pageable) {
@@ -91,7 +92,7 @@ public class BoardPostServiceImpl implements BoardPostService {
                 .filter(file -> !file.isEmpty())
                 .map(file -> {
                     // 업로드할 때 saved.getId()를 사용할 수 있습니다.
-                    String url = imageService.upload(file, saved.getId());
+                    String url = imageService.upload(file, StorageCategory.IMAGE, saved.getId());
                     return BoardPostImage.builder()
                         .boardPost(saved)
                         .imageUrl(url)

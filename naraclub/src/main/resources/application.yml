@@ -10,7 +10,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
-
   mvc:
     format:
       date: yyyy-MM-dd
@@ -32,6 +31,10 @@ spring:
     suffix: .html
     mode: HTML
     cache: false  # 개발 중엔 false, 운영에선 true 권장
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
 
 server:
   port: ${SERVER_PORT:8080}

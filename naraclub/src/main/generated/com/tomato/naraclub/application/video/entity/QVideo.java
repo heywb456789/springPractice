@@ -1,4 +1,4 @@
-package com.tomato.naraclub.application.video.entity;
+package com.tomato.naraclub.application.original.entity;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
