@@ -33,7 +33,7 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public VideoResponse upload(VideoUploadRequest req) {
         String videoUrl     = fileStorageService.upload(req.getVideoFile(), StorageCategory.VIDEO, 1L);
-        String thumbnailUrl = fileStorageService.upload(req.getThumbnailFile(), StorageCategory.IMAGE, 1L);
+//        String thumbnailUrl = fileStorageService.upload(req.getThumbnailFile(), StorageCategory.IMAGE, 1L);
         return null;
     }
 

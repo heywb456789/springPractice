@@ -23,7 +23,7 @@ public class VideoController {
     private final VideoService videoService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDTO<VideoResponse> upload(@RequestBody @Valid VideoUploadRequest req) {
+    public ResponseDTO<VideoResponse> upload(@ModelAttribute VideoUploadRequest req) {
 
         VideoResponse resp = videoService.upload(req);
         return ResponseDTO.ok(resp);
