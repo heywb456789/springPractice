@@ -1,9 +1,11 @@
 package com.tomato.naraclub.application.board.dto;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.tomato.naraclub.application.board.code.BoardSearchType;
 import com.tomato.naraclub.application.board.code.BoardSortType;
+import com.tomato.naraclub.application.original.code.VideoSortType;
 import com.tomato.naraclub.common.interfaces.SearchTypeRequest;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,34 +40,41 @@ public class BoardListRequest implements SearchTypeRequest {
 
 
     @Schema(description = "기간 From")
-    @DateTimeFormat(pattern = "yyyy-MM")
-    private YearMonth fromMonth;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime fromTime;
 
     @Schema(description = "기간 To")
-    @DateTimeFormat(pattern = "yyyy-MM")
-    private YearMonth toMonth;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime toTime;
 
 
     @Schema(description = "정렬 기준: LATEST, POPULAR, SHARED")
     private BoardSortType sortType;
 
-    //날짜가 Null일 경우 필터 제외
-    @Hidden
-    public boolean nullDate() {
-        return Objects.isNull(getFromMonth()) || Objects.isNull(getToMonth());
-    }
 
-    //ComparablePath<YearMonth>를 사용하여 QueryDSL에서 동적 조건 추가 가능
+    /** fromTime~toTime 사이 */
     @Hidden
     public BooleanExpression isPeriod(DateTimePath<LocalDateTime> dateTimePath) {
-        if (nullDate()) {
+        if (fromTime == null || toTime == null) {
             return null;
         }
+        return dateTimePath.between(fromTime, toTime);
+    }
 
-        LocalDateTime start = fromMonth.atDay(1).atStartOfDay();
-        LocalDateTime end = toMonth.atEndOfMonth().atTime(LocalTime.MAX);
+    @Hidden
+    public OrderSpecifier<?> getSortOrder() {
+        if(this.sortType != null && this.sortType.getOrder() != null){
+            return this.sortType.getOrder();
+        }
+        return BoardSortType.LATEST.getOrder();
+    }
 
-        return dateTimePath.between(start, end);
+    @Hidden
+    public BooleanExpression getSearchCondition() {
+        if (searchType == null || searchText == null || searchText.isBlank()) {
+            return null;
+        }
+        return searchType.getExpression().apply(searchText.trim());
     }
 
 }

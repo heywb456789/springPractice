@@ -1,14 +1,11 @@
 package com.tomato.naraclub.application.board.repository.custom;
 
 import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.tomato.naraclub.application.board.code.BoardSortType;
 import com.tomato.naraclub.application.board.dto.BoardListRequest;
 import com.tomato.naraclub.application.board.dto.BoardPostResponse;
 import com.tomato.naraclub.application.board.entity.QBoardPost;
@@ -17,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.Optional;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -34,7 +30,7 @@ public class BoardPostCustomRepositoryImpl implements BoardPostCustomRepository 
         // 1) 검색·기간 조건을 하나의 BooleanExpression 으로 결합
         // Predicate 로 선언
         Predicate condition = ExpressionUtils.allOf(
-            getSearchCondition(request, board),
+            request.getSearchCondition(),
             request.isPeriod(board.createdAt)
         );
 
@@ -49,7 +45,7 @@ public class BoardPostCustomRepositoryImpl implements BoardPostCustomRepository 
             .select(getBoardPostFields())
             .from(board)
             .where(condition)
-            .orderBy(getSortOrder(request))
+            .orderBy(request.getSortOrder())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -75,18 +71,5 @@ public class BoardPostCustomRepositoryImpl implements BoardPostCustomRepository 
         );
     }
 
-    private BooleanExpression getSearchCondition(BoardListRequest req, QBoardPost board) {
-        if (req == null || req.getSearchText() == null || req.getSearchText().isBlank()) {
-            return null;
-        }
-        String kw = "%" + req.getSearchText().trim() + "%";
-        return board.title.likeIgnoreCase(kw).or(board.content.likeIgnoreCase(kw));
-    }
-
-    private OrderSpecifier<?> getSortOrder(BoardListRequest req) {
-        return (req.getSortType() != null
-            ? req.getSortType().getOrder()
-            : BoardSortType.LATEST.getOrder());
-    }
 
 }

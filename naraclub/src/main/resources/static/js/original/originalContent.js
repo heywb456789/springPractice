@@ -1,124 +1,294 @@
-import { optionalAuthFetch } from '../commonFetch.js';
+import {optionalAuthFetch} from '../commonFetch.js';
+import VideoService from "./video-service.js";
+
+// 현재 활성화된 탭과 컨텐츠 타입 매핑
+const TAB_CONTENT_TYPE = {
+  'video': 'YOUTUBE_VIDEO',   // 롱폼
+  'shorts': 'YOUTUBE_SHORTS', // 쇼츠
+  'article': 'NEWS_ARTICLE'   // 뉴스토마토 기사
+};
 
 // 현재 활성화된 탭
 let currentTab = 'video';
 // 페이지당 아이템 수
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 4;
+// 현재 페이지 번호 (0부터 시작)
+let currentPage = 0;
+// 모든 데이터를 로드했는지 여부
+let isAllLoaded = false;
+// 데이터 로딩 중 여부
+let isLoading = false;
+// 무한 스크롤 옵저버
+let scrollObserver = null;
 
 /**
  * 콘텐츠 목록을 API에서 불러와 동적으로 구성하는 함수
- * @param {string} type - 콘텐츠 타입 (video, shorts, article)
+ * @param {string} tab - 탭 종류 (video, shorts, article)
  * @param {number} page - 페이지 번호 (기본값: 0)
- * @param {number} size - 한 페이지당 아이템 수 (기본값: 10)
+ * @param {number} size - 한 페이지당 아이템 수 (기본값: 5)
  * @param {string} keyword - 검색어 (기본값: 빈 문자열)
+ * @param {boolean} append - 기존 콘텐츠에 추가할지 여부
  */
-async function loadContent(type = 'video', page = 0, size = 10, keyword = '') {
+async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
+    keyword = '', append = false) {
+  // 이미 로딩 중이거나 모든 데이터를 로드한 경우 중단
+  if (isLoading || (isAllLoaded && append)) {
+    console.log(`로드 중단: 로딩=${isLoading}, 모든데이터로드=${isAllLoaded}, 추가=${append}`);
+    return;
+  }
+
+  console.log(`콘텐츠 로드 시작: 탭=${tab}, 페이지=${page}, 크기=${size}, 추가=${append}`);
+
+  // 컨텐츠 타입 가져오기
+  const contentType = TAB_CONTENT_TYPE[tab];
+
   // 컨텐츠 리스트 컨테이너 확인
-  const contentListElement = document.getElementById(`${type}List`);
+  const contentListElement = document.getElementById(`${tab}List`);
   if (!contentListElement) {
     return;
   }
 
-  // 콘텐츠 리스트 활성화 상태 변경
-  const contentLists = document.querySelectorAll('.content-list');
-  contentLists.forEach(list => list.classList.remove('active'));
-  contentListElement.classList.add('active');
+  // 탭 변경 시 이전 탭 데이터 초기화
+  if (!append) {
+    // 콘텐츠 리스트 활성화 상태 변경
+    const contentLists = document.querySelectorAll('.content-list');
+    contentLists.forEach(list => {
+      list.classList.remove('active');
+      list.style.display = 'none'; // 명시적으로 display 속성 설정
+    });
+    contentListElement.classList.add('active');
+    contentListElement.style.display = tab === 'shorts' ? 'grid' : 'block'; // shorts는 grid, 나머지는 block
 
-  // 현재 탭 업데이트
-  currentTab = type;
+    // 현재 탭 업데이트
+    currentTab = tab;
+
+    // 페이지 초기화
+    currentPage = page;
+
+    // 모든 데이터 로드 상태 초기화
+    isAllLoaded = false;
+
+    // 이전 내용 비우기 (확실하게 초기화)
+    contentListElement.innerHTML = '';
+  }
 
   // 로딩 상태 표시
+  isLoading = true;
   showLoading(true);
 
-  // API URL 구성
-  const apiUrl = `/api/content/${type}?page=${page}&size=${size}` +
-    (keyword ? `&keyword=${encodeURIComponent(keyword)}` : '');
-
   try {
+    console.log(`API 호출: 페이지=${page}, 크기=${size}, 타입=${contentType}`);
     // API 호출
-    const response = await optionalAuthFetch(apiUrl);
-    const data = await response.json();
+    const response = await VideoService.getLatestVideos(page, size,
+        contentType);
+
+    // 응답 데이터 확인
+    if (!response || !response.response || !response.response.data) {
+      throw new Error('Invalid response data');
+    }
+
+    const data = response.response;
+    console.log(`API 응답 데이터:`, data);
+
+    // 데이터 없음 처리
+    if (!data.data || data.data.length === 0) {
+      console.log(`데이터 없음: 추가=${append}`);
+      // 추가 로드 시 모든 데이터 로드 완료 상태로 설정
+      if (append) {
+        isAllLoaded = true;
+      } else {
+        // 초기 로드 시 빈 상태 표시
+        showEmptyState(contentListElement);
+      }
+      return;
+    }
 
     // 페이지네이션 정보 업데이트
-    updatePagination(data.response.pagination);
+    if (data.pagination) {
+      console.log(`페이지네이션 정보:`, data.pagination);
+      // 현재 페이지가 마지막 페이지면 모든 데이터 로드 완료
+      if (data.pagination.currentPage >= data.pagination.totalPages) {
+        isAllLoaded = true;
+        console.log(
+            `마지막 페이지 도달: ${data.pagination.currentPage}/${data.pagination.totalPages
+            - 1}`);
+      }
+
+      // 현재 페이지 업데이트
+      currentPage = data.pagination.currentPage - 1;
+    }
 
     // 콘텐츠 업데이트
-    updateContent(type, data.response);
+    updateContent(tab, data, append);
+
+    // 새 콘텐츠가 추가된 후 무한 스크롤 초기화
+    initInfiniteScroll();
 
   } catch (error) {
-    console.error(`${type} 콘텐츠 로드 오류:`, error);
-    
-    // 오류 메시지 표시
-    contentListElement.innerHTML = `
-      <div class="error-state">
-        <div class="error-icon">
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" stroke="#ff6b6b" stroke-width="2"/>
-            <path d="M12 8V13" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="12" cy="16" r="1" fill="#ff6b6b"/>
-          </svg>
-        </div>
-        <p class="error-title">콘텐츠를 불러오는 데 실패했습니다</p>
-        <p class="error-message">네트워크 연결을 확인하시거나 잠시 후 다시 시도해 주세요</p>
-        <button class="retry-button" onclick="loadContent('${type}', ${page}, ${size}, '${keyword}')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4.01 7.58 4.01 12C4.01 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="#4263eb"/>
-          </svg>
-          다시 시도하기
-        </button>
-      </div>
-    `;
+    console.error(`${tab} 콘텐츠 로드 오류:`, error);
+
+    // 초기 로드에서만 오류 메시지 표시
+    if (!append) {
+      showError(tab, contentListElement);
+    }
   } finally {
     // 로딩 상태 숨김
+    isLoading = false;
     showLoading(false);
   }
 }
 
 /**
  * 콘텐츠 업데이트 함수
- * @param {string} type - 콘텐츠 타입
+ * @param {string} tab - 탭 종류
  * @param {Object} data - API 응답 데이터
+ * @param {boolean} append - 기존 콘텐츠에 추가할지 여부
  */
-function updateContent(type, data) {
-  const contentList = document.getElementById(`${type}List`);
-
-  if (!contentList) return;
-
-  // 데이터가 없는 경우
-  if (!data.items || data.items.length === 0) {
-    contentList.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 5V19H5V5H19ZM21 3H3V21H21V3Z" fill="#adb5bd"/>
-            <path d="M14 17H6V15H14V17Z" fill="#adb5bd"/>
-            <path d="M14 13H6V11H14V13Z" fill="#adb5bd"/>
-            <path d="M18 9H6V7H18V9Z" fill="#adb5bd"/>
-          </svg>
-        </div>
-        <p class="empty-title">콘텐츠가 없습니다</p>
-        <p class="empty-message">새로운 콘텐츠가 곧 업데이트될 예정입니다</p>
-      </div>
-    `;
+function updateContent(tab, data, append = false) {
+  const contentList = document.getElementById(`${tab}List`);
+  if (!contentList) {
     return;
   }
 
-  // 컨텐츠 타입에 따라 다른 HTML 생성
-  let contentHTML = '';
-
-  if (type === 'video') {
-    contentHTML = createVideoListHTML(data.items);
-  } else if (type === 'shorts') {
-    contentHTML = createShortsListHTML(data.items);
-  } else if (type === 'article') {
-    contentHTML = createArticleListHTML(data.items);
+  // 데이터가 없는 경우
+  if (!data.data || data.data.length === 0) {
+    if (!append) {
+      showEmptyState(contentList);
+    }
+    return;
   }
 
-  // HTML 삽입
-  contentList.innerHTML = contentHTML;
+  // 컨텐츠 HTML 생성
+  let contentHTML = '';
+
+  if (tab === 'video') {
+    contentHTML = createVideoListHTML(data.data);
+  } else if (tab === 'shorts') {
+    contentHTML = createShortsListHTML(data.data);
+  } else if (tab === 'article') {
+    contentHTML = createArticleListHTML(data.data);
+  }
+
+  // HTML 삽입 또는 추가
+  if (append) {
+    // 기존 내용에 추가
+    contentList.insertAdjacentHTML('beforeend', contentHTML);
+  } else {
+    // 내용 교체
+    contentList.innerHTML = contentHTML;
+  }
 
   // 아이템 클릭 이벤트 초기화
-  initContentItemsClick(type);
+  initContentItemsClick(tab);
+
+  // 마우스 오버 및 터치 이벤트 초기화 (비디오와 쇼츠에만 적용)
+  if (tab === 'video' || tab === 'shorts') {
+    initVideoHoverPreview(tab);
+  }
+}
+
+/**
+ * 빈 상태 메시지 표시
+ * @param {HTMLElement} container - 컨테이너 요소
+ */
+function showEmptyState(container) {
+  container.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 5V19H5V5H19ZM21 3H3V21H21V3Z" fill="#adb5bd"/>
+          <path d="M14 17H6V15H14V17Z" fill="#adb5bd"/>
+          <path d="M14 13H6V11H14V13Z" fill="#adb5bd"/>
+          <path d="M18 9H6V7H18V9Z" fill="#adb5bd"/>
+        </svg>
+      </div>
+      <p class="empty-title">콘텐츠가 없습니다</p>
+      <p class="empty-message">새로운 콘텐츠가 곧 업데이트될 예정입니다</p>
+    </div>
+  `;
+}
+
+/**
+ * 오류 상태 메시지 표시
+ * @param {string} tab - 탭 종류
+ * @param {HTMLElement} container - 컨테이너 요소
+ */
+function showError(tab, container) {
+  container.innerHTML = `
+    <div class="error-state">
+      <div class="error-icon">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" stroke="#ff6b6b" stroke-width="2"/>
+          <path d="M12 8V13" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="16" r="1" fill="#ff6b6b"/>
+        </svg>
+      </div>
+      <p class="error-title">콘텐츠를 불러오는 데 실패했습니다</p>
+      <p class="error-message">네트워크 연결을 확인하시거나 잠시 후 다시 시도해 주세요</p>
+      <button class="retry-button" onclick="window.loadContent('${tab}', 0)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4.01 7.58 4.01 12C4.01 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="#4263eb"/>
+        </svg>
+        다시 시도하기
+      </button>
+    </div>
+  `;
+
+  // 재시도 버튼 이벤트 등록
+  const retryButton = container.querySelector('.retry-button');
+  if (retryButton) {
+    retryButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      loadContent(tab, 0);
+    });
+  }
+}
+
+/**
+ * 무한 스크롤 초기화
+ */
+function initInfiniteScroll() {
+  // 이전 옵저버가 있으면 해제
+  if (scrollObserver) {
+    scrollObserver.disconnect();
+    scrollObserver = null;
+  }
+
+  // 현재 활성화된 리스트 컨테이너
+  const contentList = document.getElementById(`${currentTab}List`);
+  if (!contentList) {
+    return;
+  }
+
+  // 마지막 아이템 찾기
+  const items = contentList.querySelectorAll(`.${currentTab}-item`);
+  if (items.length === 0) {
+    return;
+  } // 아이템이 없으면 종료
+
+  const lastItem = items[items.length - 1];
+
+  console.log(`무한 스크롤 설정: ${currentTab} 탭, 마지막 아이템:`, lastItem);
+
+  // 인터섹션 옵저버 설정
+  const options = {
+    root: null,
+    rootMargin: '200px', // 더 일찍 로드되도록 마진 크게 설정
+    threshold: 0.1 // 낮은 임계값으로 감도 높임
+  };
+
+  // 옵저버 생성
+  scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !isLoading && !isAllLoaded) {
+        console.log(`스크롤 감지: ${currentTab} 탭의 다음 페이지(${currentPage + 1}) 로드`);
+        loadContent(currentTab, currentPage + 1, PAGE_SIZE, '', true);
+      }
+    });
+  }, options);
+
+  // 마지막 아이템 감시
+  scrollObserver.observe(lastItem);
 }
 
 /**
@@ -128,19 +298,32 @@ function updateContent(type, data) {
  */
 function createVideoListHTML(items) {
   return items.map(item => {
-    const isNew = isItemNew(item.createdAt);
+    const isNew = isItemNew(item.publishedAt || item.createdAt);
+    const videoId = item.videoId;
+    const videoUrl = item.videoUrl;
+
     return `
-      <div class="video-item" data-id="${item.id}">
+      <div class="video-item" data-id="${videoId}" data-url="${videoUrl}">
         <div class="video-thumbnail-container">
           <img src="${item.thumbnailUrl}" alt="${item.title}" class="video-thumbnail">
-          <span class="video-duration">${formatDuration(item.duration)}</span>
+          
+          <!-- 비디오 요소 (마우스 오버 시 재생) -->
+          <video class="hover-video" src="${videoUrl}" muted preload="none" loop></video>
+          
+          <span class="video-duration">${formatDuration(item.durationSec)}</span>
           ${isNew ? '<span class="video-badge badge-new">N</span>' : ''}
+          <div class="play-overlay">
+            <div class="play-button">
+              <i class="fas fa-play"></i>
+            </div>
+          </div>
         </div>
-        <div class="video-info">
+        <div class="video-info" data-id="${videoId}">
           <h3 class="video-title">${item.title}</h3>
           <div class="video-meta">
-            <span class="video-date">${formatDate(item.createdAt)}</span>
-            <span class="video-views">조회수 ${formatViews(item.views)}회</span>
+            <span class="video-date">${formatDate(
+        item.publishedAt || item.createdAt)}</span>
+            <span class="video-views">조회수 ${formatViews(item.viewCount)}회</span>
           </div>
         </div>
       </div>
@@ -155,14 +338,21 @@ function createVideoListHTML(items) {
  */
 function createShortsListHTML(items) {
   return items.map(item => {
-    const isNew = isItemNew(item.createdAt);
+    const isNew = isItemNew(item.publishedAt || item.createdAt);
+    const videoId = item.videoId;
+    const videoUrl = item.videoUrl;
+
     return `
-      <div class="shorts-item" data-id="${item.id}">
+      <div class="shorts-item" data-id="${videoId}" data-url="${videoUrl}">
         <img src="${item.thumbnailUrl}" alt="${item.title}" class="shorts-thumbnail">
+        
+        <!-- 비디오 요소 (마우스 오버 시 재생) -->
+        <video class="hover-video" src="${videoUrl}" muted preload="none" loop></video>
+        
         ${isNew ? '<span class="shorts-badge badge-new">N</span>' : ''}
-        <div class="shorts-overlay">
+        <div class="shorts-overlay" data-id="${videoId}">
           <h3 class="shorts-title">${item.title}</h3>
-          <span class="shorts-views">조회수 ${formatViews(item.views)}회</span>
+          <span class="shorts-views">조회수 ${formatViews(item.viewCount)}회</span>
         </div>
       </div>
     `;
@@ -176,17 +366,20 @@ function createShortsListHTML(items) {
  */
 function createArticleListHTML(items) {
   return items.map(item => {
-    const isNew = isItemNew(item.createdAt);
+    const isNew = isItemNew(item.publishedAt || item.createdAt);
+    const articleId = item.articleId || item.id;
+
     return `
-      <div class="article-item" data-id="${item.id}">
+      <div class="article-item" data-id="${articleId}">
         <img src="${item.thumbnailUrl}" alt="${item.title}" class="article-thumbnail">
-        <div class="article-info">
+        <div class="article-info" data-id="${articleId}">
           <h3 class="article-title">
             ${isNew ? '<span class="article-badge badge-new">N</span>' : ''}
             ${item.title}
           </h3>
           <div class="article-meta">
-            <span class="article-date">${formatDate(item.createdAt)}</span>
+            <span class="article-date">${formatDate(
+        item.publishedAt || item.createdAt)}</span>
           </div>
         </div>
       </div>
@@ -196,139 +389,274 @@ function createArticleListHTML(items) {
 
 /**
  * 콘텐츠 아이템 클릭 이벤트 초기화
- * @param {string} type - 콘텐츠 타입
+ * @param {string} tab - 탭 종류
  */
-function initContentItemsClick(type) {
-  const items = document.querySelectorAll(`.${type}-item`);
-
+function initContentItemsClick(tab) {
+  // 아이템 전체 클릭 이벤트
+  const items = document.querySelectorAll(`.${tab}-item`);
   items.forEach(item => {
-    item.addEventListener('click', function() {
+    item.addEventListener('click', function (e) {
+      // 비디오 영역 클릭 시 미리보기가 시작된 경우 이벤트 중지
+      if (e.target.closest('.video-thumbnail-container')
+          && e.currentTarget.querySelector('.hover-video')?.style.opacity
+          === '1') {
+        return;
+      }
+
       const contentId = this.getAttribute('data-id');
-      if (!contentId) return;
+      if (!contentId) {
+        return;
+      }
 
       // 콘텐츠 상세 페이지로 이동
-      window.location.href = `/${type}Detail.html?id=${contentId}`;
+      navigateToDetail(tab, contentId);
+    });
+  });
+
+  // 제목 및 정보 영역 클릭 이벤트
+  const infoItems = document.querySelectorAll(
+      `.${tab}-info, .${tab}-title, .${tab}-overlay`);
+  infoItems.forEach(info => {
+    info.addEventListener('click', function (e) {
+      e.stopPropagation(); // 상위 요소 이벤트 전파 방지
+
+      const contentId = this.getAttribute('data-id');
+      if (!contentId) {
+        return;
+      }
+
+      // 콘텐츠 상세 페이지로 이동
+      navigateToDetail(tab, contentId);
     });
   });
 }
 
 /**
- * 페이지네이션 업데이트 함수
- * @param {Object} pagination - 페이지네이션 데이터
+ * 콘텐츠 상세 페이지로 이동
+ * @param {string} tab - 탭 종류
+ * @param {string|number} contentId - 콘텐츠 ID
  */
-function updatePagination(pagination) {
-  const paginationContainer = document.getElementById('pagination');
-  if (!paginationContainer) return;
+function navigateToDetail(tab, contentId) {
+  let detailPage = '';
 
-  // 현재 페이지
-  const currentPage = pagination.currentPage || 0;
-
-  // 전체 페이지 수
-  const totalPages = pagination.totalPages || 0;
-
-  // 표시할 페이지 버튼 개수
-  const displayPageCount = 5;
-
-  // 시작 페이지와 끝 페이지 계산
-  let startPage = Math.max(0, currentPage - Math.floor(displayPageCount / 2));
-  let endPage = Math.min(totalPages - 1, startPage + displayPageCount - 1);
-
-  // 시작 페이지 재조정
-  if (endPage - startPage < displayPageCount - 1) {
-    startPage = Math.max(0, endPage - displayPageCount + 1);
+  switch (tab) {
+    case 'video':
+    case 'shorts':
+      detailPage = '/original/videoDetail.html';
+      break;
+    case 'article':
+      detailPage = '/original/articleDetail.html';
+      break;
   }
 
-  // 페이지네이션 HTML 생성
-  let paginationHTML = `
-    <span class="pagination-item prev ${currentPage === 0 ? 'disabled' : ''}" data-page="${currentPage - 1}">
-      <i class="fas fa-chevron-left"></i>
-    </span>
-  `;
-
-  // 첫 페이지가 0이 아닌 경우, 첫 페이지 버튼 추가
-  if (startPage > 0) {
-    paginationHTML += `
-      <span class="pagination-item" data-page="0">1</span>
-      ${startPage > 1 ? '<span class="pagination-item dots">...</span>' : ''}
-    `;
-  }
-
-  // 페이지 버튼 생성
-  for (let i = startPage; i <= endPage; i++) {
-    paginationHTML += `
-      <span class="pagination-item ${i === currentPage ? 'active' : ''}" data-page="${i}">
-        ${i + 1}
-      </span>
-    `;
-  }
-
-  // 마지막 페이지가 totalPages가 아닌 경우, 마지막 페이지 버튼 추가
-  if (endPage < totalPages - 1) {
-    paginationHTML += `
-      ${endPage < totalPages - 2 ? '<span class="pagination-item dots">...</span>' : ''}
-      <span class="pagination-item" data-page="${totalPages - 1}">${totalPages}</span>
-    `;
-  }
-
-  // 다음 페이지 버튼
-  paginationHTML += `
-    <span class="pagination-item next ${currentPage === totalPages - 1 ? 'disabled' : ''}" data-page="${currentPage + 1}">
-      <i class="fas fa-chevron-right"></i>
-    </span>
-  `;
-
-  // HTML 삽입
-  paginationContainer.innerHTML = paginationHTML;
-
-  // 페이지네이션 클릭 이벤트 추가
-  initPaginationClick();
+  window.location.href = `${detailPage}?id=${contentId}`;
 }
 
 /**
- * 페이지네이션 클릭 이벤트 초기화
+ * 비디오 마우스 오버 미리보기 초기화
+ * @param {string} tab - 탭 종류 (video 또는 shorts)
  */
-function initPaginationClick() {
-  const paginationItems = document.querySelectorAll(
-    '.pagination-item:not(.dots):not(.disabled)');
+function initVideoHoverPreview(tab) {
+  const videoContainers = document.querySelectorAll(`.${tab}-item`);
 
-  paginationItems.forEach(item => {
-    item.addEventListener('click', function () {
-      const page = parseInt(this.getAttribute('data-page'));
-      if (isNaN(page)) {
-        return;
+  videoContainers.forEach(container => {
+    const thumbnailImg = container.querySelector(`.${tab}-thumbnail`);
+    const videoElement = container.querySelector('.hover-video');
+
+    if (!thumbnailImg || !videoElement) {
+      return;
+    }
+
+    // 호버 타이머 (지연 시작용)
+    let hoverTimer;
+    // 미리보기 타이머 (자동 종료용)
+    let previewTimer;
+    // 미리보기 시작 여부
+    let previewStarted = false;
+
+    // 데스크탑: mouseenter 이벤트 - 지연 시작
+    container.addEventListener('mouseenter', function () {
+      // 0.8초 지연 후 미리보기 시작
+      hoverTimer = setTimeout(() => {
+        startVideoPreview();
+      }, 800);
+    });
+
+    // 모바일: touchstart 이벤트 - 길게 누르기
+    let touchTimer;
+    let touchStartY;
+    let touchStartTime;
+
+    container.addEventListener('touchstart', function (e) {
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+      previewStarted = false;
+
+      // 1초 동안 길게 터치하면 미리보기 시작
+      touchTimer = setTimeout(() => {
+        previewStarted = true;
+        startVideoPreview();
+      }, 1000);
+    });
+
+    // 모바일: 위로 스와이프 감지
+    // container.addEventListener('touchmove', function (e) {
+    //   const currentY = e.touches[0].clientY;
+    //   const deltaY = touchStartY - currentY;
+    //
+    //   // 위로 25px 이상 스와이프하면 미리보기 시작
+    //   if (deltaY > 25) {
+    //     clearTimeout(touchTimer); // 기존 터치 타이머 취소
+    //     if (!previewStarted) {
+    //       previewStarted = true;
+    //       e.preventDefault(); // 스와이프로 미리보기 시작할 때만 기본 동작 방지
+    //       startVideoPreview();
+    //     }
+    //   }
+    // });
+    container.addEventListener('touchmove', function (e) {
+      const currentY = e.touches[0].clientY;
+      const deltaY = touchStartY - currentY;
+
+      // 위로 25px 이상 스와이프하면 미리보기 시작 (preventDefault 없이)
+      if (deltaY > 25) {
+        clearTimeout(touchTimer);
+        if (!previewStarted) {
+          previewStarted = true;
+          startVideoPreview();
+        }
+      }
+    });
+
+    // 비디오 미리보기 시작 함수
+    function startVideoPreview() {
+      // 비디오가 준비되지 않은 경우 로드
+      if (videoElement.readyState === 0) {
+        videoElement.load();
+        // 로드 완료 후 재생 시작
+        videoElement.addEventListener('loadeddata', playVideo, {once: true});
+      } else {
+        playVideo();
       }
 
-      // 현재 검색어 유지
-      const searchInput = document.querySelector('.search-input');
-      const keyword = searchInput ? searchInput.value.trim() : '';
+      function playVideo() {
+        // 이미지 숨기고 비디오 표시
+        thumbnailImg.style.opacity = '0';
+        videoElement.style.opacity = '1';
 
-      // 콘텐츠 목록 다시 로드
-      loadContent(currentTab, page, PAGE_SIZE, keyword);
+        // 비디오 재생
+        videoElement.play().catch(err => {
+          console.error('비디오 재생 오류:', err);
+          // 재생 실패 시 이미지 다시 표시
+          thumbnailImg.style.opacity = '1';
+          videoElement.style.opacity = '0';
+        });
+
+        // 5초 후 비디오 정지 및 썸네일 다시 표시
+        clearTimeout(previewTimer);
+        previewTimer = setTimeout(() => {
+          stopVideoPreview();
+        }, 5000);
+      }
+    }
+
+    // 데스크탑: mouseleave 이벤트
+    container.addEventListener('mouseleave', function () {
+      clearTimeout(hoverTimer); // 호버 타이머 취소
+      stopVideoPreview();
     });
+
+    // 모바일: touchend 이벤트
+    // container.addEventListener('touchend', function (e) {
+    //   clearTimeout(touchTimer); // 터치 타이머 취소
+    //
+    //   // 터치 지속 시간이 짧으면(300ms 미만) 클릭으로 간주
+    //   const touchEndTime = Date.now();
+    //   const touchDuration = touchEndTime - touchStartTime;
+    //
+    //   if (previewStarted) {
+    //     // 미리보기가 시작된 상태면 멈추고 클릭 이벤트 방지
+    //     e.preventDefault();
+    //     stopVideoPreview();
+    //   } else if (touchDuration < 300) {
+    //     // 짧은 터치는 클릭 이벤트 그대로 통과 (기본 동작 유지)
+    //     // 아무 것도 하지 않음
+    //   }
+    // });
+    container.addEventListener('touchend', function (e) {
+      clearTimeout(touchTimer);
+
+      const touchEndTime = Date.now();
+      const touchDuration = touchEndTime - touchStartTime;
+
+      if (previewStarted) {
+        stopVideoPreview();
+      }
+      // preventDefault를 호출하지 않음
+    });
+
+    // 비디오 미리보기 중지 함수
+    function stopVideoPreview() {
+      previewStarted = false;
+      clearTimeout(previewTimer);
+      videoElement.pause();
+      // 가능하면 처음으로 되감기
+      if (videoElement.readyState >= 2) {
+        videoElement.currentTime = 0;
+      }
+      thumbnailImg.style.opacity = '1';
+      videoElement.style.opacity = '0';
+    }
   });
 }
 
 /**
  * 콘텐츠 탭 클릭 이벤트 초기화
  */
+// 중복 이벤트 바인딩 방지
 function initTabsEvent() {
-  const tabItems = document.querySelectorAll('.content-tabs .tab-item');
-
-  tabItems.forEach(tab => {
-    tab.addEventListener('click', function() {
-      const tabType = this.getAttribute('data-tab');
-
-      // 이미 활성화된 탭이면 아무것도 하지 않음
-      if (currentTab === tabType) return;
-
-      // 탭 활성화 상태 변경
-      tabItems.forEach(item => item.classList.remove('active'));
-      this.classList.add('active');
-
-      // 새 콘텐츠 로드
-      loadContent(tabType, 0, PAGE_SIZE);
-    });
+  const tabs = document.querySelectorAll('.content-tab-item');
+  tabs.forEach(tab => {
+    tab.removeEventListener('click', handleTabClick);
+    tab.addEventListener('click', handleTabClick);
   });
+}
+
+// 탭 클릭 핸들러 함수 분리
+function handleTabClick(event) {
+  const tabType = this.getAttribute('data-tab');
+
+  // 이미 활성화된 탭이면 아무것도 하지 않음
+  if (currentTab === tabType) {
+    return;
+  }
+
+  // 모든 탭 비활성화
+  const allTabs = document.querySelectorAll('.content-tabs .tab-item');
+  allTabs.forEach(item => item.classList.remove('active'));
+
+  // 클릭한 탭 활성화
+  this.classList.add('active');
+
+  // 스크롤 옵저버 해제
+  if (scrollObserver) {
+    scrollObserver.disconnect();
+    scrollObserver = null;
+  }
+
+  // 상태 초기화
+  isAllLoaded = false;
+  currentPage = 0;
+
+  // 모든 콘텐츠 리스트 숨기기 (이전 탭 내용 확실히 숨김)
+  const contentLists = document.querySelectorAll('.content-list');
+  contentLists.forEach(list => {
+    list.classList.remove('active');
+    list.style.display = 'none';
+  });
+
+  // 새 콘텐츠 로드
+  loadContent(tabType, 0, PAGE_SIZE);
 }
 
 /**
@@ -336,20 +664,23 @@ function initTabsEvent() {
  */
 function initCommonTabMenu() {
   // 공통 탭 메뉴의 탭 아이템들
-  const commonTabItems = document.querySelectorAll('#tab-menu-container .tab-item');
-  
+  const commonTabItems = document.querySelectorAll(
+      '#tab-menu-container .tab-item');
+
   if (commonTabItems.length === 0) {
     console.warn('공통 탭 메뉴 아이템을 찾을 수 없습니다.');
     return;
   }
-  
+
   commonTabItems.forEach(tab => {
-    tab.addEventListener('click', function() {
+    tab.addEventListener('click', function () {
       // 이미 active 클래스가 있는 경우에는 아무 작업도 하지 않음
-      if (this.classList.contains('active')) return;
-      
+      if (this.classList.contains('active')) {
+        return;
+      }
+
       const page = this.getAttribute('data-page') || '';
-      
+
       // 페이지별 URL 매핑
       const pageUrls = {
         'home': '/main/main.html',
@@ -359,7 +690,7 @@ function initCommonTabMenu() {
         'column': '/column/columnList.html',
         'notice': '/notice/noticeList.html'
       };
-      
+
       // 해당 페이지로 이동
       if (pageUrls[page]) {
         window.location.href = pageUrls[page];
@@ -381,6 +712,17 @@ function initSearch() {
     searchForm.addEventListener('submit', function (e) {
       e.preventDefault();
       const keyword = searchInput.value.trim();
+
+      // 스크롤 옵저버 해제
+      if (scrollObserver) {
+        scrollObserver.disconnect();
+        scrollObserver = null;
+      }
+
+      // 상태 초기화
+      isAllLoaded = false;
+      currentPage = 0;
+
       loadContent(currentTab, 0, PAGE_SIZE, keyword);
     });
   }
@@ -391,6 +733,17 @@ function initSearch() {
       if (e.key === 'Enter') {
         e.preventDefault();
         const keyword = this.value.trim();
+
+        // 스크롤 옵저버 해제
+        if (scrollObserver) {
+          scrollObserver.disconnect();
+          scrollObserver = null;
+        }
+
+        // 상태 초기화
+        isAllLoaded = false;
+        currentPage = 0;
+
         loadContent(currentTab, 0, PAGE_SIZE, keyword);
       }
     });
@@ -399,12 +752,12 @@ function initSearch() {
 
 /**
  * 로딩 상태 표시 함수
- * @param {boolean} isLoading - 로딩 중 여부
+ * @param {boolean} loading - 로딩 중 여부
  */
-function showLoading(isLoading) {
+function showLoading(loading) {
   const loadingState = document.getElementById('loadingState');
   if (loadingState) {
-    loadingState.style.display = isLoading ? 'flex' : 'none';
+    loadingState.style.display = loading ? 'flex' : 'none';
   }
 }
 
@@ -414,6 +767,10 @@ function showLoading(isLoading) {
  * @returns {boolean} 새로운 아이템 여부
  */
 function isItemNew(dateString) {
+  if (!dateString) {
+    return false;
+  }
+
   const itemDate = new Date(dateString);
   const now = new Date();
   const diffTime = now.getTime() - itemDate.getTime();
@@ -428,6 +785,10 @@ function isItemNew(dateString) {
  * @returns {string} 포맷된 날짜
  */
 function formatDate(dateString) {
+  if (!dateString) {
+    return '';
+  }
+
   const date = new Date(dateString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -444,13 +805,17 @@ function formatDate(dateString) {
  * @returns {string} 포맷된 조회수
  */
 function formatViews(views) {
+  if (!views) {
+    return '0';
+  }
+
   if (views >= 10000) {
     return `${Math.floor(views / 10000)}만`;
   } else if (views >= 1000) {
     return `${Math.floor(views / 1000)}천`;
-  } else {
-    return views.toString();
   }
+
+  return views.toString();
 }
 
 /**
@@ -459,34 +824,35 @@ function formatViews(views) {
  * @returns {string} 포맷된 길이 (00:00)
  */
 function formatDuration(seconds) {
+  if (!seconds) {
+    return '00:00';
+  }
+
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
 
-  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  return `${String(minutes).padStart(2, '0')}:${String(
+      remainingSeconds).padStart(2, '0')}`;
 }
+
+// 전역 함수 노출 (retry 버튼 등에서 사용)
+window.loadContent = loadContent;
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function () {
-  // 공통 요소 로드가 완료된 후 실행할 이벤트 등록
-  if (window.loadCommonComponents) {
-    window.loadCommonComponents().then(() => {
-      // 공통 탭 메뉴 이벤트 초기화
-      initCommonTabMenu();
-      
-      // 콘텐츠 탭 클릭 이벤트 초기화
-      initTabsEvent();
-      
-      // 검색 이벤트 초기화
-      initSearch();
-      
-      // 초기 콘텐츠 로드 (기본: 동영상 탭)
-      loadContent('video', 0, PAGE_SIZE);
-    });
-  } else {
-    // fallback: 공통 컴포넌트 로더가 없는 경우 직접 실행
-    initCommonTabMenu();
-    initTabsEvent();
-    initSearch();
-    loadContent('video', 0, PAGE_SIZE);
+  if (window.originalContentInitialized) {
+    return;
   }
+  window.originalContentInitialized = true;
+
+  // 콘텐츠 전용 탭 이벤트 및 검색 이벤트 초기화
+  initTabsEvent();
+  initSearch();
+
+  // 첫 진입 시 video 탭 활성화
+  document.querySelector('.content-tab-item[data-tab="video"]')?.classList.add(
+      'active');
+
+  // 초기 콘텐츠 로드
+  loadContent('video', 0, PAGE_SIZE);
 });

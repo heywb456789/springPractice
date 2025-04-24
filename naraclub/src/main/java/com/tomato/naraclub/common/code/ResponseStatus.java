@@ -34,7 +34,9 @@ public enum ResponseStatus {
 
   VOTE_POST_NOT_EXIST("ER_4001", "투표 게시글이 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   VOTE_POST_OPTIONS_NOT_EXIST("ER_4002", "투표 옵션이 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-  ALREADY_VOTED("ER_4003","이미 투표 처리가 완료되었습니다.", HttpStatus.INTERNAL_SERVER_ERROR )
+  ALREADY_VOTED("ER_4003","이미 투표 처리가 완료되었습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
+
+  VIDEO_NOT_EXIST("ER_5001","비디오가 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
   ;
   @JsonProperty("code")
   private final String code;

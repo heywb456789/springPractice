@@ -1,14 +1,20 @@
 package com.tomato.naraclub.application.original.entity;
 
+import com.tomato.naraclub.application.comment.entity.VideoComments;
+import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
+import com.tomato.naraclub.application.original.dto.VideoDetailResponse;
+import com.tomato.naraclub.application.original.dto.VideoResponse;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
+import org.hibernate.annotations.DynamicInsert;
 
 @Entity
 @Table(
@@ -22,6 +28,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@DynamicInsert
 public class Video extends Audit {
 
     @Comment("제목")
@@ -53,23 +60,54 @@ public class Video extends Audit {
     private Integer durationSec;
 
     @Comment("조회수")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long viewCount;
 
     @Comment("공개 여부")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isPublic;
 
     @Comment("공개 시간")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime publishedAt;
 
     @Comment("핫 인지 아닌지")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isHot;
 
     @Comment("유튜브 영상 ID")
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String youtubeId;
 
+    @Comment("댓글 목록")
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VideoComments> comments;
+
+    @Comment("댓글 수")
+    private long commentCount;
+
+    public VideoResponse convertDTO() {
+        return VideoResponse.builder()
+            .videoId(id)
+            .title(title)
+            .description(description)
+            .type(type)
+            .category(category)
+            .thumbnailUrl(thumbnailUrl)
+            .videoUrl(videoUrl)
+            .durationSec(durationSec)
+            .viewCount(viewCount)
+            .publishedAt(publishedAt)
+            .isPublic(isPublic)
+            .isHot(isHot)
+            .build();
+    }
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
+    public void incrementCommentCount() {
+        this.commentCount++;
+    }
 }

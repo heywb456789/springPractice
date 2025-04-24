@@ -6,7 +6,7 @@ spring:
       enabled: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     database: mysql
     open-in-view: true
     show-sql: false
@@ -16,8 +16,14 @@ spring:
         use_sql_comments: true
   #        dialect: org.hibernate.dialect.MariaDB103Dialect
   app:
+    display: https://image.newstomato.com/newstomato/club
     upload:
-      root: C:/workspace/project/uploads
+      root: /test
+      ftp:
+        host: 1.201.174.63
+        port: 21
+        user: tomatochain
+        password: tomatochain1!
 
   datasource:
     url: ${DB_URL:jdbc:log4jdbc:mariadb://localhost:3307/narasarang}

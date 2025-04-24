@@ -71,7 +71,7 @@
 }
 
 /* 공통 tab-item 클래스와 구분하기 위해 content-tabs 내부의 tab-item 스타일 조정 */
-.content-tabs .tab-item {
+.content-tabs .content-tab-item {
   padding: 12px 20px;
   font-size: 15px;
   color: #666;
@@ -81,12 +81,12 @@
   min-width: 80px;
 }
 
-.content-tabs .tab-item.active {
+.content-tabs .content-tab-item.active {
   color: #000;
   font-weight: bold;
 }
 
-.content-tabs .tab-item.active::after {
+.content-tabs .content-tab-item.active::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -140,42 +140,112 @@
 
 .video-item {
   display: flex;
+  flex-direction: column;
   border-bottom: 1px solid #f0f0f0;
   padding-bottom: 15px;
   position: relative;
+  cursor: pointer;
+}
+
+/* 동영상 컨테이너 크기 고정 */
+.video-thumbnail-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 비율을 유지하는 패딩 (100% / 16 * 9) */
+  overflow: hidden;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.video-thumbnail, .hover-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 이미지 비율 유지하며 컨테이너 채우기 */
 }
 
 .video-thumbnail {
-  width: 130px;
-  height: 73px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 4px;
-  margin-right: 12px;
-  position: relative;
+  transition: opacity 0.3s ease;
+}
+
+/* 호버 비디오 */
+.hover-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
 }
 
 .video-duration {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
+  bottom: 8px;
+  right: 8px;
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
-  font-size: 10px;
-  padding: 2px 4px;
+  font-size: 12px;
+  padding: 2px 6px;
   border-radius: 2px;
+  z-index: 2;
+}
+
+.play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 2;
+}
+
+.video-thumbnail-container:hover .play-overlay {
+  opacity: 1;
+}
+
+.play-button {
+  width: 50px;
+  height: 50px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.play-button i {
+  color: white;
+  font-size: 20px;
 }
 
 .video-info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .video-title {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.4;
   font-weight: 500;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   color: #333;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -196,13 +266,14 @@
 
 .video-badge {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 8px;
+  left: 8px;
   font-size: 10px;
-  padding: 1px 4px;
+  padding: 2px 5px;
   border-radius: 2px;
   color: white;
   font-weight: bold;
+  z-index: 3;
 }
 
 .badge-new {
@@ -216,18 +287,45 @@
   gap: 10px;
 }
 
+/* 쇼츠 컨테이너도 일관된 크기로 표시 */
 .shorts-item {
   position: relative;
   border-radius: 6px;
   overflow: hidden;
   aspect-ratio: 9/16;
+  height: 0;
+  padding-bottom: 177.78%; /* 9:16 비율 (100% / 9 * 16) */
   background-color: #f1f3f5;
+  cursor: pointer;
+}
+
+.shorts-thumbnail, .shorts-item .hover-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .shorts-thumbnail {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+/* 쇼츠용 호버 비디오 */
+.shorts-item .hover-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
 }
 
 .shorts-overlay {
@@ -236,7 +334,9 @@
   left: 0;
   right: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-  padding: 12px 8px 8px;
+  padding: 15px 10px 10px;
+  z-index: 2;
+  cursor: pointer;
 }
 
 .shorts-title {
@@ -257,13 +357,14 @@
 
 .shorts-badge {
   position: absolute;
-  top: 5px;
-  left: 5px;
+  top: 8px;
+  left: 8px;
   font-size: 10px;
-  padding: 1px 4px;
+  padding: 2px 5px;
   border-radius: 2px;
   color: white;
   font-weight: bold;
+  z-index: 3;
 }
 
 .shorts-badge.badge-new {
@@ -281,6 +382,7 @@
   display: flex;
   border-bottom: 1px solid #f0f0f0;
   padding-bottom: 15px;
+  cursor: pointer;
 }
 
 .article-thumbnail {
@@ -295,6 +397,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .article-title {
@@ -342,6 +445,7 @@
   padding: 15px 0;
   margin-top: 10px;
   border-top: 1px solid #eee;
+  display: none; /* 무한 스크롤로 변경되어 페이지네이션 숨김 */
 }
 
 .pagination {
@@ -453,9 +557,25 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .video-thumbnail {
-    width: 120px;
-    height: 68px;
+  .video-item {
+    padding-bottom: 15px;
+  }
+
+  .video-thumbnail-container {
+    margin-bottom: 8px;
+  }
+
+  .video-title {
+    font-size: 14px;
+  }
+
+  .play-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .play-button i {
+    font-size: 16px;
   }
 
   .article-thumbnail {

@@ -30,10 +30,8 @@ public class VideoUploadRequest {
     @NotNull
     private OriginalCategory category;
 
-    @NotBlank @Size(max = 500)
     private String thumbnailUrl;
 
-    @NotBlank
     private String videoUrl;
 
     @NotNull
@@ -42,7 +40,7 @@ public class VideoUploadRequest {
     @NotNull
     private Boolean isPublic;
 
-    @NotBlank
+
     private String youtubeId;
 
     @NotNull

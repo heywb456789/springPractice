@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.original.service;
 
 import com.tomato.naraclub.application.original.dto.VideoDetailResponse;
 import com.tomato.naraclub.application.original.dto.VideoDto;
+import com.tomato.naraclub.application.original.dto.VideoListRequest;
 import com.tomato.naraclub.application.original.dto.VideoResponse;
 import com.tomato.naraclub.application.original.dto.VideoUploadRequest;
 import com.tomato.naraclub.common.dto.ListDTO;
@@ -23,11 +24,12 @@ public interface VideoService {
 
     VideoResponse upload(@Valid VideoUploadRequest req);
 
-    ListDTO<VideoResponse> getListVideo(Pageable pg);
+    ListDTO<VideoResponse> getListVideo(VideoListRequest request, Pageable pg);
 
-    VideoDetailResponse getVideoDetail(Long id);
+    VideoResponse getVideoDetail(Long id);
 
     ListDTO<VideoResponse> getListShorts(Pageable pg);
 
     VideoDetailResponse getShortsDetail(Long id);
+
 }
