@@ -5,15 +5,70 @@
  */
 
 // 페이지 로드 완료 시 실행
-document.addEventListener('DOMContentLoaded', function () {
-  // 공통 요소 로드
-  loadCommonComponents().then(() => {
-    // 공통 요소 로드 후 이벤트 초기화
-    initSideMenu();
-    initTabMenu();
+document.addEventListener('DOMContentLoaded', async () => {
+  const loaded = await loadCommonComponents();
+  initSideMenu();
+  initTabMenu();
+  setActiveItems();
 
-    // 현재 페이지 URL에 따라 활성 탭/메뉴 설정
-    setActiveItems();
+  // --- 헤더 검색 토글 & 실행 ---
+  const searchBtn = document.querySelector('.search-button');
+  const panel   = document.querySelector('.header-search-panel');
+  const submit  = document.getElementById('header-search-submit');
+  const input   = document.getElementById('header-search-input');
+  const selSec  = document.getElementById('filter-section');
+  const selFld  = document.getElementById('filter-field');
+  const searchIcon  = searchBtn.querySelector('i');
+
+  searchBtn.addEventListener('click', () => {
+    // 판넬 상태 토글
+    const isOpen = panel.style.display !== 'flex';
+    panel.style.display = isOpen ? 'flex' : 'none';
+
+    // 아이콘 토글: 닫기(X) ↔ 돋보기
+    if (isOpen) {
+      searchIcon.classList.remove('fa-search');
+      searchIcon.classList.add('fa-times');
+    } else {
+      searchIcon.classList.remove('fa-times');
+      searchIcon.classList.add('fa-search');
+    }
+
+    // 패널을 열 때 입력창에 포커스
+    if (isOpen) {
+      document.getElementById('header-search-input').focus();
+    }
+  });
+
+
+  // Enter 또는 돋보기 클릭 시 검색 실행
+  function doHeaderSearch() {
+    const section = selSec.value;   // all | original | board | vote
+    const field   = selFld.value;   // all | title | content | author
+    const keyword = input.value.trim();
+    if (!keyword) return;
+
+    let url;
+    switch (section) {
+      case 'original':
+        url = `/original/originalContent.html?searchType=${field}&keyword=${encodeURIComponent(keyword)}`;
+        break;
+      case 'board':
+        url = `/board/boardList.html?searchType=${field}&keyword=${encodeURIComponent(keyword)}`;
+        break;
+      case 'vote':
+        url = `/vote/voteList.html?searchType=${field}&keyword=${encodeURIComponent(keyword)}`;
+        break;
+      default:
+        // 전체 검색 페이지로 이동 (직접 구현해 주세요)
+        url = `/search.html?searchType=${field}&keyword=${encodeURIComponent(keyword)}`;
+    }
+    window.location.href = url;
+  }
+
+  submit.addEventListener('click', doHeaderSearch);
+  input.addEventListener('keypress', e => {
+    if (e.key === 'Enter') doHeaderSearch();
   });
 });
 
