@@ -25,10 +25,11 @@ function initBackButton() {
     backButton.addEventListener('click', function () {
       // 이전 페이지로 이동 (히스토리가 있는 경우)
       if (window.history.length > 1) {
-        window.history.back();
+        // window.history.back();
+        window.location.href = '/board/boardList.html';
       } else {
         // 히스토리가 없는 경우 목록 페이지로 이동
-        window.location.href = 'boardList.html';
+        window.location.href = '/board/boardList.html';
       }
     });
   }
@@ -120,6 +121,10 @@ async function loadPostData() {
  * 게시글 UI 업데이트
  * @param {Object} postData - 게시글 데이터
  */
+/**
+ * 게시글 UI 업데이트
+ * @param {Object} postData - 게시글 데이터
+ */
 function updatePostUI(postData) {
   // 제목 업데이트
   const titleElement = document.querySelector('.post-title');
@@ -137,7 +142,7 @@ function updatePostUI(postData) {
   // 본문 내용 업데이트
   const contentElement = document.querySelector('.post-content');
   if (contentElement) {
-    // 텍스트 내용
+    // 내용 초기화
     contentElement.innerHTML = '';
 
     // 본문 텍스트 추가
@@ -149,18 +154,38 @@ function updatePostUI(postData) {
 
     // 이미지가 있는 경우 추가
     if (postData.imageUrls && postData.imageUrls.length > 0) {
+      // 이미지 컨테이너 생성
+      const imagesContainer = document.createElement('div');
+      imagesContainer.className = 'post-images-container';
+
+      // 각 이미지 URL에 대해 이미지 요소 생성 및 추가
       postData.imageUrls.forEach(imageUrl => {
         const imageContainer = document.createElement('div');
         imageContainer.className = 'post-image-container';
 
         const image = document.createElement('img');
+        // 이미지 URL 설정
         image.src = imageUrl;
         image.className = 'post-image';
         image.alt = '게시글 이미지';
 
+        // 이미지 로딩 이벤트 추가
+        image.onload = function() {
+          // 이미지 로드 완료 시 페이드인 효과 적용
+          image.classList.add('loaded');
+        };
+
+        // 이미지 에러 처리
+        image.onerror = function() {
+          // 이미지 로드 실패 시 대체 이미지 또는 메시지 표시
+          imageContainer.innerHTML = '<div class="image-error">이미지를 불러올 수 없습니다</div>';
+        };
+
         imageContainer.appendChild(image);
-        contentElement.appendChild(imageContainer);
+        imagesContainer.appendChild(imageContainer);
       });
+
+      contentElement.appendChild(imagesContainer);
     }
   }
 

@@ -33,11 +33,11 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
     keyword = '', append = false) {
   // 이미 로딩 중이거나 모든 데이터를 로드한 경우 중단
   if (isLoading || (isAllLoaded && append)) {
-    console.log(`로드 중단: 로딩=${isLoading}, 모든데이터로드=${isAllLoaded}, 추가=${append}`);
+    // console.log(`로드 중단: 로딩=${isLoading}, 모든데이터로드=${isAllLoaded}, 추가=${append}`);
     return;
   }
 
-  console.log(`콘텐츠 로드 시작: 탭=${tab}, 페이지=${page}, 크기=${size}, 추가=${append}`);
+  // console.log(`콘텐츠 로드 시작: 탭=${tab}, 페이지=${page}, 크기=${size}, 추가=${append}`);
 
   // 컨텐츠 타입 가져오기
   const contentType = TAB_CONTENT_TYPE[tab];
@@ -77,7 +77,7 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
   showLoading(true);
 
   try {
-    console.log(`API 호출: 페이지=${page}, 크기=${size}, 타입=${contentType}`);
+    // console.log(`API 호출: 페이지=${page}, 크기=${size}, 타입=${contentType}`);
     // API 호출
     const response = await VideoService.getLatestVideos(page, size,
         contentType);
@@ -88,11 +88,11 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
     }
 
     const data = response.response;
-    console.log(`API 응답 데이터:`, data);
+    // console.log(`API 응답 데이터:`, data);
 
     // 데이터 없음 처리
     if (!data.data || data.data.length === 0) {
-      console.log(`데이터 없음: 추가=${append}`);
+      // console.log(`데이터 없음: 추가=${append}`);
       // 추가 로드 시 모든 데이터 로드 완료 상태로 설정
       if (append) {
         isAllLoaded = true;
@@ -105,13 +105,13 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
 
     // 페이지네이션 정보 업데이트
     if (data.pagination) {
-      console.log(`페이지네이션 정보:`, data.pagination);
+      // console.log(`페이지네이션 정보:`, data.pagination);
       // 현재 페이지가 마지막 페이지면 모든 데이터 로드 완료
       if (data.pagination.currentPage >= data.pagination.totalPages) {
         isAllLoaded = true;
-        console.log(
-            `마지막 페이지 도달: ${data.pagination.currentPage}/${data.pagination.totalPages
-            - 1}`);
+        // console.log(
+        //     `마지막 페이지 도달: ${data.pagination.currentPage}/${data.pagination.totalPages
+        //     - 1}`);
       }
 
       // 현재 페이지 업데이트
@@ -268,7 +268,7 @@ function initInfiniteScroll() {
 
   const lastItem = items[items.length - 1];
 
-  console.log(`무한 스크롤 설정: ${currentTab} 탭, 마지막 아이템:`, lastItem);
+  // console.log(`무한 스크롤 설정: ${currentTab} 탭, 마지막 아이템:`, lastItem);
 
   // 인터섹션 옵저버 설정
   const options = {
@@ -281,7 +281,7 @@ function initInfiniteScroll() {
   scrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting && !isLoading && !isAllLoaded) {
-        console.log(`스크롤 감지: ${currentTab} 탭의 다음 페이지(${currentPage + 1}) 로드`);
+        // console.log(`스크롤 감지: ${currentTab} 탭의 다음 페이지(${currentPage + 1}) 로드`);
         loadContent(currentTab, currentPage + 1, PAGE_SIZE, '', true);
       }
     });
@@ -632,7 +632,7 @@ function handleTabClick(event) {
   }
 
   // 모든 탭 비활성화
-  const allTabs = document.querySelectorAll('.content-tabs .tab-item');
+  const allTabs = document.querySelectorAll('.content-tabs .content-tab-item');
   allTabs.forEach(item => item.classList.remove('active'));
 
   // 클릭한 탭 활성화

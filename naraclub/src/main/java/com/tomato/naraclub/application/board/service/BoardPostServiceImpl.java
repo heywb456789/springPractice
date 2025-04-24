@@ -15,6 +15,7 @@ import com.tomato.naraclub.common.exception.APIException;
 import com.tomato.naraclub.common.util.FileStorageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,9 @@ public class BoardPostServiceImpl implements BoardPostService {
     private final BoardPostLikeRepository postLikeRepository;
     private final MemberRepository memberRepository;
     private final FileStorageService imageService;
+
+    @Value("${spring.app.display}")
+    private String displayUrl;
 
     @Override
     public ListDTO<BoardPostResponse> listPosts(BoardListRequest request, Pageable pageable) {
@@ -95,7 +99,7 @@ public class BoardPostServiceImpl implements BoardPostService {
                     String url = imageService.upload(file, StorageCategory.IMAGE, saved.getId());
                     return BoardPostImage.builder()
                         .boardPost(saved)
-                        .imageUrl(url)
+                        .imageUrl(displayUrl + url)
                         .build();
                 })
                 .collect(Collectors.toList());

@@ -18,7 +18,7 @@ export default class VideoService {
       }
 
       const data = await response.json();
-      console.log('API 응답 데이터:', data); // 디버깅용
+      // console.log('API 응답 데이터:', data); // 디버깅용
       return data;
 
     } catch (error) {
@@ -43,7 +43,7 @@ export default class VideoService {
       }
 
       const data = await response.json();
-      console.log('API 응답 데이터:', data); // 디버깅용
+      // console.log('API 응답 데이터:', data); // 디버깅용
       return data;
 
     } catch (error) {

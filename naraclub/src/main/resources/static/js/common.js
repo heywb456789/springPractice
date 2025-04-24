@@ -33,7 +33,7 @@ async function loadCommonComponents() {
     // 탭 메뉴
     await loadComponent('tab-menu-container', '/components/tab-menu.html');
 
-    console.log('모든 공통 컴포넌트 로드 완료');
+    // console.log('모든 공통 컴포넌트 로드 완료');
     return true;
   } catch (error) {
     console.error('공통 컴포넌트 로드 중 오류 발생:', error);
