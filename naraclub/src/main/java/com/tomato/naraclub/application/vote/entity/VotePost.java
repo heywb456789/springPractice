@@ -2,6 +2,8 @@ package com.tomato.naraclub.application.vote.entity;
 
 import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.member.entity.Member;
+import com.tomato.naraclub.application.search.code.SearchCategory;
+import com.tomato.naraclub.application.search.dto.SearchDTO;
 import com.tomato.naraclub.application.vote.dto.VoteOptionDTO;
 import com.tomato.naraclub.application.vote.dto.VotePostResponse;
 import com.tomato.naraclub.common.audit.Audit;
@@ -95,6 +97,18 @@ public class VotePost extends Audit {
             .voteOptions(optionDTOs)
             .createdAt(createdAt)
             .updatedAt(updatedAt)
+            .build();
+    }
+
+    public SearchDTO convertSearchDTO() {
+        return SearchDTO.builder()
+            .id(id)
+            .title(question)
+            .content(null)
+            .imageUrl(null)
+            .searchCategory(SearchCategory.VOTE_POST)
+            .createdAt(createdAt)
+            .redirectionUrl("/vote/voteDetail.html?id=" + id)
             .build();
     }
 }

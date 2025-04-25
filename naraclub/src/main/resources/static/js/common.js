@@ -4,6 +4,7 @@
  * 공통 컴포넌트 로드 및 관리
  */
 
+
 // 페이지 로드 완료 시 실행
 document.addEventListener('DOMContentLoaded', async () => {
   const loaded = await loadCommonComponents();
@@ -20,57 +21,44 @@ document.addEventListener('DOMContentLoaded', async () => {
   const selFld  = document.getElementById('filter-field');
   const searchIcon  = searchBtn.querySelector('i');
 
+  // 패널 토글
   searchBtn.addEventListener('click', () => {
-    // 판넬 상태 토글
     const isOpen = panel.style.display !== 'flex';
     panel.style.display = isOpen ? 'flex' : 'none';
-
-    // 아이콘 토글: 닫기(X) ↔ 돋보기
-    if (isOpen) {
-      searchIcon.classList.remove('fa-search');
-      searchIcon.classList.add('fa-times');
-    } else {
-      searchIcon.classList.remove('fa-times');
-      searchIcon.classList.add('fa-search');
-    }
-
-    // 패널을 열 때 입력창에 포커스
-    if (isOpen) {
-      document.getElementById('header-search-input').focus();
-    }
+    // 아이콘 토글
+    searchIcon.classList.toggle('fa-search', !isOpen);
+    searchIcon.classList.toggle('fa-times',  isOpen);
+    if (isOpen) input.focus();
   });
 
-
-  // Enter 또는 돋보기 클릭 시 검색 실행
+  // 검색 실행 함수
   function doHeaderSearch() {
     const section = selSec.value;   // all | original | board | vote
     const field   = selFld.value;   // all | title | content | author
     const keyword = input.value.trim();
     if (!keyword) return;
 
-    let url;
-    switch (section) {
-      case 'original':
-        url = `/original/originalContent.html?searchType=${field}&keyword=${encodeURIComponent(keyword)}`;
-        break;
-      case 'board':
-        url = `/board/boardList.html?searchType=${field}&keyword=${encodeURIComponent(keyword)}`;
-        break;
-      case 'vote':
-        url = `/vote/voteList.html?searchType=${field}&keyword=${encodeURIComponent(keyword)}`;
-        break;
-      default:
-        // 전체 검색 페이지로 이동 (직접 구현해 주세요)
-        url = `/search.html?searchType=${field}&keyword=${encodeURIComponent(keyword)}`;
-    }
-    window.location.href = url;
+    // 매핑 테이블
+    const mapCategory = { all: 'ALL', video: 'ORIGINAL_VIDEO', shorts: 'ORIGINAL_SHORTS',
+  article: 'ORIGINAL_NEWS', board: 'BOARD_POST', vote: 'VOTE_POST' };
+    const mapSection  = { all:'ALL', title:'TITLE', content:'CONTENT', author:'AUTHOR' };
+
+    const params = new URLSearchParams({
+      searchCategory: mapCategory[section] || 'ALL',
+      searchSection:  mapSection[field]   || 'ALL',
+      searchKeyword:  keyword,
+      page:           '0',
+      size:           '10'
+    });
+
+    // 통합 검색 페이지로 리다이렉트
+    window.location.href = `/main/search.html?${params.toString()}`;
   }
 
-  submit.addEventListener('click', doHeaderSearch);
-  input.addEventListener('keypress', e => {
-    if (e.key === 'Enter') doHeaderSearch();
-  });
+  submit.addEventListener('click',    doHeaderSearch);
+  input.addEventListener ('keypress', e => { if (e.key==='Enter') doHeaderSearch(); });
 });
+
 
 /**
  * 공통 컴포넌트 로드 함수
@@ -118,21 +106,21 @@ async function loadComponent(containerId, componentUrl) {
 
     // 컴포넌트 HTML 가져오기
     fetch(componentUrl)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP 오류: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then(html => {
-        // 컨테이너에 HTML 삽입
-        container.innerHTML = html;
-        resolve();
-      })
-      .catch(error => {
-        console.error(`${componentUrl} 로드 중 오류:`, error);
-        reject(error);
-      });
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP 오류: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(html => {
+      // 컨테이너에 HTML 삽입
+      container.innerHTML = html;
+      resolve();
+    })
+    .catch(error => {
+      console.error(`${componentUrl} 로드 중 오류:`, error);
+      reject(error);
+    });
   });
 }
 
@@ -294,7 +282,8 @@ function initSideMenuItems() {
       const page = this.getAttribute('data-page');
 
       // 현재 활성화된 메뉴 아이템 비활성화
-      document.querySelector('.side-menu-item.active')?.classList.remove('active');
+      document.querySelector('.side-menu-item.active')?.classList.remove(
+          'active');
 
       // 클릭한 메뉴 아이템 활성화
       this.classList.add('active');

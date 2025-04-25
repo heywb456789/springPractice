@@ -1,8 +1,10 @@
 package com.tomato.naraclub.common.dto;
 
 import com.querydsl.jpa.impl.JPAQuery;
+import com.tomato.naraclub.application.search.code.SearchCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +20,10 @@ public class ListDTO<T> {
 
   @Schema(description = "페이지 정보")
     private Pagination pagination;
+
+  @Schema(description = "검색 탭 카운트")
+  private Map<String, Long> counts;
+
   @Schema(description = "조회 데이터")
   private List<T> data;
 
@@ -71,5 +77,12 @@ public class ListDTO<T> {
     private ListDTO(List<T> items, Pagination pagination) {
         this.data = items;
         this.pagination = pagination;
+    }
+
+    // private 생성자
+    public ListDTO(Pagination pagination, List<T> items, Map<String, Long> counts) {
+        this.data = items;
+        this.pagination = pagination;
+        this.counts = counts;
     }
 }

@@ -3,6 +3,8 @@ package com.tomato.naraclub.application.board.entity;
 import com.tomato.naraclub.application.board.dto.BoardPostResponse;
 import com.tomato.naraclub.application.comment.entity.BoardComments;
 import com.tomato.naraclub.application.member.entity.Member;
+import com.tomato.naraclub.application.search.code.SearchCategory;
+import com.tomato.naraclub.application.search.dto.SearchDTO;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
 import lombok.*;
@@ -118,6 +120,18 @@ public class BoardPost extends Audit {
             .isHot(isHot)
             .createdAt(createdAt)
             .isLike(isLike)
+            .build();
+    }
+
+    public SearchDTO convertSearchDTO(BoardPost e) {
+        return SearchDTO.builder()
+            .id(e.getId())
+            .title(e.getTitle())
+            .content(e.getContent())
+            .imageUrl(null)
+            .searchCategory(SearchCategory.BOARD_POST)
+            .createdAt(e.getCreatedAt())
+            .redirectionUrl("/board/boardDetail.html?id=" + e.getId())
             .build();
     }
 }

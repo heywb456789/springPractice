@@ -6,6 +6,8 @@ import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
 import com.tomato.naraclub.application.original.dto.VideoDetailResponse;
 import com.tomato.naraclub.application.original.dto.VideoResponse;
+import com.tomato.naraclub.application.search.code.SearchCategory;
+import com.tomato.naraclub.application.search.dto.SearchDTO;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
 import java.util.List;
@@ -38,6 +40,10 @@ public class Video extends Audit {
     @Comment("설명 / 내용")
     @Column(length = 2000)
     private String description;
+
+    @Comment("작성자 /기자 ")
+    @Column(length = 10)
+    private String authorName;
 
     @Comment("토마토 오리지날 타입")
     @Enumerated(EnumType.STRING)
@@ -109,5 +115,17 @@ public class Video extends Audit {
 
     public void incrementCommentCount() {
         this.commentCount++;
+    }
+
+    public SearchDTO convertSearchDTO(Video e, SearchCategory searchCategory) {
+        return SearchDTO.builder()
+            .id(e.getId())
+            .title(e.getTitle())
+            .content(e.getDescription())
+            .imageUrl(e.getThumbnailUrl())
+            .searchCategory(searchCategory)
+            .createdAt(e.getCreatedAt())
+            .redirectionUrl("/original/videoDetail.html?id=" + e.getId())
+            .build();
     }
 }

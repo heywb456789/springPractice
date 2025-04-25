@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.vote.repository;
 
+import com.tomato.naraclub.application.search.repository.QuerydslSearchableRepository;
 import com.tomato.naraclub.application.vote.entity.VotePost;
 import com.tomato.naraclub.application.vote.repository.custom.VotePostCustomRepository;
 import java.util.Optional;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Repository;
  * @AUTHOR : MinjaeKim
  */
 @Repository
-public interface VotePostRepository extends JpaRepository<VotePost, Long> ,
+public interface VotePostRepository extends QuerydslSearchableRepository<VotePost, Long>,
     VotePostCustomRepository {
 
     @EntityGraph(attributePaths = "voteOptions")
