@@ -80,7 +80,7 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
     // console.log(`API 호출: 페이지=${page}, 크기=${size}, 타입=${contentType}`);
     // API 호출
     const response = await VideoService.getLatestVideos(page, size,
-        contentType);
+        contentType, keyword);
 
     // 응답 데이터 확인
     if (!response || !response.response || !response.response.data) {
