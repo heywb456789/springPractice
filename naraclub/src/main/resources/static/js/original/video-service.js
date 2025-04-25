@@ -33,12 +33,10 @@ export default class VideoService {
    * @returns {Promise<Array>} 비디오 목록
    */
   static async getLatestVideos(page=0, limit = 4, originalType='YOUTUBE_VIDEO', keyword='') {
+    const url = `/api/videos?page=${page}&size=${limit}&originalType=${originalType}`+
+      (keyword ? `&searchType=VIDEO_TITLE_CONTENT&searchText=${encodeURIComponent(keyword)}` : '');
     try {
-      let search ='';
-      if(keyword!==''){
-        search =`&searchType=VIDEO_TITLE_CONTENT&searchText=${keyword}`;
-      }
-      const response = await optionalAuthFetch(`/api/videos?page=${page}&size=${limit}&originalType=${originalType}${search}`);
+      const response = await optionalAuthFetch(url)
       if (!response.ok) {
         if (response.status === 204) {
           return []; // 콘텐츠 없음

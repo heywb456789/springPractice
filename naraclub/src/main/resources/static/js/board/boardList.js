@@ -29,7 +29,7 @@ async function loadBoardList(page = 0, size = 10, keyword = '') {
   </div>
 `;
   const apiUrl = `/api/board/posts?page=${page}&size=${size}` +
-    (keyword ? `&searchType=BOARD_TITLE_CONTENT&keyword=${encodeURIComponent(keyword)}` : '');
+    (keyword ? `&searchType=BOARD_TITLE_CONTENT&searchText=${encodeURIComponent(keyword)}` : '');
   try {
     const res = await optionalAuthFetch(apiUrl);
     const data = await res.json();
@@ -272,7 +272,7 @@ function initSearch() {
     searchForm.addEventListener('submit', function (e) {
       e.preventDefault();
       const keyword = searchInput.value.trim();
-      loadBoardList(1, 10, keyword);
+      loadBoardList(0, 10, keyword);
     });
   }
 
@@ -282,7 +282,7 @@ function initSearch() {
       if (e.key === 'Enter') {
         e.preventDefault();
         const keyword = this.value.trim();
-        loadBoardList(1, 10, keyword);
+        loadBoardList(0, 10, keyword);
       }
     });
   }

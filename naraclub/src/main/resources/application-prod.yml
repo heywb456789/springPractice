@@ -1,0 +1,45 @@
+spring:
+  main:
+    banner-mode: off
+  devtools:
+    livereload:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database: mysql
+    open-in-view: true
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+  #        dialect: org.hibernate.dialect.MariaDB103Dialect
+  app:
+    display: https://image.newstomato.com/newstomato/club
+    upload:
+      root: /test
+      ftp:
+        host: 1.201.174.63
+        port: 21
+        user: tomatochain
+        password: tomatochain1!
+
+  datasource:
+    url: ${DB_URL:jdbc:log4jdbc:mariadb://192.168.10.12:3306/narasarang}
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    username: ${DB_ID:root}
+    password: ${DB_PW:tomato0425@!}
+    # 또는 로그4jdbc 래퍼를 계속 쓰려면 아래 두 줄 중복 주석 해제
+    hikari:
+      connection-timeout: 30000    # 기본 30000
+      maximum-pool-size: 10        # 기본 10
+      minimum-idle: 1              # 기본 maximum-pool-size
+      connection-test-query: SELECT 1
+      idle-timeout: 600000         # 기본 600000
+      pool-name: ${spring.application.name}-pool
+
+google:
+  key-path:
+    console: "/google/pc-api-6501066511374588335-380-1ad7a0f489f4.json"
+    firebase: "/firebase/dev-bread-4908a-firebase-adminsdk-cp247-2bc9dd1010.json"

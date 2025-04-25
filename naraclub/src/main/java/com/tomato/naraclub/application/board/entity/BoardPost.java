@@ -21,7 +21,9 @@ import java.util.List;
     name = "t_board_post",
     indexes = {
         @Index(name = "idx01_t_board_post_created_at", columnList = "created_at"), // 최신순 정렬용
-        @Index(name = "idx02_t_board_post_views", columnList = "views")
+        @Index(name = "idx02_t_board_post_views", columnList = "views"),
+        @Index(name = "idx02_t_board_post_title", columnList = "title"),
+        @Index(name = "idx02_t_board_post_content", columnList = "content"),
     }
 )
 @Getter
