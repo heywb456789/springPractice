@@ -15,8 +15,8 @@ public class VideoHotScheduler {
     private final VideoRepository videoRepository;
 
     @Transactional
-//    @Scheduled(cron = "0 15 0 * * *")  // 매일 새벽 1시 예시
-    @Scheduled(cron = "0 0/1 * * * *") //test 매1분
+    @Scheduled(cron = "0 15 0 * * *")  // 매일 새벽 1시 예시
+//    @Scheduled(cron = "0 0/1 * * * *") //test 매1분
     public void updateVideoHotPosts() {
 
         videoRepository.resetAllHotFlags();

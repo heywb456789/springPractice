@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>투표 관리 - 나라 걱정 클럽 관리자</title>
+</head>
+<body>
+
+<th:block th:fragment="content">
+    <!-- 투표 리스트 페이지 내용 -->
+    
+    <!-- 버튼 및 필터 -->
+    <div class="row mb-2">
+        <div class="col-sm-4">
+            <a th:href="@{/admin/polls/create}" class="btn btn-danger mb-2">
+                <i class="mdi mdi-plus-circle me-1"></i> 새 투표 등록
+            </a>
+        </div>
+        <div class="col-sm-8">
+            <div class="text-sm-end">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="제목 검색..." aria-label="제목 검색">
+                    <button class="btn btn-primary" type="button">검색</button>
+                    <button type="button" class="btn btn-light" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="mdi mdi-filter-variant"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="#" data-status="all">모든 상태</a>
+                        <a class="dropdown-item" href="#" data-status="active">진행중</a>
+                        <a class="dropdown-item" href="#" data-status="completed">완료됨</a>
+                        <a class="dropdown-item" href="#" data-status="scheduled">예약됨</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" data-popularity="high">인기 높은 순</a>
+                        <a class="dropdown-item" href="#" data-popularity="low">인기 낮은 순</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 투표 카드 -->
+    <div class="row">
+        <!-- 실제 데이터 -->
+        <div class="col-lg-6" th:each="poll : ${polls}" th:if="${polls != null}">
+            <div class="card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a th:href="@{/admin/polls/{id}/edit(id=${poll.id})}" class="dropdown-item">수정</a>
+                            <a th:href="@{/admin/polls/{id}/results(id=${poll.id})}" class="dropdown-item">결과 보기</a>
+                            <a th:href="@{/admin/polls/{id}/delete(id=${poll.id})}" class="dropdown-item text-danger delete-confirm">삭제</a>
+                        </div>
+                    </div>
+                    <h4 class="header-title mb-3" th:text="${poll.title}">대한민국의 핵무장, 찬성하십니까?</h4>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span th:text="${poll.category}" class="badge bg-primary">정치</span>
+                        <span th:class="${poll.status == 'ACTIVE' ? 'badge bg-success' : (poll.status == 'COMPLETED' ? 'badge bg-secondary' : 'badge bg-warning')}">
+                            <span th:text="${poll.status == 'ACTIVE' ? '진행중' : (poll.status == 'COMPLETED' ? '완료' : '예약됨')}">진행중</span>
+                        </span>
+                    </div>
+                    
+                    <p class="text-muted" th:text="${poll.description}">
+                        현재 한반도를 둘러싼 안보 상황에서 대한민국의 핵무장에 대한 귀하의 의견을 알려주세요.
+                    </p>
+                    
+                    <!-- 진행률 바 -->
+                    <div class="mt-3">
+                        <h5 class="mb-1 mt-0 fw-normal">참여율 <span th:text="${poll.participationRate + '%'}" class="float-end">75%</span></h5>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" th:style="'width: ' + ${poll.participationRate + '%'}" style="width: 75%" 
+                                    th:aria-valuenow="${poll.participationRate}" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <!-- 투표 통계 -->
+                    <div class="row mt-3 text-center">
+                        <div class="col-4">
+                            <h3 class="fw-normal" th:text="${poll.totalVotes}">3,512</h3>
+                            <p class="text-muted mb-0">총 투표수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal" th:text="${poll.uniqueParticipants}">3,200</h3>
+                            <p class="text-muted mb-0">참여자수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal" th:text="${poll.commentCount}">182</h3>
+                            <p class="text-muted mb-0">댓글수</p>
+                        </div>
+                    </div>
+
+                    <!-- 기간 표시 -->
+                    <div class="mt-3 d-flex justify-content-between text-muted">
+                        <small th:text="${'시작: ' + #temporals.format(poll.startDate, 'yyyy-MM-dd')}">시작: 2025-04-15</small>
+                        <small th:text="${'종료: ' + #temporals.format(poll.endDate, 'yyyy-MM-dd')}">종료: 2025-04-30</small>
+                    </div>
+                    
+                    <!-- 바로가기 버튼 -->
+                    <div class="mt-3 d-grid">
+                        <a th:href="@{/admin/polls/{id}/results(id=${poll.id})}" class="btn btn-outline-primary">결과 분석</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 샘플 데이터 -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="javascript:void(0);" class="dropdown-item">수정</a>
+                            <a href="javascript:void(0);" class="dropdown-item">결과 보기</a>
+                            <a href="javascript:void(0);" class="dropdown-item text-danger delete-confirm">삭제</a>
+                        </div>
+                    </div>
+                    <h4 class="header-title mb-3">대한민국의 핵무장, 찬성하십니까?</h4>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary">정치</span>
+                        <span class="badge bg-success">진행중</span>
+                    </div>
+                    
+                    <p class="text-muted">
+                        현재 한반도를 둘러싼 안보 상황에서 대한민국의 핵무장에 대한 귀하의 의견을 알려주세요.
+                    </p>
+                    
+                    <!-- 진행률 바 -->
+                    <div class="mt-3">
+                        <h5 class="mb-1 mt-0 fw-normal">참여율 <span class="float-end">75%</span></h5>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <!-- 투표 통계 -->
+                    <div class="row mt-3 text-center">
+                        <div class="col-4">
+                            <h3 class="fw-normal">3,512</h3>
+                            <p class="text-muted mb-0">총 투표수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal">3,200</h3>
+                            <p class="text-muted mb-0">참여자수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal">182</h3>
+                            <p class="text-muted mb-0">댓글수</p>
+                        </div>
+                    </div>
+
+                    <!-- 기간 표시 -->
+                    <div class="mt-3 d-flex justify-content-between text-muted">
+                        <small>시작: 2025-04-15</small>
+                        <small>종료: 2025-04-30</small>
+                    </div>
+                    
+                    <!-- 바로가기 버튼 -->
+                    <div class="mt-3 d-grid">
+                        <a href="javascript:void(0);" class="btn btn-outline-primary">결과 분석</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="javascript:void(0);" class="dropdown-item">수정</a>
+                            <a href="javascript:void(0);" class="dropdown-item">결과 보기</a>
+                            <a href="javascript:void(0);" class="dropdown-item text-danger delete-confirm">삭제</a>
+                        </div>
+                    </div>
+                    <h4 class="header-title mb-3">선거연령 18세 하향, 어떻게 생각하시나요?</h4>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary">정치</span>
+                        <span class="badge bg-success">진행중</span>
+                    </div>
+                    
+                    <p class="text-muted">
+                        선거 연령이 19세에서 18세로 하향된 것에 대한 의견을 알려주세요.
+                    </p>
+                    
+                    <!-- 진행률 바 -->
+                    <div class="mt-3">
+                        <h5 class="mb-1 mt-0 fw-normal">참여율 <span class="float-end">68%</span></h5>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 68%" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <!-- 투표 통계 -->
+                    <div class="row mt-3 text-center">
+                        <div class="col-4">
+                            <h3 class="fw-normal">2,895</h3>
+                            <p class="text-muted mb-0">총 투표수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal">2,700</h3>
+                            <p class="text-muted mb-0">참여자수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal">156</h3>
+                            <p class="text-muted mb-0">댓글수</p>
+                        </div>
+                    </div>
+
+                    <!-- 기간 표시 -->
+                    <div class="mt-3 d-flex justify-content-between text-muted">
+                        <small>시작: 2025-04-10</small>
+                        <small>종료: 2025-04-25</small>
+                    </div>
+                    
+                    <!-- 바로가기 버튼 -->
+                    <div class="mt-3 d-grid">
+                        <a href="javascript:void(0);" class="btn btn-outline-primary">결과 분석</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="javascript:void(0);" class="dropdown-item">수정</a>
+                            <a href="javascript:void(0);" class="dropdown-item">결과 보기</a>
+                            <a href="javascript:void(0);" class="dropdown-item text-danger delete-confirm">삭제</a>
+                        </div>
+                    </div>
+                    <h4 class="header-title mb-3">국가 차원의 출산 정책, 필요하다고 생각하시나요?</h4>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-info">사회</span>
+                        <span class="badge bg-success">진행중</span>
+                    </div>
+                    
+                    <p class="text-muted">
+                        저출산 문제 해결을 위한 국가 차원의 출산 정책에 대한 귀하의 의견을 알려주세요.
+                    </p>
+                    
+                    <!-- 진행률 바 -->
+                    <div class="mt-3">
+                        <h5 class="mb-1 mt-0 fw-normal">참여율 <span class="float-end">63%</span></h5>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 63%" aria-valuenow="63" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <!-- 투표 통계 -->
+                    <div class="row mt-3 text-center">
+                        <div class="col-4">
+                            <h3 class="fw-normal">2,478</h3>
+                            <p class="text-muted mb-0">총 투표수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal">2,300</h3>
+                            <p class="text-muted mb-0">참여자수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal">215</h3>
+                            <p class="text-muted mb-0">댓글수</p>
+                        </div>
+                    </div>
+
+                    <!-- 기간 표시 -->
+                    <div class="mt-3 d-flex justify-content-between text-muted">
+                        <small>시작: 2025-04-05</small>
+                        <small>종료: 2025-04-20</small>
+                    </div>
+                    
+                    <!-- 바로가기 버튼 -->
+                    <div class="mt-3 d-grid">
+                        <a href="javascript:void(0);" class="btn btn-outline-primary">결과 분석</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="javascript:void(0);" class="dropdown-item">수정</a>
+                            <a href="javascript:void(0);" class="dropdown-item">결과 보기</a>
+                            <a href="javascript:void(0);" class="dropdown-item text-danger delete-confirm">삭제</a>
+                        </div>
+                    </div>
+                    <h4 class="header-title mb-3">대체공휴일 확대, 찬성하시나요?</h4>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-success">경제</span>
+                        <span class="badge bg-secondary">완료</span>
+                    </div>
+                    
+                    <p class="text-muted">
+                        대체공휴일 확대 적용에 대한 의견을 알려주세요.
+                    </p>
+                    
+                    <!-- 진행률 바 -->
+                    <div class="mt-3">
+                        <h5 class="mb-1 mt-0 fw-normal">참여율 <span class="float-end">82%</span></h5>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 82%" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <!-- 투표 통계 -->
+                    <div class="row mt-3 text-center">
+                        <div class="col-4">
+                            <h3 class="fw-normal">1,986</h3>
+                            <p class="text-muted mb-0">총 투표수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal">1,800</h3>
+                            <p class="text-muted mb-0">참여자수</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="fw-normal">95</h3>
+                            <p class="text-muted mb-0">댓글수</p>
+                        </div>
+                    </div>
+
+                    <!-- 기간 표시 -->
+                    <div class="mt-3 d-flex justify-content-between text-muted">
+                        <small>시작: 2025-03-20</small>
+                        <small>종료: 2025-04-05</small>
+                    </div>
+                    
+                    <!-- 바로가기 버튼 -->
+                    <div class="mt-3 d-grid">
+                        <a href="javascript:void(0);" class="btn btn-outline-primary">결과 분석</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end row -->
+
+    <!-- 페이지네이션 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="pagination justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-rounded">
+                        <li class="page-item">
+                            <a class="page-link" href="javascript: void(0);" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="javascript: void(0);">1</a></li>
+                        <li class="page-item"><a class="page-link" href="javascript: void(0);">2</a></li>
+                        <li class="page-item"><a class="page-link" href="javascript: void(0);">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="javascript: void(0);" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <!-- end pagination -->
+    
+</th:block>
+
+<th:block th:fragment="scripts">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 삭제 확인 다이얼로그
+            $(".delete-confirm").click(function(e) {
+                e.preventDefault();
+                if (confirm("정말 이 투표를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.")) {
+                    // 삭제 처리 로직
+                    console.log("삭제 처리");
+                }
+            });
+            
+            // 필터 적용
+            $(".dropdown-menu a[data-status], .dropdown-menu a[data-popularity]").click(function(e) {
+                e.preventDefault();
+                
+                // 필터 적용 로직
+                let filterType = '';
+                let filterValue = '';
+                
+                if ($(this).data('status')) {
+                    filterType = 'status';
+                    filterValue = $(this).data('status');
+                } else if ($(this).data('popularity')) {
+                    filterType = 'popularity';
+                    filterValue = $(this).data('popularity');
+                }
+                
+                console.log(`필터 적용: ${filterType} = ${filterValue}`);
+                
+                // 여기에 필터링 로직 구현
+            });
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

@@ -15,6 +15,9 @@ spring:
       date: yyyy-MM-dd
       date-time: yyyy-MM-dd HH:mm:ss
       time: HH:mm:ss
+    thymeleaf:
+      prefix: classpath:/templates/
+      suffix: .html
   security:
     jwt:
       secret: MDEyMzQ1Njc4OWNiZmFnZDEyMzQ1Njc4OWNiZmFnZA==

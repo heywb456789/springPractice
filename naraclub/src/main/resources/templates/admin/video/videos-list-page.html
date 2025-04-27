@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비디오 관리 - 나라 걱정 클럽 관리자</title>
+</head>
+<body>
+
+<th:block th:fragment="content">
+    <!-- 비디오 리스트 페이지 내용 -->
+    
+    <!-- 버튼 및 필터 -->
+    <div class="row mb-2">
+        <div class="col-sm-4">
+            <a th:href="@{/admin/videos/create}" class="btn btn-danger mb-2">
+                <i class="mdi mdi-plus-circle me-1"></i> 새 비디오 등록
+            </a>
+        </div>
+        <div class="col-sm-8">
+            <div class="text-sm-end">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="제목 검색..." aria-label="제목 검색">
+                    <button class="btn btn-primary" type="button">검색</button>
+                    <button type="button" class="btn btn-light">
+                        <i class="mdi mdi-filter-variant"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 테이블 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-centered table-striped dt-responsive nowrap w-100" id="videos-datatable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20px;">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="checkAll">
+                                            <label class="form-check-label" for="checkAll">&nbsp;</label>
+                                        </div>
+                                    </th>
+                                    <th>ID</th>
+                                    <th>썸네일</th>
+                                    <th>제목</th>
+                                    <th>분류</th>
+                                    <th>상태</th>
+                                    <th>등록일</th>
+                                    <th>조회수</th>
+                                    <th>좋아요</th>
+                                    <th style="width: 85px;">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="video : ${videos}" th:if="${videos != null}">
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" th:id="'video-' + ${video.id}">
+                                            <label class="form-check-label" th:for="'video-' + ${video.id}">&nbsp;</label>
+                                        </div>
+                                    </td>
+                                    <td th:text="${video.id}">1</td>
+                                    <td>
+                                        <img th:src="${video.thumbnailUrl}" src="/assets/images/video-thumb-1.jpg" alt="썸네일" class="rounded" width="48">
+                                    </td>
+                                    <td th:text="${video.title}">대한민국의 핵보유, 과연 시급한 과제인가</td>
+                                    <td th:text="${video.category}">정치</td>
+                                    <td>
+                                        <span th:if="${video.status == 'PUBLISHED'}" class="badge bg-success-lighten text-success">발행됨</span>
+                                        <span th:if="${video.status == 'DRAFT'}" class="badge bg-warning-lighten text-warning">임시저장</span>
+                                        <span class="badge bg-success-lighten text-success">발행됨</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(video.createdAt, 'yyyy-MM-dd')}">2025-04-20</td>
+                                    <td th:text="${video.viewCount}">8,642</td>
+                                    <td th:text="${video.likeCount}">324</td>
+                                    <td>
+                                        <a th:href="@{/admin/videos/{id}/edit(id=${video.id})}" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
+                                        <a th:href="@{/admin/videos/{id}/delete(id=${video.id})}" class="action-icon delete-confirm"> <i class="mdi mdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                
+                                <!-- 샘플 데이터 -->
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="video-1">
+                                            <label class="form-check-label" for="video-1">&nbsp;</label>
+                                        </div>
+                                    </td>
+                                    <td>1</td>
+                                    <td>
+                                        <img src="/assets/images/video-thumb-1.jpg" alt="썸네일" class="rounded" width="48">
+                                    </td>
+                                    <td>대한민국의 핵보유, 과연 시급한 과제인가</td>
+                                    <td>정치</td>
+                                    <td>
+                                        <span class="badge bg-success-lighten text-success">발행됨</span>
+                                    </td>
+                                    <td>2025-04-20</td>
+                                    <td>8,642</td>
+                                    <td>324</td>
+                                    <td>
+                                        <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
+                                        <a href="javascript:void(0);" class="action-icon delete-confirm"> <i class="mdi mdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="video-2">
+                                            <label class="form-check-label" for="video-2">&nbsp;</label>
+                                        </div>
+                                    </td>
+                                    <td>2</td>
+                                    <td>
+                                        <img src="/assets/images/video-thumb-2.jpg" alt="썸네일" class="rounded" width="48">
+                                    </td>
+                                    <td>정치 현안 토크: 여야 대립 심화</td>
+                                    <td>정치</td>
+                                    <td>
+                                        <span class="badge bg-success-lighten text-success">발행됨</span>
+                                    </td>
+                                    <td>2025-04-18</td>
+                                    <td>7,256</td>
+                                    <td>286</td>
+                                    <td>
+                                        <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
+                                        <a href="javascript:void(0);" class="action-icon delete-confirm"> <i class="mdi mdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="video-3">
+                                            <label class="form-check-label" for="video-3">&nbsp;</label>
+                                        </div>
+                                    </td>
+                                    <td>3</td>
+                                    <td>
+                                        <img src="/assets/images/video-thumb-3.jpg" alt="썸네일" class="rounded" width="48">
+                                    </td>
+                                    <td>전문가들이 말하는 한반도 핵무장 시나리오</td>
+                                    <td>안보</td>
+                                    <td>
+                                        <span class="badge bg-success-lighten text-success">발행됨</span>
+                                    </td>
+                                    <td>2025-04-10</td>
+                                    <td>6,853</td>
+                                    <td>247</td>
+                                    <td>
+                                        <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
+                                        <a href="javascript:void(0);" class="action-icon delete-confirm"> <i class="mdi mdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="video-4">
+                                            <label class="form-check-label" for="video-4">&nbsp;</label>
+                                        </div>
+                                    </td>
+                                    <td>4</td>
+                                    <td>
+                                        <img src="/assets/images/video-thumb-4.jpg" alt="썸네일" class="rounded" width="48">
+                                    </td>
+                                    <td>부동산 정책 변화, 어떻게 대응해야 할까?</td>
+                                    <td>경제</td>
+                                    <td>
+                                        <span class="badge bg-success-lighten text-success">발행됨</span>
+                                    </td>
+                                    <td>2025-04-15</td>
+                                    <td>5,742</td>
+                                    <td>198</td>
+                                    <td>
+                                        <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
+                                        <a href="javascript:void(0);" class="action-icon delete-confirm"> <i class="mdi mdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="video-5">
+                                            <label class="form-check-label" for="video-5">&nbsp;</label>
+                                        </div>
+                                    </td>
+                                    <td>5</td>
+                                    <td>
+                                        <img src="/assets/images/video-thumb-5.jpg" alt="썸네일" class="rounded" width="48">
+                                    </td>
+                                    <td>청년 정치 참여, 현실과 과제</td>
+                                    <td>사회</td>
+                                    <td>
+                                        <span class="badge bg-warning-lighten text-warning">임시저장</span>
+                                    </td>
+                                    <td>2025-04-12</td>
+                                    <td>4,928</td>
+                                    <td>175</td>
+                                    <td>
+                                        <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
+                                        <a href="javascript:void(0);" class="action-icon delete-confirm"> <i class="mdi mdi-delete"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div> <!-- end card-body-->
+            </div> <!-- end card-->
+        </div> <!-- end col -->
+    </div>
+    <!-- end row -->
+
+    <!-- 페이지네이션 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="pagination justify-content-center">
+                <nav>
+                    <ul class="pagination pagination-rounded">
+                        <li class="page-item">
+                            <a class="page-link" href="javascript: void(0);" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="javascript: void(0);">1</a></li>
+                        <li class="page-item"><a class="page-link" href="javascript: void(0);">2</a></li>
+                        <li class="page-item"><a class="page-link" href="javascript: void(0);">3</a></li>
+                        <li class="page-item"><a class="page-link" href="javascript: void(0);">4</a></li>
+                        <li class="page-item"><a class="page-link" href="javascript: void(0);">5</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="javascript: void(0);" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <!-- end pagination -->
+    
+</th:block>
+
+<th:block th:fragment="scripts">
+    <!-- Datatable js -->
+    <script th:src="@{/assets/admin/js/vendor/jquery.dataTables.min.js}"></script>
+    <script th:src="@{/assets/admin/js/vendor/dataTables.bootstrap5.min.js}"></script>
+    <script th:src="@{/assets/admin/js/vendor/dataTables.responsive.min.js}"></script>
+    
+    <!-- Datatable Init js -->
+    <script>
+        $(document).ready(function() {
+            // 데이터테이블 초기화
+            $('#videos-datatable').DataTable({
+                responsive: true,
+                info: false,
+                ordering: true,
+                paging: false,
+                language: {
+                    search: "검색:",
+                    zeroRecords: "검색 결과가 없습니다.",
+                }
+            });
+            
+            // 전체 선택 체크박스
+            $("#checkAll").click(function() {
+                $('.form-check-input').prop('checked', this.checked);
+            });
+            
+            // 삭제 확인 다이얼로그
+            $(".delete-confirm").click(function(e) {
+                e.preventDefault();
+                if (confirm("정말 이 비디오를 삭제하시겠습니까?")) {
+                    // 삭제 처리 로직
+                    console.log("삭제 처리");
+                }
+            });
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

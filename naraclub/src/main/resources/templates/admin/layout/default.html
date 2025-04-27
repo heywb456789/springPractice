@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="html(title, content, customCSS, customJS, activeMenu, activeSubmenu)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">Spark Admin</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/assets/admin/css/common.css}" rel="stylesheet">
+
+    <!-- Page specific CSS -->
+    <th:block th:replace="${customCSS} ?: ~{}"></th:block>
+</head>
+<body>
+<div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <div class="app-brand">
+                <a href="/admin/dashboard">
+                    <div class="brand-logo">
+                        <i class="fas fa-heartbeat text-white"></i>
+                    </div>
+                    <span class="brand-name">Spark</span>
+                </a>
+            </div>
+            <div class="user-info text-center mt-3">
+                <div class="user-avatar">
+                    <img th:src="${userAvatar} ?: @{/assets/admin/images/default-avatar.png}" alt="User Avatar" class="rounded-circle">
+                </div>
+                <div class="user-details mt-2">
+                    <h6 class="user-name" th:text="${userName} ?: 'Linda Miller'">Linda Miller</h6>
+                    <p class="user-role text-muted" th:text="${userRole} ?: 'Front-end Developer'">Front-end Developer</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <h6 class="menu-category">Main</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'dashboards'} ? 'active'" href="/admin/dashboard">
+                        <i class="fas fa-home menu-icon"></i>
+                        <span>Dashboards</span>
+                        <i class="fas fa-chevron-down menu-arrow"></i>
+                    </a>
+                    <ul class="submenu collapse" th:classappend="${activeMenu == 'dashboards'} ? 'show'">
+                        <li><a th:classappend="${activeSubmenu == 'default'} ? 'active'" href="/admin/dashboard">Default</a></li>
+                        <li><a th:classappend="${activeSubmenu == 'analytics'} ? 'active'" href="/admin/dashboard/analytics">Analytics</a></li>
+                        <li><a th:classappend="${activeSubmenu == 'ecommerce'} ? 'active'" href="/admin/dashboard/ecommerce">E-commerce</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'board'} ? 'active'" href="/admin/board">
+                        <i class="fas fa-clipboard menu-icon"></i>
+                        <span>Board</span>
+                        <i class="fas fa-chevron-down menu-arrow"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'news'} ? 'active'" href="/admin/news">
+                        <i class="fas fa-newspaper menu-icon"></i>
+                        <span>News</span>
+                        <i class="fas fa-chevron-down menu-arrow"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'video'} ? 'active'" href="/admin/video">
+                        <i class="fas fa-video menu-icon"></i>
+                        <span>Video</span>
+                        <i class="fas fa-chevron-down menu-arrow"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'vote'} ? 'active'" href="/admin/vote">
+                        <i class="fas fa-vote-yea menu-icon"></i>
+                        <span>Vote</span>
+                        <i class="fas fa-chevron-down menu-arrow"></i>
+                    </a>
+                </li>
+            </ul>
+
+            <h6 class="menu-category">Elements</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'user-interface'} ? 'active'" href="#">
+                        <i class="fas fa-desktop menu-icon"></i>
+                        <span>User Interface</span>
+                        <i class="fas fa-chevron-down menu-arrow"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'charts'} ? 'active'" href="#">
+                        <i class="fas fa-chart-pie menu-icon"></i>
+                        <span>Charts</span>
+                        <span class="badge bg-primary rounded-pill ms-auto">New</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'forms'} ? 'active'" href="#">
+                        <i class="fas fa-pen-to-square menu-icon"></i>
+                        <span>Forms</span>
+                        <i class="fas fa-chevron-down menu-arrow"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${activeMenu == 'tables'} ? 'active'" href="#">
+                        <i class="fas fa-table menu-icon"></i>
+                        <span>Tables</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div id="content">
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light topbar">
+            <div class="container-fluid">
+                <button type="button" id="sidebarCollapse" class="btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div class="search-bar">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search projects...">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="#" role="button">
+                            <i class="fas fa-envelope"></i>
+                            <span class="badge bg-danger rounded-pill position-absolute">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="#" role="button">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge bg-danger rounded-pill position-absolute">5</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="#" role="button">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <th:block th:replace="${content}"></th:block>
+        </div>
+    </div>
+</div>
+
+<!-- Core JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+
+<!-- Custom JS -->
+<script th:src="@{/assets/admin/js/common.js}"></script>
+
+<!-- Page specific JS -->
+<th:block th:replace="${customJS} ?: ~{}"></th:block>
+</body>
+</html>

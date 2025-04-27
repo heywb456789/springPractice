@@ -15,8 +15,8 @@ public class BoardPostHotScheduler {
     private final BoardPostRepository repo;
 
     @Transactional
-//    @Scheduled(cron = "0 0 0 * * *")  // 매일 자정
-    @Scheduled(cron = "30 0/1 * * * *")  // test 매1분30초
+    @Scheduled(cron = "0 0 0 * * *")  // 매일 자정
+//    @Scheduled(cron = "30 0/1 * * * *")  // test 매1분30초
     public void updateBoardHotPosts() {
         repo.resetAllHotFlags();
 
