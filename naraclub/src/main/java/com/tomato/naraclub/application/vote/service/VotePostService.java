@@ -4,6 +4,7 @@ import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.application.vote.dto.VoteListRequest;
 import com.tomato.naraclub.application.vote.dto.VotePostResponse;
 import com.tomato.naraclub.common.dto.ListDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -16,9 +17,9 @@ import org.springframework.data.domain.Pageable;
  */
 public interface VotePostService {
 
-    ListDTO<VotePostResponse> getList(VoteListRequest request, Pageable pageable);
+    ListDTO<VotePostResponse> getList(MemberUserDetails userDetails, VoteListRequest request, Pageable pageable);
 
-    VotePostResponse getVoteDetailById(Long id, MemberUserDetails userDetails);
+    VotePostResponse getVoteDetailById(Long id, MemberUserDetails userDetails, HttpServletRequest request);
 
     Long createVoteRecord(Long votePostId, Long voteOptionId, MemberUserDetails user);
 }

@@ -224,3 +224,21 @@
   border-color: #4263eb;
   background-color: #fff;
 }
+
+/* 공유 모달 버튼 크기·정렬 */
+.share-modal-btn {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 5px;
+}
+
+/* 모달 전체 모양 약간 둥글게 */
+#shareModal .modal-content {
+  border-radius: 12px;
+}

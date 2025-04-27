@@ -4,12 +4,16 @@
 
 import { authFetch, optionalAuthFetch, handleTokenRefresh } from '../commonFetch.js';
 
+let shareModal;
+
 document.addEventListener('DOMContentLoaded', function () {
   // 뒤로가기 버튼 이벤트
   initBackButton();
 
   // 액션 버튼 이벤트 (좋아요, 공유 등)
   initActionButtons();
+
+  initShareModal();
 
   // 게시글 데이터 로드
   loadPostData();
@@ -45,11 +49,84 @@ function initActionButtons() {
     likeButton.addEventListener('click', () => toggleLike(likeButton));
   }
 
-  // 공유 버튼
-  const shareButton = document.querySelector('.share-button');
-  if (shareButton) {
-    shareButton.addEventListener('click', sharePost);
+  const shareButton = document.getElementById('openShareModal');
+    if (shareButton) {
+      shareButton.addEventListener('click', () => {
+        shareModal.show();
+      });
+    }
+}
+
+/** 공유 모달 인스턴스 생성 및 내부 버튼 이벤트 **/
+function initShareModal() {
+  // Bootstrap Modal 인스턴스
+  const modalEl = document.getElementById('shareModal');
+  shareModal = new bootstrap.Modal(modalEl);
+
+  const shareUrl  = window.location.href;
+  const title     = document.querySelector('.post-title')?.textContent || '게시글 공유';
+
+  // 1) 카카오톡 공유
+  if (window.Kakao) {
+    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
+      document.getElementById('shareKakao').addEventListener('click', () => {
+        try {
+//          Kakao.Link.sendDefault({
+//            objectType: 'feed',
+//            content: {
+//              title,
+//              description: '',
+//              imageUrl: 'https://yourdomain.com/default-thumb.png',
+//              link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+//            },
+//          });
+            Kakao.Link.sendScrap({
+              requestUrl: window.location.href
+            });
+        } catch (e) {
+          // 카카오링크 실패 시 Web Share API 또는 클립보드 복사로 폴백
+          if (navigator.share) {
+            navigator.share({ title, url: shareUrl })
+              .catch(err => console.error('Web Share 오류:', err));
+          } else {
+            navigator.clipboard.writeText(shareUrl)
+              .then(() => alert('URL이 클립보드에 복사되었습니다.'))
+              .catch(err => console.error('클립보드 복사 오류:', err));
+          }
+        } finally {
+          shareModal.hide();
+        }
+      });
   }
+
+  // 2) X(트위터) 공유
+  document.getElementById('shareTwitter').addEventListener('click', () => {
+    const url  = encodeURIComponent(shareUrl);
+    const text = encodeURIComponent(title);
+    window.open(
+      `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
+      '_blank',
+      'width=550,height=420'
+    );
+    shareModal.hide();
+  });
+
+  // 3) 통통(커스텀) 공유
+  document.getElementById('shareTongtong').addEventListener('click', () => {
+    window.open(
+      `https://yourdomain.com/tongtong/share?url=${encodeURIComponent(shareUrl)}`,
+      '_blank'
+    );
+    shareModal.hide();
+  });
+
+  // 4) URL 복사
+  document.getElementById('copyUrl').addEventListener('click', () => {
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => alert('URL이 복사되었습니다.'))
+      .catch(() => alert('복사에 실패했습니다.'));
+    shareModal.hide();
+  });
 }
 
 /**

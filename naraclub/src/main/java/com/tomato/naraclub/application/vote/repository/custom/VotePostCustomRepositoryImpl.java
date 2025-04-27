@@ -10,6 +10,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tomato.naraclub.application.vote.code.VoteSortType;
@@ -18,8 +19,11 @@ import com.tomato.naraclub.application.vote.dto.VoteOptionDTO;
 import com.tomato.naraclub.application.vote.dto.VotePostResponse;
 import com.tomato.naraclub.application.vote.entity.QVoteOption;
 import com.tomato.naraclub.application.vote.entity.QVotePost;
+import com.tomato.naraclub.application.vote.entity.QVoteViewHistory;
 import com.tomato.naraclub.common.dto.ListDTO;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +47,29 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
     private final JPAQueryFactory query;
 
     @Override
-    public ListDTO<VotePostResponse> getList(VoteListRequest request, Pageable pageable) {
+    public ListDTO<VotePostResponse> getList(Long memberId, VoteListRequest request, Pageable pageable) {
         QVotePost vote = QVotePost.votePost;
         QVoteOption voteOption = QVoteOption.voteOption;
+        QVoteViewHistory viewHistory = QVoteViewHistory.voteViewHistory;
+
+        LocalDateTime startOfToday    = LocalDate.now().atStartOfDay();
+        LocalDateTime startOfTomorrow = startOfToday.plusDays(1);
+        BooleanExpression createdToday = vote.createdAt.goe(startOfToday)
+                .and(vote.createdAt.lt(startOfTomorrow));
+
+        BooleanExpression hasNoHistory = JPAExpressions.selectOne()
+                .from(viewHistory)
+                .where(
+                        viewHistory.reader.id.eq(memberId),
+                        viewHistory.votePost.id.eq(vote.id)
+                )
+                .exists()
+                .not();
+        //회원 비회원 분기
+        BooleanExpression isNewExpr = (memberId != null)
+                ? createdToday.and(hasNoHistory)
+                : createdToday;
+
 
         // 1) 검색·기간 조건
         Predicate condition = ExpressionUtils.allOf(
@@ -99,7 +123,7 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
                                         ).as("voteOptions"),
                                         vote.commentCount,
                                         vote.viewCount,
-                                        vote.isNew.as("new"),
+                                        isNewExpr.as("new"),
                                         vote.createdAt,
                                         vote.updatedAt
                                 )
@@ -128,7 +152,6 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
             votePost.question,
             votePost.commentCount.as("commentCount"),
             votePost.viewCount.as("viewCount"),
-            votePost.isNew.as("isNew"),
             votePost.createdAt,
             votePost.updatedAt
 //            JPAExpressions.selectOne()

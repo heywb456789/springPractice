@@ -15,5 +15,5 @@ import org.springframework.data.domain.Pageable;
  */
 public interface VotePostCustomRepository {
 
-    ListDTO<VotePostResponse> getList(VoteListRequest request, Pageable pageable);
+    ListDTO<VotePostResponse> getList(Long memberId, VoteListRequest request, Pageable pageable);
 }

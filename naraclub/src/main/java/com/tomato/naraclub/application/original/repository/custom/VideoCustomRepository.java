@@ -15,5 +15,5 @@ import org.springframework.data.domain.Pageable;
  */
 public interface VideoCustomRepository {
 
-    ListDTO<VideoResponse> getListVideo(VideoListRequest request, Pageable pageable);
+    ListDTO<VideoResponse> getListVideo(VideoListRequest request, Long memberId, Pageable pageable);
 }

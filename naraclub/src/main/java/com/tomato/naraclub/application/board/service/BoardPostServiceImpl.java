@@ -13,6 +13,8 @@ import com.tomato.naraclub.common.code.StorageCategory;
 import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.exception.APIException;
 import com.tomato.naraclub.common.util.FileStorageService;
+import com.tomato.naraclub.common.util.UserDeviceInfoUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,7 @@ public class BoardPostServiceImpl implements BoardPostService {
 
     private final BoardPostRepository boardPostRepository;
     private final BoardPostLikeRepository postLikeRepository;
+    private final BoardPostViewHistoryRepository viewHistoryRepository;
     private final MemberRepository memberRepository;
     private final FileStorageService imageService;
 
@@ -36,13 +39,22 @@ public class BoardPostServiceImpl implements BoardPostService {
     private String displayUrl;
 
     @Override
-    public ListDTO<BoardPostResponse> listPosts(BoardListRequest request, Pageable pageable) {
-        return boardPostRepository.getBoardPostList(request, pageable);
+    public ListDTO<BoardPostResponse> listPosts(MemberUserDetails userDetails, BoardListRequest request, Pageable pageable) {
+        Long memberId = Optional.ofNullable(userDetails)
+                .map(ud -> ud.getMember().getId())
+                .orElse(null);
+        return boardPostRepository.getBoardPostList(memberId, request, pageable);
     }
 
     @Override
     @Transactional
-    public BoardPostResponse getPost(Long postId, MemberUserDetails userDetails) {
+    public BoardPostResponse getPost(Long postId, MemberUserDetails userDetails, HttpServletRequest request ) {
+
+        // 0) 요청에서 IP, User-Agent, deviceType 파싱
+        String ip         = UserDeviceInfoUtil.extractClientIp(request);
+        String userAgent  = UserDeviceInfoUtil.defaultString(request.getHeader("User-Agent"));
+        String deviceType = UserDeviceInfoUtil.determineDeviceType(userAgent);
+
         // 1) 로그인 정보 있으면 좋아요 여부 내려주기
         Optional<Member> memberOpt = Optional.ofNullable(userDetails)
             .flatMap(ud -> memberRepository.findByIdAndStatus(ud.getMember().getId(), MemberStatus.ACTIVE));
@@ -52,8 +64,20 @@ public class BoardPostServiceImpl implements BoardPostService {
             .orElseThrow(() -> new APIException(ResponseStatus.BOARD_POST_NOT_EXIST));
 
         // 3) 조회수 증가
-        post.setViews(post.getViews() + 1);
-        boardPostRepository.save(post);
+        post.increaseViewCount();
+        //비회원 조회도 전체 조회수는 업데이트 회원이면 접근 기록 저장
+        memberOpt.ifPresent(member -> {
+            viewHistoryRepository.save(
+                    BoardPostViewHistory.builder()
+                            .reader(member)
+                            .boardPost(post)
+                            .viewedAt(LocalDateTime.now())
+                            .ipAddress(ip)
+                            .userAgent(userAgent)
+                            .deviceType(deviceType)
+                            .build()
+            );
+        });
 
         // 1) 4) 내가 좋아요 했는지 여부
         boolean isLike = memberOpt
@@ -80,7 +104,6 @@ public class BoardPostServiceImpl implements BoardPostService {
             .views(0)
             .likes(0)
             .shareCount(0)
-            .isNew(true)
             .isHot(false)
             .createdAt(LocalDateTime.now())
             .build();
@@ -118,7 +141,6 @@ public class BoardPostServiceImpl implements BoardPostService {
             .orElseThrow(() -> new APIException(ResponseStatus.BOARD_POST_NOT_EXIST));
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setNew(false);
         return boardPostRepository.save(post).convertDTO();
     }
 

@@ -4,13 +4,19 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tomato.naraclub.application.original.dto.VideoListRequest;
 import com.tomato.naraclub.application.original.dto.VideoResponse;
 import com.tomato.naraclub.application.original.entity.QVideo;
+import com.tomato.naraclub.application.original.entity.QVideoViewHistory;
 import com.tomato.naraclub.common.dto.ListDTO;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
@@ -28,54 +34,79 @@ public class VideoCustomRepositoryImpl implements VideoCustomRepository {
     private final JPAQueryFactory query;
 
     @Override
-    public ListDTO<VideoResponse> getListVideo(VideoListRequest request, Pageable pageable) {
+    public ListDTO<VideoResponse> getListVideo(VideoListRequest request, Long memberId, Pageable pageable) {
         QVideo video = QVideo.video;
+        QVideoViewHistory viewHistory = QVideoViewHistory.videoViewHistory;
 
         // 1) 검색·기간 조건을 하나의 BooleanExpression 으로 결합
         // Predicate 로 선언
         Predicate condition = ExpressionUtils.allOf(
-            request.getSearchCondition(),
-            request.isPublishedAfter(video.publishedAt),
-            request.getOriginalTypeCondition(video),
-            request.isPeriod(video.createdAt)
+                request.getSearchCondition(),
+                request.isPublishedAfter(video.publishedAt),
+                request.getOriginalTypeCondition(video),
+                request.isPeriod(video.createdAt)
         );
 
         // 2) countQuery: 전체 건수 조회
         JPAQuery<Long> countQuery = query
-            .select(video.count())
-            .from(video)
-            .where(condition);
+                .select(video.count())
+                .from(video)
+                .where(condition);
 
         // 3) contentQuery: 실제 페이지 데이터 조회
-        List<VideoResponse> content = query
-            .select(getVideoFields())
-            .from(video)
-            .where(condition)
-            .orderBy(request.getSortOrder())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
+        JPAQuery<VideoResponse> selectQuery = query
+                .select(getVideoFields(memberId, video, viewHistory))
+                .from(video);
+
+        if (memberId != null) {
+            selectQuery.leftJoin(viewHistory)
+                    .on(
+                        viewHistory.reader.id.eq(memberId),
+                        viewHistory.video.id.eq(video.id)
+                    );
+        }
+
+        List<VideoResponse> content = selectQuery
+                .where(condition)
+                .orderBy(request.getSortOrder())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
 
         // 4) DTO 변환
         return ListDTO.of(countQuery, content, pageable);
     }
 
-    private QBean<VideoResponse> getVideoFields() {
-        QVideo video = QVideo.video;
+    private QBean<VideoResponse> getVideoFields(Long memberId, QVideo video, QVideoViewHistory viewHistory) {
+        LocalDateTime startOfToday    = LocalDate.now().atStartOfDay();
+        LocalDateTime startOfTomorrow = startOfToday.plusDays(1);
+
+        BooleanExpression createdToday = video.createdAt.goe(startOfToday)
+                .and(video.createdAt.lt(startOfTomorrow));
+        BooleanExpression noHistory    = viewHistory.id.isNull();
+
+        // isNew 식만 분기
+        BooleanExpression isNewExpr = (memberId == null
+                ? createdToday
+                : createdToday.and(noHistory)
+        );
+
+
         return Projections.fields(
-            VideoResponse.class,
-            video.id.as("videoId"),
-            video.title,
-            video.description,
-            video.type,
-            video.category,
-            video.thumbnailUrl,
-            video.videoUrl,
-            video.durationSec,
-            video.viewCount,
-            video.isPublic.as("isPublic"),
-            video.publishedAt,
-            video.isHot.as("isHot")
+                VideoResponse.class,
+                video.id.as("videoId"),
+                video.title,
+                video.description,
+                video.type,
+                video.category,
+                video.thumbnailUrl,
+                video.videoUrl,
+                video.durationSec,
+                video.viewCount,
+                video.isPublic.as("isPublic"),
+                video.publishedAt,
+                video.isHot.as("isHot"),
+                isNewExpr.as("isNew")
         );
     }
 

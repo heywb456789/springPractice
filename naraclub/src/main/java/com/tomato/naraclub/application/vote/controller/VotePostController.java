@@ -7,6 +7,7 @@ import com.tomato.naraclub.application.vote.dto.VotePostResponse;
 import com.tomato.naraclub.application.vote.service.VotePostService;
 import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.dto.ResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,17 +37,20 @@ public class VotePostController {
     @GetMapping
     public ResponseDTO<ListDTO<VotePostResponse>> getList(
         VoteListRequest request,
+        @AuthenticationPrincipal MemberUserDetails userDetails,
         @RequestParam(name = "page", defaultValue = "0") int page,
         @RequestParam(name = "size", defaultValue = "6") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseDTO.ok(voteService.getList(request, pageable));
+        return ResponseDTO.ok(voteService.getList(userDetails, request, pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseDTO<VotePostResponse> getDetail(@PathVariable Long id, @AuthenticationPrincipal
-        MemberUserDetails userDetails) {
-        return ResponseDTO.ok(voteService.getVoteDetailById(id, userDetails));
+    public ResponseDTO<VotePostResponse> getDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            HttpServletRequest request) {
+        return ResponseDTO.ok(voteService.getVoteDetailById(id, userDetails, request));
     }
 
     @PostMapping("/{id}/options/{optionId}")

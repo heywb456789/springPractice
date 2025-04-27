@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/validate").authenticated()
 
                 // 2) 로그인·리프레시는 누구나 (토큰 없어도) 허용
-                .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/board/**","/api/vote/**")
+                .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/board/**", "/api/vote/**", "/api/videos/**")
                 .permitAll()
 
                 // 3) swagger, 정적 리소스 등

@@ -1,13 +1,11 @@
 package com.tomato.naraclub.application.vote.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tomato.naraclub.application.vote.entity.VoteRecord;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 
 /**
  * @author : MinjaeKim
@@ -17,8 +15,7 @@ import lombok.Setter;
  * @description :
  * @AUTHOR : MinjaeKim
  */
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

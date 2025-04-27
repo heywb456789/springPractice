@@ -28,4 +28,5 @@ public class VideoResponse {
     private LocalDateTime publishedAt;
     private boolean isPublic;
     private boolean isHot;
+    private boolean isNew;
 }

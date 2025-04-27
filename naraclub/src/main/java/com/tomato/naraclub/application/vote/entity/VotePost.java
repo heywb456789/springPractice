@@ -62,9 +62,9 @@ public class VotePost extends Audit {
     @Column(nullable = false)
     private long shareCount;
 
-    @Comment("신규 여부")
-    @Column(name = "is_new", nullable = false, columnDefinition = "TINYINT(1) default 0")
-    private boolean isNew;
+//    @Comment("신규 여부")
+//    @Column(name = "is_new", nullable = false, columnDefinition = "TINYINT(1) default 0")
+//    private boolean isNew;
 
     public void increment() {
         this.voteCount++;
@@ -72,6 +72,10 @@ public class VotePost extends Audit {
 
     public void incrementCommentCount() {
         this.commentCount++;
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
     }
 
     public VotePostResponse convertDTO(Boolean isVoted, Long votedId) {
@@ -90,7 +94,6 @@ public class VotePost extends Audit {
             .question(question)
             .commentCount(commentCount)
             .viewCount(viewCount)
-            .isNew(isNew)
             .isVoted(isVoted != null && isVoted)
             .votedId(votedId == null ? 0L : votedId)
             .voteCount(voteCount)

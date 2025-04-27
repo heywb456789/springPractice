@@ -2,12 +2,15 @@ package com.tomato.naraclub.application.original.controller;
 
 import com.tomato.naraclub.application.original.dto.*;
 import com.tomato.naraclub.application.original.service.VideoService;
+import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.dto.ResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,15 +32,18 @@ public class VideoController {
     @GetMapping
     public ResponseDTO<ListDTO<VideoResponse>> getListVideo(
         VideoListRequest request,
+        @AuthenticationPrincipal MemberUserDetails userDetails,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
-    ) {
+        @RequestParam(defaultValue = "10") int size) {
         Pageable pg = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "publishedAt"));
-        return ResponseDTO.ok(videoService.getListVideo(request, pg));
+        return ResponseDTO.ok(videoService.getListVideo(request, userDetails, pg));
     }
 
     @GetMapping("/{id}")
-    public ResponseDTO<VideoResponse> getVideoDetail(@PathVariable Long id) {
-        return ResponseDTO.ok(videoService.getVideoDetail(id));
+    public ResponseDTO<VideoResponse> getVideoDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            HttpServletRequest request) {
+        return ResponseDTO.ok(videoService.getVideoDetail(id, userDetails, request));
     }
 }

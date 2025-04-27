@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.vote.service;
 
 import com.tomato.naraclub.application.board.entity.BoardPost;
 import com.tomato.naraclub.application.board.entity.BoardPostLike;
+import com.tomato.naraclub.application.board.entity.BoardPostViewHistory;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.security.MemberUserDetails;
@@ -10,14 +11,20 @@ import com.tomato.naraclub.application.vote.dto.VotePostResponse;
 import com.tomato.naraclub.application.vote.entity.VoteOption;
 import com.tomato.naraclub.application.vote.entity.VotePost;
 import com.tomato.naraclub.application.vote.entity.VoteRecord;
+import com.tomato.naraclub.application.vote.entity.VoteViewHistory;
 import com.tomato.naraclub.application.vote.repository.VoteOptionRepository;
 import com.tomato.naraclub.application.vote.repository.VotePostRepository;
 import com.tomato.naraclub.application.vote.repository.VoteRecordRepository;
+import com.tomato.naraclub.application.vote.repository.VoteViewHistoryRepository;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.ResponseStatus;
 import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.exception.APIException;
+import com.tomato.naraclub.common.util.UserDeviceInfoUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,15 +47,24 @@ public class VotePostServiceImpl implements VotePostService {
     private final VotePostRepository votePostRepository;
     private final VoteRecordRepository voteRecordRepository;
     private final VoteOptionRepository voteOptionRepository;
+    private final VoteViewHistoryRepository viewHistoryRepository;
     private final MemberRepository memberRepository;
 
     @Override
-    public ListDTO<VotePostResponse> getList(VoteListRequest request, Pageable pageable) {
-        return votePostRepository.getList(request, pageable);
+    public ListDTO<VotePostResponse> getList(MemberUserDetails userDetails, VoteListRequest request, Pageable pageable) {
+        Long memberId = Optional.ofNullable(userDetails)
+                .map(ud -> ud.getMember().getId())
+                .orElse(null);
+        return votePostRepository.getList(memberId, request, pageable);
     }
 
     @Override
-    public VotePostResponse getVoteDetailById(Long id, MemberUserDetails userDetails) {
+    public VotePostResponse getVoteDetailById(Long id, MemberUserDetails userDetails, HttpServletRequest request) {
+        // 0) 요청에서 IP, User-Agent, deviceType 파싱
+        String ip         = UserDeviceInfoUtil.extractClientIp(request);
+        String userAgent  = UserDeviceInfoUtil.defaultString(request.getHeader("User-Agent"));
+        String deviceType = UserDeviceInfoUtil.determineDeviceType(userAgent);
+
         // 1) 로그인 정보 있으면 좋아요 여부 내려주기
         Optional<Member> member = Optional.ofNullable(userDetails)
             .flatMap(ud -> memberRepository.findByIdAndStatus(ud.getMember().getId(),
@@ -59,7 +75,20 @@ public class VotePostServiceImpl implements VotePostService {
             .orElseThrow(() -> new APIException(ResponseStatus.VOTE_POST_NOT_EXIST));
 
         //3) 조회수 증가 TODO : 무지성 접속에 대한 조회수 증가가 맞는지 ?
-        vote.setViewCount(vote.getViewCount() + 1);
+        vote.incrementViewCount();
+
+        member.ifPresent(m -> {
+            viewHistoryRepository.save(
+                    VoteViewHistory.builder()
+                            .reader(m)
+                            .votePost(vote)
+                            .viewedAt(LocalDateTime.now())
+                            .ipAddress(ip)
+                            .userAgent(userAgent)
+                            .deviceType(deviceType)
+                            .build()
+            );
+        });
 
         // 4) 이 회원이 이미 투표했는지, 했다면 어떤 옵션인지 조회
         Optional<VoteRecord> recordOpt = member.flatMap(m ->

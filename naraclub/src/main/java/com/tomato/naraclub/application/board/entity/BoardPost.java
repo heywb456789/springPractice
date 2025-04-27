@@ -64,10 +64,6 @@ public class BoardPost extends Audit {
     @Column(nullable = false)
     private int shareCount;
 
-    @Comment("신규 여부")
-    @Column(name = "is_new", nullable = false, columnDefinition = "TINYINT(1) default 0")
-    private boolean isNew;
-
     @Comment("핫 여부")
     @Column(name = "is_hot", nullable = false, columnDefinition = "TINYINT(1) default 0")
     private boolean isHot;
@@ -75,6 +71,10 @@ public class BoardPost extends Audit {
     @Comment("이미지 목록")
     @OneToMany(mappedBy = "boardPost", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardPostImage> images;
+
+    public void increaseViewCount(){
+        this.views++;
+    }
 
     public BoardPostResponse convertDTO() {
         return BoardPostResponse.builder()
@@ -94,7 +94,6 @@ public class BoardPost extends Audit {
             .views(views)
             .likes(likes)
             .shareCount(shareCount)
-            .isNew(isNew)
             .isHot(isHot)
             .createdAt(createdAt)
             .build();
@@ -118,7 +117,6 @@ public class BoardPost extends Audit {
             .views(views)
             .likes(likes)
             .shareCount(shareCount)
-            .isNew(isNew)
             .isHot(isHot)
             .createdAt(createdAt)
             .isLike(isLike)
