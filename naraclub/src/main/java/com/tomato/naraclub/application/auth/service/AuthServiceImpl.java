@@ -7,17 +7,16 @@ import com.tomato.naraclub.application.auth.repository.RefreshTokenRepository;
 import com.tomato.naraclub.application.oneld.dto.OneIdResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
-import com.tomato.naraclub.application.security.JwtTokenProvider;
+import com.tomato.naraclub.common.security.JwtTokenProvider;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.MemberRole;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.exception.UnAuthorizationException;
 import com.tomato.naraclub.common.util.InviteCodeGenerator;
+import com.tomato.naraclub.common.util.UserDeviceInfoUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -68,13 +67,15 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = tokenProvider.createRefreshToken(member, authRequest.isAutoLogin());
 
         LocalDateTime expiryDate = tokenProvider.getExpirationDate(refreshToken);
+        String userAgent  = UserDeviceInfoUtil.defaultString(servletRequest.getHeader("User-Agent"));
+
         refreshTokenRepository.save(RefreshToken.builder()
                 .member(member)
                 .refreshToken(refreshToken)
                 .expiryDate(expiryDate)
-                .ipAddress(servletRequest.getRemoteAddr())  // IP 주소 가져오기
-                .deviceType(servletRequest.getHeader("Device-Type"))  // Custom 헤더 또는 파싱
-                .userAgent(servletRequest.getHeader("User-Agent"))
+                .ipAddress(UserDeviceInfoUtil.extractClientIp(servletRequest))  // IP 주소 가져오기
+                .deviceType(UserDeviceInfoUtil.determineDeviceType(userAgent))  // Custom 헤더 또는 파싱
+                .userAgent(userAgent)
                 .lastUsedAt(LocalDateTime.now())
                 .build());
 

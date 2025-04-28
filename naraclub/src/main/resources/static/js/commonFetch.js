@@ -36,6 +36,7 @@ export async function handleTokenRefresh() {
   localStorage.setItem('accessToken', data.response.token);
 }
 
+
 /**
  * 1) 인증이 필수인 API 호출용
  *   - 토큰 없으면 바로 에러
@@ -114,4 +115,71 @@ export async function optionalAuthFetch(url, options = {}) {
     throw new Error(`HTTP ${res.status}`);
   }
   return res;
+}
+
+
+//############# admin ###################
+
+export async function adminAuthFetch(url, options = {}) {
+  const token = localStorage.getItem('adminAccessToken');
+  if (!token) {
+    throw new Error('Unauthorized');
+  }
+  // 1) 기본 헤더 세팅
+  let headers = {
+    // JSON 바디일 때만 Content-Type
+    ...(options.body instanceof FormData
+      ? {}
+      : { 'Content-Type': options.contentType || 'application/json' }
+    ),
+    'Authorization': `Bearer ${token}`,
+    // 사용자가 직접 넘긴 추가 헤더
+    ...(options.headers || {})
+  };
+
+  // 2) 첫 호출
+  let res = await fetch(url, {
+    method: options.method || 'GET',
+    headers,
+    credentials: 'include',
+    body: options.body
+  });
+
+  // 토큰 만료
+  if (res.status === 401) {
+    await adminHandleTokenRefresh();            // refresh 시도
+    const newToken = localStorage.getItem('adminAccessToken');
+    headers.Authorization = `Bearer ${newToken}`;
+
+    res = await fetch(url, {
+      method: options.method || 'GET',
+      headers,
+      credentials: 'include',
+      body: options.body
+    });
+  }
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return res;
+}
+
+
+export async function adminHandleTokenRefresh() {
+  const refreshToken = localStorage.getItem('adminRefreshToken');
+  const res = await fetch('/admin/auth/refresh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  if (!res.ok) {
+    localStorage.clear();
+    window.location.href = '/admin/auth/login';
+    throw new Error('세션이 만료되었습니다. 다시 로그인 해주세요.');
+  }
+
+  const data = await res.json();
+  localStorage.setItem('adminAccessToken', data.response.token);
 }

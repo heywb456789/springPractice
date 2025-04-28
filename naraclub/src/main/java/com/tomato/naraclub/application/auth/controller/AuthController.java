@@ -9,7 +9,6 @@ import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.oneld.dto.OneIdResponse;
 import com.tomato.naraclub.application.oneld.dto.OneIdVerifyResponse;
 import com.tomato.naraclub.application.oneld.service.TomatoAuthService;
-import com.tomato.naraclub.application.security.JwtTokenProvider;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.ResponseStatus;
 import com.tomato.naraclub.common.dto.ResponseDTO;

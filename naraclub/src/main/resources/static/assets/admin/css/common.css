@@ -318,3 +318,15 @@ a:hover {
     display: none;
   }
 }
+
+/* common.css */
+.sidebar-header .user-info {
+  padding: .75rem 1.5rem;
+}
+.topbar .nav-link i.fa-sign-out-alt {
+  font-size: 1.1rem;
+  color: var(--dark-color);
+}
+.topbar .nav-link:hover i.fa-sign-out-alt {
+  color: var(--danger-color);
+}

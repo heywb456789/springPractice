@@ -23,6 +23,7 @@ public enum ResponseStatus {
   WITHDRAWAL_USER("ER_1002", "탈퇴한 회원입니다. 재가입 해주세요.", HttpStatus.UNAUTHORIZED),
   FORBIDDEN("ER_1003", "권한이 없는 사용자입니다.", HttpStatus.FORBIDDEN),
   UNAUTHORIZED("ER_1004", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
+  UNAUTHORIZED_ID_PW("ER_1005", "아이디 비밀번호를 확인해주세요.", HttpStatus.UNAUTHORIZED),
 
   BOARD_POST_NOT_EXIST("ER_2001", "게시글이 없습니다. 잘못 된 요청입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   ALREADY_LIKED("ER_2002","이미 좋아요 처리가 되었습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
