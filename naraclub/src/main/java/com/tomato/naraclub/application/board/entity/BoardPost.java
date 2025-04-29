@@ -43,7 +43,7 @@ public class BoardPost extends Audit {
     private String title;
 
     @Comment("상세 내용")
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(nullable = false, length = 2000)
     private String content;
 
     @Comment("댓글 목록")
