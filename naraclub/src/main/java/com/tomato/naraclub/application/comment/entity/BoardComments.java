@@ -43,6 +43,9 @@ public class BoardComments extends Audit {
     @JoinColumn(name = "board_post_id", nullable = false)
     private BoardPost boardPost;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
     public CommentResponse convertDTO() {
         return CommentResponse.builder()
             .commentId(id)

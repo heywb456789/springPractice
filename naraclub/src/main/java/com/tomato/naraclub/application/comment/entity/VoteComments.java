@@ -40,6 +40,9 @@ public class VoteComments extends Audit {
     @JoinColumn(name = "vote_post_id", nullable = false)
     private VotePost votePost;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
     public CommentResponse convertDTO() {
         return CommentResponse.builder()
                 .commentId(id)

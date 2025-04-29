@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.tomato.naraclub.application.board.code.BoardSearchType;
 import com.tomato.naraclub.application.board.code.BoardSortType;
+import com.tomato.naraclub.application.board.entity.QBoardPost;
 import com.tomato.naraclub.application.original.code.VideoSortType;
 import com.tomato.naraclub.common.interfaces.SearchTypeRequest;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -75,6 +76,11 @@ public class BoardListRequest implements SearchTypeRequest {
             return null;
         }
         return searchType.getExpression().apply(searchText.trim());
+    }
+
+    @Hidden
+    public BooleanExpression getIsNotDeleted(){
+        return QBoardPost.boardPost.deleted.eq(false);
     }
 
 }

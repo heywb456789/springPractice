@@ -31,6 +31,7 @@
 
 #boardTable {
   margin-bottom: 1rem;
+  background-color: #fff;
 }
 
 #boardTable thead th {
@@ -47,22 +48,32 @@
 #boardTable tbody td {
   padding: 0.75rem;
   vertical-align: middle;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid #ededed;
   text-align: center;
 }
 
-#boardTable tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+/* 줄무늬 스타일 제거 */
+.table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: transparent !important;
 }
 
 /* 선택된 행 스타일 */
-#boardTable tbody tr.selected {
-  background-color: rgba(44, 123, 229, 0.1);
+#boardTable tbody tr.table-active {
+  background-color: rgba(44, 123, 229, 0.08) !important;
+}
+
+#boardTable tbody tr {
+  transition: background-color 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+#boardTable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 /* 제목 정렬 */
 .board-title {
-  text-align: left;
+  text-align: left !important;
 }
 
 .board-title a {

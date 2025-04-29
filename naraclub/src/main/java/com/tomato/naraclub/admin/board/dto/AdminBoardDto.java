@@ -1,5 +1,6 @@
 package com.tomato.naraclub.admin.board.dto;
 
+import com.tomato.naraclub.application.comment.dto.CommentResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ public class AdminBoardDto {
     private String title;
     private String content;
     private List<String> imageUrls;
+    private List<CommentResponse> comments;
     private long commentCount;
     private int views;
     private int likes;

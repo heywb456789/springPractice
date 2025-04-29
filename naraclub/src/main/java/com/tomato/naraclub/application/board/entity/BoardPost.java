@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.board.entity;
 
+import com.tomato.naraclub.admin.board.dto.AdminBoardDto;
 import com.tomato.naraclub.application.board.dto.BoardPostResponse;
 import com.tomato.naraclub.application.comment.entity.BoardComments;
 import com.tomato.naraclub.application.member.entity.Member;
@@ -72,6 +73,9 @@ public class BoardPost extends Audit {
     @OneToMany(mappedBy = "boardPost", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardPostImage> images;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
     public void increaseViewCount(){
         this.views++;
     }
@@ -132,6 +136,32 @@ public class BoardPost extends Audit {
             .searchCategory(SearchCategory.BOARD_POST)
             .createdAt(e.getCreatedAt())
             .redirectionUrl("/board/boardDetail.html?id=" + e.getId())
+            .build();
+    }
+
+    public AdminBoardDto convertAdminDTO() {
+        return AdminBoardDto.builder()
+            .boardId(id)
+            .authorId(author.getId())
+            .title(title)
+            .content(content)
+            .authorName(author.getName())
+            .imageUrls(
+                images == null
+                    ? List.of()
+                    : images.stream()
+                        .map(BoardPostImage::getImageUrl)
+                        .toList()
+            )
+            .comments(comments.stream()
+                .map(BoardComments::convertDTO).toList()
+            )
+            .commentCount(commentCount)
+            .views(views)
+            .likes(likes)
+            .shareCount(shareCount)
+            .isHot(isHot)
+            .createdAt(createdAt)
             .build();
     }
 }

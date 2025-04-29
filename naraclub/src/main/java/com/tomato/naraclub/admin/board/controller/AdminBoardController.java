@@ -67,20 +67,23 @@ public class AdminBoardController {
      * 게시글 상세 보기
      */
     @GetMapping("/{id}")
-    public String getBoardDetail(@PathVariable("id") Long id, Model model) {
+    public String getBoardDetail(
+        @AuthenticationPrincipal AdminUserDetails user,
+        @PathVariable("id") Long id,
+        Model model) {
         AdminBoardDto board = adminBoardService.getBoardDetail(id);
         model.addAttribute("board", board);
 
         // 페이지 제목 및 활성 메뉴 설정
-        model.addAttribute("pageTitle", board.getTitle() + " - Spark Admin");
+        model.addAttribute("pageTitle", board.getTitle());
         model.addAttribute("activeMenu", "board");
 
         // 사용자 정보 설정 (공통)
-        model.addAttribute("userName", "Linda Miller");
-        model.addAttribute("userRole", "Front-end Developer");
-        model.addAttribute("userAvatar", "/assets/admin/images/default-avatar.png");
+        model.addAttribute("userName", user.getUsername());
+        model.addAttribute("userRole", user.getAuthorities());
+//        model.addAttribute("userAvatar", "/assets/admin/images/default-avatar.png");
 
-        return "admin/boardView";
+        return "admin/board/boardDetail";
     }
 //
 //    /**

@@ -41,7 +41,8 @@ public class AdminBoardPostCustomRepositoryImpl implements AdminBoardPostCustomR
         // Predicate 로 선언
         Predicate condition = ExpressionUtils.allOf(
                 request.getSearchCondition(),
-                request.isPeriod(board.createdAt)
+                request.isPeriod(board.createdAt),
+                request.getIsNotDeleted()
         );
 
         // 2) countQuery: 전체 건수 조회

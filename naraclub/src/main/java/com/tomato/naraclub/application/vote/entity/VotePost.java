@@ -62,6 +62,9 @@ public class VotePost extends Audit {
     @Column(nullable = false)
     private long shareCount;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
 //    @Comment("신규 여부")
 //    @Column(name = "is_new", nullable = false, columnDefinition = "TINYINT(1) default 0")
 //    private boolean isNew;

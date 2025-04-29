@@ -47,6 +47,9 @@ public class VideoComments extends Audit {
     @JoinColumn(name = "video_id", nullable = false)
     private Video video;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
     public CommentResponse convertDTO() {
         return CommentResponse.builder()
                 .commentId(id)
