@@ -22,6 +22,7 @@ import lombok.*;
 public class VotePostResponse {
     private Long votePostId;
     private Long authorId;
+    private String authorName;
     private String question;
     private List<VoteOptionDTO> voteOptions;
     private List<VoteCommentsDTO> voteComments;
@@ -33,5 +34,7 @@ public class VotePostResponse {
     private boolean isVoted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
 }

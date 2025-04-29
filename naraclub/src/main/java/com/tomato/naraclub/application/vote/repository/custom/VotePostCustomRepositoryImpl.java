@@ -60,7 +60,7 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
         BooleanExpression hasNoHistory = JPAExpressions.selectOne()
                 .from(viewHistory)
                 .where(
-                        viewHistory.reader.id.eq(memberId),
+                        viewHistory.reader.id.eq(memberId==null ? 0L : memberId),
                         viewHistory.votePost.id.eq(vote.id)
                 )
                 .exists()
@@ -73,7 +73,7 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
 
         // 1) 검색·기간 조건
         Predicate condition = ExpressionUtils.allOf(
-                getSearchCondition(request, vote, voteOption),
+                request.getSearchCondition(),
                 request.isPeriod(vote.createdAt)
         );
 
@@ -88,7 +88,7 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
                 .select(vote.id)
                 .from(vote)
                 .where(condition)
-                .orderBy(getSortOrder(request))
+                .orderBy(request.getSortOrder())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -103,7 +103,7 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
                 .from(vote)
                 .leftJoin(vote.voteOptions, voteOption)
                 .where(vote.id.in(postIds))
-                .orderBy(getSortOrder(request))
+                .orderBy(request.getSortOrder())
                 .transform(
                         groupBy(vote.id).list(
                                 Projections.bean(
@@ -165,19 +165,5 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
         );
     }
 
-    private OrderSpecifier<?> getSortOrder(VoteListRequest request) {
-        return (request.getSortType() != null ? request.getSortType().getOrder()
-            : VoteSortType.LATEST.getOrder());
-    }
 
-    private BooleanExpression getSearchCondition(VoteListRequest request, QVotePost vote,
-        QVoteOption voteOption) {
-        if (request == null || request.getSearchText() == null || request.getSearchText().trim()
-            .isEmpty()) {
-            return null;
-        }
-        String keyword = "%" + request.getSearchText() + "%";
-        return vote.question.likeIgnoreCase(keyword)
-            .or(voteOption.optionName.likeIgnoreCase(keyword));
-    }
 }

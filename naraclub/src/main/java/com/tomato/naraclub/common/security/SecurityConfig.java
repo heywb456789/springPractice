@@ -85,7 +85,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // 3) swagger, 정적 리소스 등
-                .requestMatchers("/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/","/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(
                     "/login/**", "/main/**", "/board/**", "/components/**",
                     "/bootstrap/**", "/css/**", "/js/**", "/images/**",

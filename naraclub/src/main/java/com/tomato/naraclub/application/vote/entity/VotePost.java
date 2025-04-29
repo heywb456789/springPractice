@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.vote.entity;
 
+import com.tomato.naraclub.admin.user.entity.Admin;
 import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.search.code.SearchCategory;
@@ -9,12 +10,16 @@ import com.tomato.naraclub.application.vote.dto.VotePostResponse;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
 import java.util.List;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(
@@ -32,7 +37,7 @@ public class VotePost extends Audit {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
-    private Member author;
+    private Admin author;
 
     @Comment("투표 제목")
     @Column(nullable = false, length = 200)
@@ -57,17 +62,20 @@ public class VotePost extends Audit {
     @Column(nullable = false)
     private long voteCount;
 
-
     @Comment("공유수")
     @Column(nullable = false)
     private long shareCount;
 
-    @Column(name = "is_deleted", nullable = false)
-    private boolean deleted = false;
+    @Comment("시작")
+    @Column(updatable = false)
+    protected LocalDateTime startDate;
 
-//    @Comment("신규 여부")
-//    @Column(name = "is_new", nullable = false, columnDefinition = "TINYINT(1) default 0")
-//    private boolean isNew;
+    @Comment("종료")
+    @Column
+    protected LocalDateTime endDate;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted;
 
     public void increment() {
         this.voteCount++;
@@ -83,13 +91,13 @@ public class VotePost extends Audit {
 
     public VotePostResponse convertDTO(Boolean isVoted, Long votedId) {
         List<VoteOptionDTO> optionDTOs = voteOptions.stream()
-        .map(opt -> VoteOptionDTO.builder()
-            .optionId(opt.getId())
-            .optionName(opt.getOptionName())
-            .voteCount(opt.getVoteCount())
-            .build()
-        )
-        .collect(Collectors.toList());
+            .map(opt -> VoteOptionDTO.builder()
+                .optionId(opt.getId())
+                .optionName(opt.getOptionName())
+                .voteCount(opt.getVoteCount())
+                .build()
+            )
+            .collect(Collectors.toList());
 
         return VotePostResponse.builder()
             .votePostId(id)
@@ -101,8 +109,40 @@ public class VotePost extends Audit {
             .votedId(votedId == null ? 0L : votedId)
             .voteCount(voteCount)
             .voteOptions(optionDTOs)
+            .startDate(startDate)
+            .endDate(endDate)
             .createdAt(createdAt)
             .updatedAt(updatedAt)
+            .build();
+    }
+
+    public VotePostResponse convertDTOWithoutVoted() {
+        List<VoteOptionDTO> optionDTOs = voteOptions.stream()
+            .map(opt -> VoteOptionDTO.builder()
+                .optionId(opt.getId())
+                .optionName(opt.getOptionName())
+                .voteCount(opt.getVoteCount())
+                .percentage(
+                    voteCount > 0 ?
+                    Math.round((opt.getVoteCount() * 100) / voteCount)
+                        : 0.0
+                )
+                .build()
+            )
+            .collect(Collectors.toList());
+
+        return VotePostResponse.builder()
+            .votePostId(id)
+            .authorId(author.getId())
+            .question(question)
+            .commentCount(commentCount)
+            .viewCount(viewCount)
+            .voteCount(voteCount)
+            .voteOptions(optionDTOs)
+            .createdAt(createdAt)
+            .updatedAt(updatedAt)
+            .startDate(startDate)
+            .endDate(endDate)
             .build();
     }
 

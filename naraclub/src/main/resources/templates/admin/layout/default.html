@@ -55,7 +55,7 @@
           </a>
           <ul class="submenu collapse" th:classappend="${activeMenu == 'dashboards'} ? 'show'">
             <li><a th:classappend="${activeSubmenu == 'default'} ? 'active'"
-                   href="/admin/dashboard">Default</a></li>
+                   href="/admin/dashboard">대시보드</a></li>
             <!--                        <li><a th:classappend="${activeSubmenu == 'analytics'} ? 'active'" href="/admin/dashboard/analytics">Analytics</a></li>-->
             <!--                        <li><a th:classappend="${activeSubmenu == 'ecommerce'} ? 'active'" href="/admin/dashboard/ecommerce">E-commerce</a></li>-->
           </ul>
@@ -67,6 +67,10 @@
             <span>Board</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
           </a>
+          <ul class="submenu collapse" th:classappend="${activeMenu == 'board'} ? 'show'">
+            <li><a th:classappend="${activeSubmenu == 'default'} ? 'active'"
+                   href="/admin/board">자유게시판 리스트</a></li>
+          </ul>
         </li>
         <li class="nav-item">
           <a class="nav-link" th:classappend="${activeMenu == 'news'} ? 'active'"
@@ -86,7 +90,7 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" th:classappend="${activeMenu == 'vote'} ? 'active'"
-             href="/admin/vote">
+             href="/admin/vote/list">
             <i class="fas fa-vote-yea menu-icon"></i>
             <span>Vote</span>
             <i class="fas fa-chevron-down menu-arrow"></i>

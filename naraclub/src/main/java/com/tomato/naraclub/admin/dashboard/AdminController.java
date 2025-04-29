@@ -17,7 +17,7 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         // 페이지 제목 설정
-        model.addAttribute("pageTitle", "대시보드 - Spark Admin");
+        model.addAttribute("pageTitle", "대시보드 - 나라사랑 관리자");
 
         // 사용자 정보 설정
         model.addAttribute("userName", "Linda Miller");

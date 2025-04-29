@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: local
+    active: prod
   application:
     name: narasarang
   output:
@@ -40,7 +40,7 @@ spring:
       max-request-size: 500MB
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8032}
 
 # Springdoc ?? (???)
 

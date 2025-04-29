@@ -25,6 +25,7 @@ public class VoteOptionDTO {
     private Long optionId;
     private String optionName;
     private Long voteCount;
+    private double percentage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
