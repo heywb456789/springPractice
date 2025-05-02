@@ -54,7 +54,7 @@ public class SearchServiceImpl implements SearchService {
         // 1) 각 카테고리별 검색
         if (allCat || cat == SearchCategory.ORIGINAL_VIDEO) {
             QVideo v = QVideo.video;
-            BooleanBuilder b = buildPredicate(v.title, v.description, v.authorName, req);
+            BooleanBuilder b = buildPredicate(v.title, v.description, v.author.name, req);
             b.and(v.type.eq(OriginalType.YOUTUBE_VIDEO));
 
             long videoCount = videoRepository.count(b);
@@ -67,7 +67,7 @@ public class SearchServiceImpl implements SearchService {
 
         if (allCat || cat == SearchCategory.ORIGINAL_SHORTS) {
             QVideo s = QVideo.video;
-            BooleanBuilder b = buildPredicate(s.title, s.description, s.authorName, req);
+            BooleanBuilder b = buildPredicate(s.title, s.description, s.author.name, req);
             b.and(s.type.eq(OriginalType.YOUTUBE_SHORTS));
             long shortsCount = videoRepository.count(b);
             counts.put(SearchCategory.ORIGINAL_SHORTS.name(), shortsCount);

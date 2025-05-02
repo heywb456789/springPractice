@@ -75,7 +75,7 @@ public class SecurityConfig {
             .authenticationManager(authenticationManager())
             .authorizeHttpRequests(auth -> auth
                 //1) 회원만 가능 리스트
-                .requestMatchers("/admin","/admin/auth/login", "/admin/auth/check/username", "/admin/auth/register").permitAll()
+                .requestMatchers("/admin","/admin/auth/login", "/admin/auth/logout",  "/admin/auth/check/username", "/admin/auth/register").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
 

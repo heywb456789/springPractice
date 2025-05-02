@@ -40,6 +40,8 @@ public class VideoUploadRequest {
     @NotNull
     private Boolean isPublic;
 
+    private Boolean isHot;
+
 
     private String youtubeId;
 

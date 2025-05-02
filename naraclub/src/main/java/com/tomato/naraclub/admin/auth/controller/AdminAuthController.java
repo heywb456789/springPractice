@@ -1,7 +1,11 @@
 package com.tomato.naraclub.admin.auth.controller;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,22 +33,30 @@ public class AdminAuthController {
     }
 
     @GetMapping("/logout")
-    public String logout(HttpServletResponse response) {
-        // ACCESS_TOKEN 쿠키 제거
-        Cookie accessCookie = new Cookie("ACCESS_TOKEN", "");
-        accessCookie.setPath("/");
-        accessCookie.setHttpOnly(true);
-        accessCookie.setMaxAge(0);
-        response.addCookie(accessCookie);
+    public void logout(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
-        // REFRESH_TOKEN 쿠키 제거
-        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", "");
-        refreshCookie.setPath("/");
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setMaxAge(0);
-        response.addCookie(refreshCookie);
+        boolean isHttps = req.isSecure();
+        // ACCESS_TOKEN 완전 삭제
+        ResponseCookie accessCookie = ResponseCookie.from("ACCESS_TOKEN", "")
+            .path("/")
+            .httpOnly(true)
+            .secure(isHttps)
+            .sameSite("Strict")
+            .maxAge(0)
+            .build();
+        // REFRESH_TOKEN 완전 삭제
+        ResponseCookie refreshCookie = ResponseCookie.from("REFRESH_TOKEN", "")
+            .path("/")
+            .httpOnly(true)
+            .secure(isHttps)
+            .sameSite("Strict")
+            .maxAge(0)
+            .build();
 
-        // 로그인 페이지로 리다이렉트
-        return "redirect:/admin/auth/login";
+        response.setHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        // 로그인 페이지로 리디렉션 (302)
+        response.sendRedirect("/admin/auth/login");
     }
 }

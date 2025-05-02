@@ -1,150 +1,342 @@
-// assets/admin/js/videoList.js
-import { adminAuthFetch } from '../../../js/commonFetch.js';
+/**
+ * 동영상 목록 페이지 JavaScript
+ */
+import {adminAuthFetch} from '/js/commonFetch.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const table       = document.getElementById('videoTable');
-  const checkAll    = document.getElementById('checkAll');
-  const deleteBtn   = document.getElementById('btnDelete');
-  const confirmModal= new bootstrap.Modal(document.getElementById('confirmModal'));
-  let selectedIds   = [];
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
 
-  // 1) 전체 선택 / 해제
-  checkAll?.addEventListener('change', e => {
-    const checked = e.target.checked;
-    document.querySelectorAll('.row-check').forEach(cb => {
-      cb.checked = checked;
-      toggleRowHighlight(cb.closest('tr'), checked);
-    });
-    updateDeleteBtn();
-  });
+  // DOM 요소
+  const searchForm = document.getElementById('searchForm');
+  const btnViewGrid = document.getElementById('btnViewGrid');
+  const btnViewList = document.getElementById('btnViewList');
+  const listView = document.getElementById('listView');
+  const gridView = document.getElementById('gridView');
+  const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+  const deleteConfirmModal = new bootstrap.Modal(
+      document.getElementById('deleteConfirmModal'));
+  const dateRangeInput = document.getElementById('dateRange');
 
-  // 2) 각 행 체크박스 클릭
-  document.querySelectorAll('.row-check').forEach(cb => {
-    cb.addEventListener('change', () => {
-      toggleRowHighlight(cb.closest('tr'), cb.checked);
-      updateDeleteBtn();
-      syncCheckAll();
-    });
+  // 현재 삭제 대상 동영상 ID
+  let currentDeleteVideoId = null;
 
-    // 체크박스 클릭 시 이벤트 전파 중지 (행 클릭 이벤트와 겹치지 않도록)
-    cb.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
-  });
+  // 초기화
+  initPage();
 
-  // 3) 행 클릭 시 체크박스 토글
-  table?.querySelectorAll('tbody tr').forEach(tr => {
-    tr.addEventListener('click', (e) => {
-      // 링크나 이미지 클릭 시에는 동작하지 않음
-      if (e.target.tagName === 'A' || e.target.closest('a') ||
-          e.target.tagName === 'IMG' || e.target.closest('img')) {
-        return;
-      }
+  /**
+   * 페이지 초기화 함수
+   */
+  function initPage() {
+    // 이벤트 리스너 등록
+    initEventListeners();
 
-      const checkbox = tr.querySelector('.row-check');
-      if (checkbox) {
-        checkbox.checked = !checkbox.checked;
-        toggleRowHighlight(tr, checkbox.checked);
-        updateDeleteBtn();
-        syncCheckAll();
-      }
-    });
-  });
+    // Flatpickr 달력 초기화
+    initFlatpickrDateRange();
 
-  // 4) 더블클릭 시 상세 페이지로 이동
-  table?.querySelectorAll('tbody tr').forEach(tr => {
-    tr.addEventListener('dblclick', () => {
-      const id = tr.getAttribute('data-id');
-      if (id) window.location.href = `/admin/video/${id}`;
-    });
-  });
+    // 뷰 모드 설정 (로컬 스토리지에서 불러오기)
+    const savedViewMode = localStorage.getItem('videoListViewMode') || 'list';
+    setViewMode(savedViewMode);
+  }
 
-  // 5) 삭제 버튼 클릭 → 모달 띄우기
-  deleteBtn?.addEventListener('click', () => {
-    selectedIds = Array.from(
-      document.querySelectorAll('.row-check:checked'),
-      cb => cb.value
-    );
-    if (selectedIds.length) confirmModal.show();
-  });
-
-  // 6) 모달에서 확인 클릭 → 삭제 API 호출 후 새로고침
-  document.getElementById('btnConfirmDelete')?.addEventListener('click', async () => {
-    try {
-      await adminAuthFetch('/admin/video/delete', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ ids: selectedIds })
+  /**
+   * 이벤트 리스너 초기화
+   */
+  function initEventListeners() {
+    // 목록/그리드 뷰 전환 버튼
+    if (btnViewList && btnViewGrid) {
+      btnViewList.addEventListener('click', function () {
+        setViewMode('list');
       });
-      location.reload();
+
+      btnViewGrid.addEventListener('click', function () {
+        setViewMode('grid');
+      });
+    }
+
+    // 삭제 버튼 이벤트 (동적으로 추가될 수 있으므로 이벤트 위임 사용)
+    document.addEventListener('click', function (e) {
+      const deleteBtn = e.target.closest('.btn-delete');
+      if (deleteBtn) {
+        e.preventDefault();
+        showDeleteConfirmModal(deleteBtn.dataset.videoId);
+      }
+    });
+
+    // 삭제 확인 버튼 이벤트
+    if (btnConfirmDelete) {
+      btnConfirmDelete.addEventListener('click', confirmDelete);
+    }
+
+    // 검색 폼 제출 이벤트
+    if (searchForm) {
+      searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        performSearch();
+      });
+
+      // 검색 버튼 클릭 이벤트
+      const searchButton = searchForm.querySelector('button[type="submit"]');
+      if (searchButton) {
+        searchButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          performSearch();
+        });
+      }
+
+      // 검색어 입력 필드에서 엔터 키 이벤트
+      const searchTextInput = document.getElementById('searchText');
+      if (searchTextInput) {
+        searchTextInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+          }
+        });
+      }
+    }
+  }
+
+  /**
+   * 검색 실행
+   */
+  function performSearch() {
+    if (searchForm) {
+      searchForm.submit();
+    }
+  }
+
+  /**
+   * 목록/그리드 뷰 전환
+   * @param {string} mode - 뷰 모드 ('list' 또는 'grid')
+   */
+  function setViewMode(mode) {
+    if (mode === 'grid') {
+      listView.classList.add('d-none');
+      gridView.classList.remove('d-none');
+      btnViewList.classList.remove('active');
+      btnViewGrid.classList.add('active');
+    } else {
+      listView.classList.remove('d-none');
+      gridView.classList.add('d-none');
+      btnViewList.classList.add('active');
+      btnViewGrid.classList.remove('active');
+    }
+
+    // 로컬 스토리지에 선택 저장
+    localStorage.setItem('videoListViewMode', mode);
+  }
+
+  /**
+   * Flatpickr 날짜 범위 선택기 초기화 함수
+   */
+  function initFlatpickrDateRange() {
+    const dateRangeInput = document.getElementById('dateRange');
+
+    if (!dateRangeInput || typeof flatpickr === 'undefined') {
+      console.error('Flatpickr가 로드되지 않았거나 dateRangeInput 요소가 없습니다.');
+      return;
+    }
+
+    try {
+      // 상위 요소에 특별한 클래스 추가
+      const wrapper = dateRangeInput.closest('.input-group');
+      wrapper.classList.add('date-range-input-group');
+
+      // 날짜 범위 값 파싱
+      let startDate = '';
+      let endDate = '';
+      if (dateRangeInput.value) {
+        const dates = dateRangeInput.value.split(' ~ ');
+        if (dates.length === 2) {
+          startDate = dates[0];
+          endDate = dates[1];
+        }
+      }
+
+      // 클리어 버튼 생성
+      let clearBtn = wrapper.querySelector('.date-clear-btn');
+      if (!clearBtn) {
+        clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'date-clear-btn';
+        clearBtn.innerHTML = '<i class="fas fa-times"></i>';
+        wrapper.appendChild(clearBtn);
+      }
+
+      // 초기 버튼 상태 설정
+      clearBtn.style.display = dateRangeInput.value ? 'flex' : 'none';
+
+      // 달력 아이콘 클릭 이벤트
+      const calendarIcon = wrapper.querySelector('.input-group-text');
+      if (calendarIcon) {
+        calendarIcon.style.cursor = 'pointer';
+      }
+
+      // Flatpickr 설정
+      const fpInstance = flatpickr(dateRangeInput, {
+        mode: 'range',
+        dateFormat: 'Y-MM-dd',
+        locale: 'ko',
+        disableMobile: true,
+        defaultDate: [startDate, endDate].filter(Boolean),
+        onChange: function(selectedDates) {
+          if (selectedDates.length === 2) {
+            const formattedDates = selectedDates.map(date =>
+              date.getFullYear() + '-' +
+              String(date.getMonth() + 1).padStart(2, '0') + '-' +
+              String(date.getDate()).padStart(2, '0')
+            );
+            dateRangeInput.value = formattedDates.join(' ~ ');
+            clearBtn.style.display = 'flex';
+          }
+        }
+      });
+
+      // 클리어 버튼 클릭 이벤트
+      clearBtn.addEventListener('click', function() {
+        fpInstance.clear();
+        dateRangeInput.value = '';
+        this.style.display = 'none';
+      });
+
+      // 달력 아이콘 클릭 이벤트
+      if (calendarIcon) {
+        calendarIcon.addEventListener('click', function() {
+          fpInstance.toggle();
+        });
+      }
+
+    } catch (error) {
+      console.error('Flatpickr 초기화 중 오류가 발생했습니다:', error);
+    }
+  }
+
+  /**
+   * 삭제 확인 모달 표시
+   * @param {number} videoId - 삭제할 동영상 ID
+   */
+  function showDeleteConfirmModal(videoId) {
+    if (!videoId) {
+      showAlert('삭제할 동영상 ID가 없습니다.', 'warning');
+      return;
+    }
+
+    // 현재 삭제 대상 ID 설정
+    currentDeleteVideoId = videoId;
+
+    // 모달 표시
+    deleteConfirmModal.show();
+  }
+
+  /**
+   * 삭제 확인 처리
+   */
+  async function confirmDelete() {
+    if (!currentDeleteVideoId) {
+      showAlert('삭제할 동영상 ID가 없습니다.', 'warning');
+      deleteConfirmModal.hide();
+      return;
+    }
+
+    btnConfirmDelete.disabled = true;
+    btnConfirmDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 삭제 중...';
+
+    try {
+      const res = await adminAuthFetch(
+          `/admin/original/video/delete/${currentDeleteVideoId}`, {
+            method: 'DELETE'
+          });
+
+      if (!res.ok) {
+        throw new Error('서버 응답 오류: ' + res.status);
+      }
+
+      const result = await res.json();
+
+      if (result.status.code === 'OK_0000') {
+        showAlert('동영상이 성공적으로 삭제되었습니다.', 'success');
+
+        // 목록에서 해당 항목 제거
+        const listItem = document.querySelector(
+            `[data-video-id="${currentDeleteVideoId}"]`).closest('tr');
+        if (listItem) {
+          listItem.classList.add('fade-out');
+
+          // 애니메이션 후 제거
+          setTimeout(() => {
+            listItem.remove();
+
+            // 항목이 없으면 "데이터 없음" 메시지 표시
+            const tbody = document.querySelector('tbody');
+            if (tbody && tbody.children.length === 0) {
+              const emptyRow = document.createElement('tr');
+              emptyRow.innerHTML = `
+                <td colspan="8" class="text-center py-5">
+                  <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
+                  <p class="mb-0">조건에 맞는 동영상이 없습니다.</p>
+                </td>
+              `;
+              tbody.appendChild(emptyRow);
+            }
+          }, 300);
+        }
+
+        // 그리드 뷰에서도 제거
+        const gridItem = document.querySelector(
+            `.col-sm-6.col-md-4 [data-video-id="${currentDeleteVideoId}"]`).closest(
+            '.col-sm-6.col-md-4');
+        if (gridItem) {
+          gridItem.classList.add('fade-out');
+
+          // 애니메이션 후 제거
+          setTimeout(() => {
+            gridItem.remove();
+
+            // 항목이 없으면 "데이터 없음" 메시지 표시
+            const gridContainer = document.querySelector('#gridView .row');
+            if (gridContainer && gridContainer.children.length === 0) {
+              const emptyDiv = document.createElement('div');
+              emptyDiv.className = 'text-center py-5';
+              emptyDiv.innerHTML = `
+                <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
+                <p class="mb-0">조건에 맞는 동영상이 없습니다.</p>
+              `;
+              gridView.innerHTML = '';
+              gridView.appendChild(emptyDiv);
+            }
+          }, 300);
+        }
+
+        // 삭제 성공 후 현재 페이지 새로고침
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        throw new Error(result.message || '삭제 중 오류가 발생했습니다.');
+      }
     } catch (err) {
       console.error(err);
-      alert('삭제 중 오류가 발생했습니다.');
+      showAlert('삭제 중 오류가 발생했습니다: ' + err.message, 'danger');
+    } finally {
+      btnConfirmDelete.innerHTML = '삭제';
+      btnConfirmDelete.disabled = false;
+      deleteConfirmModal.hide();
     }
-  });
-
-  // 7) 검색 기능
-  const searchTypeSelect = document.getElementById('searchType');
-  const searchKeywordInput = document.getElementById('searchKeyword');
-  const searchButton = document.getElementById('btnSearch');
-
-  // URL 파라미터에서 검색 조건 가져오기
-  const urlParams = new URLSearchParams(window.location.search);
-  const searchType = urlParams.get('searchType');
-  const keyword = urlParams.get('searchText');
-
-  // 검색 조건 설정
-  if (searchType && searchTypeSelect) {
-    searchTypeSelect.value = searchType;
   }
 
-  if (keyword && searchKeywordInput) {
-    searchKeywordInput.value = keyword;
-  }
-
-  // 검색 버튼 클릭 이벤트
-  searchButton?.addEventListener('click', () => {
-    performSearch();
-  });
-
-  // 검색어 입력 필드에서 엔터 키 이벤트
-  searchKeywordInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      performSearch();
+  /**
+   * 알림 표시 함수
+   * @param {string} message - 알림 메시지
+   * @param {string} type - 알림 타입 (success, danger, warning, info)
+   */
+  function showAlert(message, type = 'info') {
+    // 커스텀 알림 시스템 사용
+    if (window.CustomNotification) {
+      window.CustomNotification.show(message, type);
+      return;
     }
-  });
 
-  // Helper: 행 강조
-  function toggleRowHighlight(tr, on) {
-    if (tr) tr.classList.toggle('table-active', on);
-  }
-
-  // Helper: 삭제 버튼 활성화
-  function updateDeleteBtn() {
-    const any = !!document.querySelector('.row-check:checked');
-    deleteBtn.disabled = !any;
-  }
-
-  // Helper: 전체 체크박스 상태 동기화
-  function syncCheckAll() {
-    const all = Array.from(document.querySelectorAll('.row-check'));
-    const anyChecked = all.some(cb => cb.checked);
-    const allChecked = all.length > 0 && all.every(cb => cb.checked);
-
-    checkAll.checked = allChecked;
-    checkAll.indeterminate = anyChecked && !allChecked;
-  }
-
-  // Helper: 검색 실행
-  function performSearch() {
-    const type = searchTypeSelect ? searchTypeSelect.value : 'title';
-    const keyword = searchKeywordInput ? searchKeywordInput.value.trim() : '';
-
-    if (keyword) {
-      window.location.href = `/admin/video/list?searchType=${type}&searchText=${encodeURIComponent(keyword)}`;
-    } else {
-      window.location.href = '/admin/video/list';
-    }
+    // 기본 alert 사용
+    alert(message);
   }
 });

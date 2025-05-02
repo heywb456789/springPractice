@@ -25,8 +25,12 @@ public class VideoResponse {
     private String videoUrl;
     private Integer durationSec;
     private Long viewCount;
+    private Long commentCount;
     private LocalDateTime publishedAt;
     private boolean isPublic;
     private boolean isHot;
     private boolean isNew;
+    private String authorName;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

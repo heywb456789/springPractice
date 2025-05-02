@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.original.entity;
 
+import com.tomato.naraclub.admin.user.entity.Admin;
 import com.tomato.naraclub.application.comment.entity.VideoComments;
 import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
@@ -41,9 +42,9 @@ public class Video extends Audit {
     @Column(length = 2000)
     private String description;
 
-    @Comment("작성자 /기자 ")
-    @Column(length = 10)
-    private String authorName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private Admin author;
 
     @Comment("토마토 오리지날 타입")
     @Enumerated(EnumType.STRING)
@@ -90,7 +91,11 @@ public class Video extends Audit {
     private List<VideoComments> comments;
 
     @Comment("댓글 수")
-    private long commentCount;
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+    private Long commentCount;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted;
 
     public VideoResponse convertDTO() {
         return VideoResponse.builder()
@@ -106,6 +111,7 @@ public class Video extends Audit {
             .publishedAt(publishedAt)
             .isPublic(isPublic)
             .isHot(isHot)
+            .authorName(author.getName())
             .build();
     }
 

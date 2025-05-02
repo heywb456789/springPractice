@@ -116,7 +116,6 @@ public class FileStorageService {
             boolean deleted = ftp.deleteFile(urlPath);
 
             // 3) 디렉토리가 비어있다면(선택) 디렉토리도 삭제
-            //    예: /uploads/images/123/ 이 비어있으면 삭제
             if (deleted) {
                 String dir = urlPath.substring(0, urlPath.lastIndexOf('/'));
                 // FTPClient.removeDirectory는 빈 디렉토리만 제거

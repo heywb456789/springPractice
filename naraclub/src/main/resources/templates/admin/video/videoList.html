@@ -9,158 +9,390 @@
         'list'
       )}">
 <head>
-    <title>동영상 관리 - 나라사랑 관리자</title>
+  <title>동영상 목록 - 나라사랑 관리자</title>
 
-    <!-- Custom CSS -->
-    <customCSS>
-        <link th:href="@{/assets/admin/css/videoList.css}" rel="stylesheet">
-    </customCSS>
+  <!-- Custom CSS -->
+  <customCSS>
+    <link th:href="@{/assets/admin/css/videoList.css}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css"
+          rel="stylesheet">
+    <link th:href="@{/assets/admin/css/dateRange.css}" rel="stylesheet">
+  </customCSS>
 </head>
 <body>
 <section>
-    <!-- Page Title and Buttons -->
-    <div class="page-header d-flex justify-content-between align-items-center mb-4">
-        <h4 class="page-title">동영상 관리</h4>
-        <div class="page-actions">
-            <button type="button" id="btnDelete" class="btn btn-danger" disabled>
-                <i class="fas fa-trash"></i> 삭제
-            </button>
+  <!-- Page Title & Actions -->
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <h4 class="page-title">동영상 목록</h4>
+    <div class="page-actions">
+      <a href="/admin/original/video/create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> 동영상 업로드
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Card -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form id="searchForm" method="get" action="/admin/original/video/list">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label for="searchType" class="form-label">검색 유형</label>
+            <select class="form-select" id="searchType" name="searchType">
+              <option value="VIDEO_TITLE" th:selected="${param.searchType == 'VIDEO_TITLE'}">제목</option>
+              <option value="VIDEO_DESCRIPTION" th:selected="${param.searchType == 'VIDEO_DESCRIPTION'}">설명
+              </option>
+              <option value="VIDEO_AUTHOR" th:selected="${param.searchType == 'VIDEO_AUTHOR'}">등록자</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="searchText" class="form-label">검색어</label>
+            <input type="text" class="form-control" id="searchText" name="searchText"
+                   th:value="${param.searchText}" placeholder="검색어를 입력하세요">
+          </div>
+          <div class="col-md-3">
+            <label for="category" class="form-label">카테고리</label>
+            <select class="form-select" id="category" name="category">
+              <option value="">전체</option>
+              <option th:each="cat : ${categories}" th:value="${cat}"
+                      th:text="${cat.displayName}"
+                      th:selected="${param.category == cat}">
+                카테고리 이름
+              </option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="type" class="form-label">타입</label>
+            <select class="form-select" id="type" name="type">
+              <option value="" th:selected="${param.type == null}">전체</option>
+              <option value="true" th:selected="${param.type == 'YOUTUBE_VIDEO'}">공개</option>
+              <option value="false" th:selected="${param.type == 'YOUTUBE_SHORTS'}">비공개</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="publishStatus" class="form-label">공개 상태</label>
+            <select class="form-select" id="publishStatus" name="publishStatus">
+              <option value="" th:selected="${param.publishStatus == null}">전체</option>
+              <option value="true" th:selected="${param.publishStatus == 'true'}">공개</option>
+              <option value="false" th:selected="${param.publishStatus == 'false'}">비공개</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="isHot" class="form-label">핫 콘텐츠</label>
+            <select class="form-select" id="isHot" name="isHot">
+              <option value="" th:selected="${param.isHot == null}">전체</option>
+              <option value="true" th:selected="${param.isHot == 'true'}">핫 콘텐츠만</option>
+              <option value="false" th:selected="${param.isHot == 'false'}">일반 콘텐츠만</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="sortBy" class="form-label">정렬 기준</label>
+            <select class="form-select" id="sortBy" name="sortBy">
+              <option value="PUBLISHED"
+                      th:selected="${param.sortBy == 'PUBLISHED' || param.sortBy == null}">공개일
+              </option>
+              <option value="LATEST" th:selected="${param.sortBy == 'LATEST'}">등록일
+              </option>
+              <option value="POPULAR" th:selected="${param.sortBy == 'POPULAR'}">조회수</option>
+              <option value="COMMENT" th:selected="${param.sortBy == 'COMMENT'}">댓글수
+              </option>
+              <option value="TITLE" th:selected="${param.sortBy == 'TITLE'}">제목</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="sortDirection" class="form-label">정렬 방향</label>
+            <select class="form-select" id="sortDirection" name="sortDirection">
+              <option value="DESC"
+                      th:selected="${param.sortDirection == 'DESC' || param.sortDirection == null}">
+                내림차순
+              </option>
+              <option value="ASC" th:selected="${param.sortDirection == 'ASC'}">오름차순</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="dateRange" class="form-label">등록일 범위</label>
+            <div class="input-group date-range-input-group">
+              <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+              <input type="text" class="form-control" id="dateRange" name="dateRange"
+                     th:value="${param.dateRange}" placeholder="날짜 범위 선택">
+            </div>
+          </div>
+          <div class="col-md-6 d-flex align-items-end">
+            <div class="d-grid w-100">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> 검색
+              </button>
+            </div>
+          </div>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Results Card -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="card-title mb-0 d-inline-block">총 <span th:text="${videoList.size()}">0</span>개의
+          동영상</h5>
+        <span class="text-muted ms-2">
+                    (페이지 <span th:text="${currentPage}">1</span>/<span
+            th:text="${totalPages}">1</span>)
+                </span>
+      </div>
+      <div class="header-actions">
+        <!--                <button class="btn btn-sm btn-outline-primary me-2" id="btnExportCSV">-->
+        <!--                    <i class="fas fa-download"></i> CSV 내보내기-->
+        <!--                </button>-->
+        <div class="btn-group">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnViewGrid">
+            <i class="fas fa-th-large"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary active" id="btnViewList">
+            <i class="fas fa-list"></i>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Search Area -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row g-3 align-items-center">
-                <div class="col-auto">
-                    <select id="searchType" class="form-select">
-                        <option value="title">제목</option>
-                        <option value="content">내용</option>
-                        <option value="author">작성자</option>
-                    </select>
+    <!-- List View (Default) -->
+    <div class="table-responsive" id="listView">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+        <tr>
+          <th style="width: 50px;">#</th>
+          <th style="width: 120px;">썸네일</th>
+          <th>제목</th>
+          <!--          <th style="width: 120px;">카테고리</th>-->
+          <th style="width: 100px;">상태</th>
+          <th style="width: 100px;">조회수</th>
+          <th style="width: 160px;">등록일</th>
+          <th style="width: 120px;">작업</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${videoList.empty}">
+          <td colspan="8" class="text-center py-5">
+            <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
+            <p class="mb-0">조건에 맞는 동영상이 없습니다.</p>
+          </td>
+        </tr>
+        <tr th:unless="${videoList.empty}" th:each="video : ${videoList}">
+          <td th:text="${video.videoId}">1</td>
+          <td>
+            <div class="thumbnail-wrapper">
+              <img th:src="${video.thumbnailUrl}" class="thumbnail-img" alt="썸네일">
+              <div class="thumbnail-overlay">
+                <div class="thumbnail-duration">
+                  <span
+                      th:text="${T(java.time.Duration).ofSeconds(video.durationSec).toMinutes() + ':' + (video.durationSec % 60 < 10 ? '0' : '') + (video.durationSec % 60)}">3:00</span>
                 </div>
-                <div class="col">
-                    <div class="input-group">
-                        <input type="text" id="searchKeyword" class="form-control" placeholder="검색어를 입력하세요">
-                        <button class="btn btn-outline-secondary" type="button" id="btnSearch">
-                            <i class="fas fa-search"></i> 검색
-                        </button>
-                    </div>
-                </div>
+              </div>
             </div>
-        </div>
+          </td>
+          <td>
+            <a th:href="@{/admin/original/video/{id}(id=${video.videoId})}" class="video-title-link" th:text="${video.title}">롱폼_1</a>
+            <div class="video-meta text-muted">
+              <!--                                <small th:if="${video.youtubeId != null && !video.youtubeId.isEmpty()}">-->
+              <!--                                    <i class="fab fa-youtube text-danger"></i> YouTube-->
+              <!--                                </small>-->
+              <small th:if="${video.isHot}" class="ms-2">
+                <i class="fas fa-fire text-warning"></i> 핫 콘텐츠
+              </small>
+            </div>
+          </td>
+          <!--          <td>-->
+          <!--            <span class="badge rounded-pill bg-dark" th:if="${video.category != null}"-->
+          <!--                  th:text="${video.category.name()}">카테고리</span>-->
+          <!--          </td>-->
+          <td>
+            <span class="badge rounded-pill"
+                  th:classappend="${video.isPublic ? 'bg-success' : 'bg-secondary'}"
+                  th:text="${video.isPublic ? '공개' : '비공개'}">공개 상태</span>
+          </td>
+          <td>
+            <span th:text="${#numbers.formatInteger(video.viewCount, 0, 'COMMA')}">0</span>
+          </td>
+          <td>
+            <span th:text="${#temporals.format(video.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</span>
+          </td>
+          <td>
+            <div class="btn-group">
+              <a th:href="@{/admin/original/video/{id}(id=${video.videoId})}"
+                 class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-eye"></i>
+              </a>
+              <a th:href="@{/admin/original/video/update/{id}(id=${video.videoId})}"
+                 class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-edit"></i>
+              </a>
+              <button th:data-video-id="${video.videoId}"
+                      class="btn btn-sm btn-outline-danger btn-delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- Video List Table -->
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="videoTable" class="table table-hover">
-                    <thead>
-                    <tr>
-                        <th><input type="checkbox" id="checkAll" class="form-check-input"></th>
-                        <th>번호</th>
-                        <th>썸네일</th>
-                        <th>제목</th>
-                        <th>작성자</th>
-                        <th>작성일</th>
-                        <th>조회수</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="video : ${videoList}" th:data-id="${video.videoId}">
-                        <td>
-                            <input type="checkbox" class="form-check-input row-check" th:value="${video.videoId}">
-                        </td>
-                        <td th:text="${video.videoId}">1</td>
-                        <td class="video-thumbnail">
-                            <img th:if="${video.thumbnailUrl}" th:src="${video.thumbnailUrl}" alt="비디오 썸네일" class="thumbnail-img">
-                            <div th:unless="${video.thumbnailUrl}" class="no-thumbnail">
-                                <i class="fas fa-video"></i>
-                            </div>
-                        </td>
-                        <td class="video-title">
-                            <a th:href="@{'/admin/video/' + ${video.videoId}}"
-                               th:text="${video.title}">비디오 제목</a>
-                        </td>
-                        <td th:text="${video.authorName}">작성자</td>
-                        <td th:text="${#temporals.format(video.createdAt,'yyyy-MM-dd')}">2025-04-28</td>
-                        <td th:text="${video.views}">100</td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(videoList)}">
-                        <td colspan="7" class="text-center py-4">등록된 동영상이 없습니다.</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            <div class="pagination-wrapper">
-                <div class="d-flex justify-content-center">
-                    <ul class="pagination" th:if="${totalPages > 0}">
-                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
-                            <a class="page-link"
-                               th:href="@{/admin/video/list(page=0, searchType=${param.searchType}, searchText=${param.keyword})}"
-                               aria-label="First">
-                                <span aria-hidden="true">&laquo;&laquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
-                            <a class="page-link"
-                               th:href="@{/admin/video/list(page=${currentPage - 1}, searchType=${param.searchType}, searchText=${param.keyword})}"
-                               aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item" th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                            th:classappend="${currentPage == i} ? 'active'">
-                            <a class="page-link"
-                               th:href="@{/admin/video/list(page=${i}, searchType=${param.searchType}, searchText=${param.keyword})}"
-                               th:text="${i}">1</a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
-                            <a class="page-link"
-                               th:href="@{/admin/video/list(page=${currentPage + 1}, searchType=${param.searchType}, searchText=${param.keyword})}"
-                               aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
-                            <a class="page-link"
-                               th:href="@{/admin/video/list(page=${totalPages}, searchType=${param.searchType}, searchText=${param.keyword})}"
-                               aria-label="Last">
-                                <span aria-hidden="true">&raquo;&raquo;</span>
-                            </a>
-                        </li>
-                    </ul>
+    <!-- Grid View (Alternative) -->
+    <div class="card-body d-none" id="gridView">
+      <div class="row" th:if="${!videoList.empty}">
+        <div class="col-sm-6 col-md-4 col-xl-3 mb-4" th:each="video : ${videoList}">
+          <div class="video-card">
+            <div class="video-thumbnail">
+              <img th:src="${video.thumbnailUrl}" class="w-100" alt="썸네일">
+              <div class="video-thumbnail-overlay">
+                <div class="thumbnail-duration">
+                  <span
+                      th:text="${T(java.time.Duration).ofSeconds(video.durationSec).toMinutes() + ':' + (video.durationSec % 60 < 10 ? '0' : '') + (video.durationSec % 60)}">3:00</span>
                 </div>
+                <div class="thumbnail-badges">
+                  <span class="badge rounded-pill bg-dark" th:if="${video.category != null}"
+                        th:text="${video.category.name()}">카테고리</span>
+                  <!--                                    <span th:if="${video.youtubeId != null && !video.youtubeId.isEmpty()}" class="badge rounded-pill bg-danger">-->
+                  <!--                                        <i class="fab fa-youtube"></i>-->
+                  <!--                                    </span>-->
+                </div>
+              </div>
             </div>
+            <div class="video-info p-3">
+              <h6 class="video-grid-title">
+                <a th:href="@{/admin/original/video/{id}(id=${video.videoId})}" th:text="${video.title}">동영상
+                  제목</a>
+              </h6>
+              <div class="video-grid-meta d-flex justify-content-between align-items-center">
+                <div class="text-muted">
+                  <small>
+                    <i class="fas fa-eye"></i> <span
+                      th:text="${#numbers.formatInteger(video.viewCount, 0, 'COMMA')}">0</span>
+                  </small>
+                  <small class="ms-2">
+                    <i class="fas fa-comment"></i> <span
+                      th:text="${#numbers.formatInteger(video.commentCount, 0, 'COMMA')}">0</span>
+                  </small>
+                </div>
+                <div>
+                  <span class="badge"
+                        th:classappend="${video.isPublic ? 'bg-success' : 'bg-secondary'}"
+                        th:text="${video.isPublic ? '공개' : '비공개'}">공개 상태</span>
+                </div>
+              </div>
+              <div class="video-grid-actions mt-2 d-flex justify-content-between">
+                <small class="text-muted"
+                       th:text="${#temporals.format(video.createdAt, 'yyyy-MM-dd')}">2023-01-01</small>
+                <div class="btn-group btn-group-sm">
+                  <a th:href="@{/admin/original/video/{id}(id=${video.videoId})}"
+                     class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a th:href="@{/admin/original/video/update/{id}(id=${video.videoId})}"
+                     class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button th:data-video-id="${video.videoId}"
+                          class="btn btn-sm btn-outline-danger btn-delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+      <div class="text-center py-5" th:if="${videoList.empty}">
+        <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
+        <p class="mb-0">조건에 맞는 동영상이 없습니다.</p>
+      </div>
     </div>
 
-    <!-- Confirmation Modal -->
-    <div class="modal fade" id="confirmModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">삭제 확인</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    선택한 동영상을 정말 삭제하시겠습니까?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmDelete">삭제</button>
-                </div>
-            </div>
-        </div>
+    <!-- Pagination -->
+
+    <!-- Pagination 수정 부분 -->
+    <div class="card-footer d-flex justify-content-center" th:if="${totalPages > 0}">
+      <nav aria-label="Page navigation">
+        <ul class="pagination mb-0">
+          <!-- First Page -->
+          <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+            <a class="page-link"
+               th:href="@{/admin/original/video/list(page=0, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               aria-label="First">
+              <span aria-hidden="true">&laquo;&laquo;</span>
+            </a>
+          </li>
+
+          <!-- Previous Page -->
+          <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+            <a class="page-link"
+               th:href="@{/admin/original/video/list(page=${currentPage - 2}, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+
+          <!-- Page Numbers -->
+          <li class="page-item"
+              th:each="pageNumber : ${#numbers.sequence(currentPage - 2 <= 0 ? 1 : currentPage - 2, currentPage + 2 >= totalPages ? totalPages : currentPage + 2)}"
+              th:classappend="${pageNumber == currentPage ? 'active' : ''}">
+            <a class="page-link"
+               th:href="@{/admin/original/video/list(page=${pageNumber - 1}, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:text="${pageNumber}">1</a>
+          </li>
+
+          <!-- Next Page -->
+          <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+            <a class="page-link"
+               th:href="@{/admin/original/video/list(page=${currentPage}, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+
+          <!-- Last Page -->
+          <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+            <a class="page-link"
+               th:href="@{/admin/original/video/list(page=${totalPages - 1}, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               aria-label="Last">
+              <span aria-hidden="true">&raquo;&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1"
+       aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteConfirmModalLabel">동영상 삭제</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>정말로 이 동영상을 삭제하시겠습니까?</p>
+          <p class="text-danger">이 작업은 되돌릴 수 없으며, 모든 관련 데이터(댓글 포함)가 삭제됩니다.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" id="btnConfirmDelete" class="btn btn-danger">삭제</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- Custom JS -->
 <customJS>
-    <script th:src="@{/assets/admin/js/videoList.js}" type="module"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
+  <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/plugins/rangePlugin.min.js"></script>
+  <script th:src="@{/assets/admin/js/videoList.js}" type="module"></script>
 </customJS>
 </body>
 </html>

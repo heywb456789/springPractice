@@ -18,7 +18,20 @@ public enum VideoSearchType implements SearchTypeEnum {
     String keyword = "%" + s.trim() + "%";
     return QVideo.video.title.likeIgnoreCase(keyword)
            .or(QVideo.video.description.likeIgnoreCase(keyword));
-  });
+  }),
+  VIDEO_TITLE("제목", s -> {
+    String keyword = "%" + s.trim() + "%";
+    return QVideo.video.title.likeIgnoreCase(keyword);
+  }),
+  VIDEO_DESCRIPTION("설명", s -> {
+    String keyword = "%" + s.trim() + "%";
+    return QVideo.video.description.likeIgnoreCase(keyword);
+  }),
+  VIDEO_AUTHOR("등록자", s -> {
+    String keyword = "%" + s.trim() + "%";
+    return QVideo.video.author.name.likeIgnoreCase(keyword);
+  }),
+  ;
 
   private final String key;
   private final Function<String, BooleanExpression> expression;

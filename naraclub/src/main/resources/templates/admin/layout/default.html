@@ -14,6 +14,7 @@
         rel="stylesheet">
   <!-- Custom CSS -->
   <link th:href="@{/assets/admin/css/common.css}" rel="stylesheet">
+  <link th:href="@{/assets/admin/css/notification.css}" rel="stylesheet">
 
   <!-- Page specific CSS -->
   <th:block th:replace="${customCSS} ?: ~{}"></th:block>
@@ -82,7 +83,7 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" th:classappend="${activeMenu == 'video'} ? 'active'"
-             href="/admin/video">
+             href="/admin/original/video/list">
             <i class="fas fa-video menu-icon"></i>
             <span>Video</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
@@ -189,6 +190,7 @@
 
 <!-- Custom JS -->
 <script th:src="@{/assets/admin/js/common.js}"></script>
+<script th:src="@{/assets/admin/js/notification.js}"></script>
 
 <!-- Page specific JS -->
 <th:block th:replace="${customJS} ?: ~{}"></th:block>

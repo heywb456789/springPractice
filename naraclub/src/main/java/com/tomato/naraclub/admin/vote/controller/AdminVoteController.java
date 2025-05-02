@@ -81,18 +81,22 @@ public class AdminVoteController {
     }
 
     @GetMapping("/create")
-    public String create(Model model) {
+    public String create(Model model, @AuthenticationPrincipal AdminUserDetails user) {
         model.addAttribute("pageTitle", "투표 등록 - 나라사랑 클럽 관리자");
+        model.addAttribute("userName", user.getUsername());
+        model.addAttribute("userRole", user.getAuthorities());
         return "admin/vote/voteForm";
     }
 
     @GetMapping("/update/{id}")
-    public String update(Model model, @PathVariable Long id) {
+    public String update(Model model, @PathVariable Long id, @AuthenticationPrincipal AdminUserDetails user) {
 
         VotePostResponse vote = adminVoteService.getVoteDetail(id);
 
         model.addAttribute("vote", vote);
         model.addAttribute("pageTitle", "투표 수정 - 나라사랑 클럽 관리자");
+        model.addAttribute("userName", user.getUsername());
+        model.addAttribute("userRole", user.getAuthorities());
         return "admin/vote/voteForm";
     }
 }

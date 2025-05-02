@@ -115,6 +115,22 @@
   }
 
   /**
+   * 알림 표시 함수
+   * @param {string} message - 알림 메시지
+   * @param {string} type - 알림 타입 (success, danger, warning, info)
+   */
+  function showAlert(message, type = 'info') {
+    // 커스텀 알림 시스템 사용
+    if (window.CustomNotification) {
+      window.CustomNotification.show(message, type);
+      return;
+    }
+
+    // 기본 alert 사용
+    alert(message);
+  }
+
+  /**
    * 모든 알림 제거 함수
    */
   function clearAllNotifications() {

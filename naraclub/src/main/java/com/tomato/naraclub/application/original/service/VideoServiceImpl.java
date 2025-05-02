@@ -76,7 +76,7 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public VideoResponse getVideoDetail(Long id, MemberUserDetails userDetails, HttpServletRequest request) {
         // 0) 요청에서 IP, User-Agent, deviceType 파싱
         String ip         = UserDeviceInfoUtil.extractClientIp(request);
