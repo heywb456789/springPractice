@@ -13,6 +13,7 @@ import com.tomato.naraclub.common.interfaces.SearchTypeRequest;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,7 +52,14 @@ public class VideoListRequest implements SearchTypeRequest {
     @Schema(description = "카테고리")
     private OriginalCategory category;
 
+    @Schema(description = "정렬 기준: LATEST, POPULAR, SHARED")
+    private VideoSortType sortType;
+
+    @Schema(description = "정렬 방향: ASC, DESC")
     private Order sortDirection;
+
+    @Schema(description = "날짜 범위 (yyyy-MM-dd HH:mm:ss ~ yyyy-MM-dd HH:mm:ss)")
+    private String dateRange; // 추가: 프론트에서 'dateRange' 파라미터로 전달
 
     //실제 검색어 입력값
     @Schema(description = "검색")
@@ -75,14 +83,24 @@ public class VideoListRequest implements SearchTypeRequest {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime publishedAfter;
 
-
-    @Schema(description = "정렬 기준: LATEST, POPULAR, SHARED")
-    private VideoSortType sortType;
+    @Hidden
+    private static final DateTimeFormatter DATE_RANGE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     //날짜가 Null일 경우 필터 제외
     @Hidden
     public boolean nullDate() {
         return Objects.isNull(getFromTime()) || Objects.isNull(getToTime());
+    }
+
+    @Hidden
+    public void parseDateRange() {
+        if (dateRange != null && !dateRange.isBlank()) {
+            String[] parts = dateRange.split(" ~ ");
+            if (parts.length == 2) {
+                fromTime = LocalDateTime.parse(parts[0].trim(), DATE_RANGE_FORMATTER);
+                toTime = LocalDateTime.parse(parts[1].trim(), DATE_RANGE_FORMATTER);
+            }
+        }
     }
 
     /**
