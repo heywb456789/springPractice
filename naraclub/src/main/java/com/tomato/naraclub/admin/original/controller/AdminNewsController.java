@@ -1,11 +1,11 @@
 package com.tomato.naraclub.admin.original.controller;
 
 import com.tomato.naraclub.admin.original.dto.NewsListRequest;
+import com.tomato.naraclub.admin.original.dto.NewsArticleResponse;
 import com.tomato.naraclub.admin.original.service.AdminNewsService;
 import com.tomato.naraclub.admin.security.AdminUserDetails;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
-import com.tomato.naraclub.application.original.dto.VideoResponse;
 import com.tomato.naraclub.common.dto.ListDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -32,14 +32,14 @@ public class AdminNewsController {
             @RequestParam(name = "size", defaultValue = "10") int size,
             Model model){
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-        ListDTO<NewsResponse>
+        ListDTO<NewsArticleResponse> newsPage = adminNewsService.getNewsList(request, user, pageable);
 
-        int totalPages = videoPage.getPagination().getTotalPages();
-        int currentPage = videoPage.getPagination().getCurrentPage();
+        int totalPages = newsPage.getPagination().getTotalPages();
+        int currentPage = newsPage.getPagination().getCurrentPage();
         int startPage = Math.max(1, currentPage);
         int endPage = Math.min(startPage + 9, totalPages);
 
-        model.addAttribute("newsList", videoPage.getData());
+        model.addAttribute("newsList", newsPage.getData());
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("startPage", startPage);

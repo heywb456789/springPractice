@@ -1,5 +1,8 @@
 package com.tomato.naraclub.application.original.entity;
 
+import com.tomato.naraclub.admin.user.entity.Admin;
+import com.tomato.naraclub.application.board.entity.BoardPostImage;
+import com.tomato.naraclub.application.comment.entity.ArticleComments;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
 import com.tomato.naraclub.common.audit.Audit;
@@ -9,6 +12,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(
@@ -23,6 +27,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @SuperBuilder
 public class Article extends Audit{
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private Admin author;
 
     @Comment("제목")
     @Column(nullable = false)
@@ -45,16 +53,13 @@ public class Article extends Audit{
     @Column(name = "image_url", nullable = false, length = 500)
     private String thumbnailUrl;
 
-    @Comment("비디오 URL")
-    @Column(nullable = false)
-    private String videoUrl;
-
-    @Column(nullable = false)
-    private Integer durationSec;
-
     @Comment("조회수")
     @Column(nullable = false)
     private Long viewCount;
+
+    @Comment("댓글수")
+    @Column(nullable = false)
+    private Long commentCount;
 
     @Comment("공개 여부")
     @Column(nullable = false)
@@ -71,5 +76,16 @@ public class Article extends Audit{
     @Comment("토마토 기사 ID")
     @Column(nullable = false, unique = true)
     private String externalId;
+
+    @Comment("이미지 목록")
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArticleImage> images;
+
+    @Comment("댓글 목록")
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArticleComments> comments;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
 
 }
