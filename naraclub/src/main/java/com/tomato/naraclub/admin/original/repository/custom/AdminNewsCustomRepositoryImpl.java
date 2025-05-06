@@ -1,24 +1,20 @@
-package com.tomato.naraclub.admin.original.service;
+package com.tomato.naraclub.admin.original.repository.custom;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tomato.naraclub.admin.original.dto.NewsArticleResponse;
 import com.tomato.naraclub.admin.original.dto.NewsListRequest;
-import com.tomato.naraclub.admin.original.repository.AdminNewsRepository;
 import com.tomato.naraclub.admin.security.AdminUserDetails;
 import com.tomato.naraclub.common.dto.ListDTO;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
-@Service
-@Slf4j
 @RequiredArgsConstructor
-public class AdminNewsServiceImpl implements AdminNewsService{
+public class AdminNewsCustomRepositoryImpl implements AdminNewsCustomRepository{
 
-    private final AdminNewsRepository adminNewsRepository;
+    private final JPAQueryFactory query;
 
     @Override
     public ListDTO<NewsArticleResponse> getNewsList(NewsListRequest request, AdminUserDetails user, Pageable pageable) {
-        return adminNewsRepository.getNewsList(request, user, pageable);
+        return null;
     }
 }
