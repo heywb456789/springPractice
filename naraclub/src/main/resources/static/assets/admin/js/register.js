@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnSubmit   = document.getElementById('registerButton');
   const msgError    = document.getElementById('errorMsg');
 
+  const pwComplexityRe = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
+
   let isUsernameAvailable = false;
   let isPasswordMatch     = false;
 
@@ -86,8 +88,24 @@ document.addEventListener('DOMContentLoaded', function() {
   [fldPassword, fldConfirm].forEach(el =>
     el.addEventListener('input', () => {
       const pw = fldPassword.value;
+      const cf = fldConfirm.value;
+
+      // 1) 복잡도 체크
+      if (pw && !pwComplexityRe.test(pw)) {
+        isPasswordMatch = false;
+        msgPass.textContent = '영문, 숫자, 특수문자를 포함하여 8자 이상으로 입력해주세요.';
+        msgPass.className   = 'form-text text-danger';
+        fldPassword.classList.add('is-invalid');
+        updateSubmitButton();
+        return;
+      } else {
+        fldPassword.classList.remove('is-invalid');
+      }
+
+      //2) 일치 검사
       const ok = pw !== '' && pw === fldConfirm.value;
       isPasswordMatch = ok;
+
       if (fldConfirm.value === '') {
         msgPass.textContent = '';
       } else if (ok) {
@@ -99,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         msgPass.className   = 'form-text text-danger';
         fldConfirm.classList.add('is-invalid');
       }
+
       updateSubmitButton();
     })
   );

@@ -38,6 +38,9 @@ public enum ResponseStatus {
   ALREADY_VOTED("ER_4003","이미 투표 처리가 완료되었습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
 
   VIDEO_NOT_EXIST("ER_5001","비디오가 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
+
+  ARTICLE_NOT_EXIST("ER_6001","비디오가 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
+  THUMBNAIL_IS_NECESSARY("ER_6002","썸네일은 필수 입니다.", HttpStatus.BAD_REQUEST ),
   ;
   @JsonProperty("code")
   private final String code;

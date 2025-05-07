@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function () {
   function initPage() {
     // 이벤트 리스너 등록
     initEventListeners();
+
+    // 페이지 로드 애니메이션
+    animatePageLoad();
   }
 
   /**
@@ -70,13 +73,14 @@ document.addEventListener('DOMContentLoaded', function () {
    */
   async function confirmDelete() {
     if (!newsId) {
-      showAlert('삭제할 뉴스 ID가 없습니다.', 'warning');
+      showNotification('삭제할 뉴스 ID가 없습니다.', 'warning');
       deleteConfirmModal.hide();
       return;
     }
 
+    // 버튼 상태 업데이트
     btnConfirmDelete.disabled = true;
-    btnConfirmDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 삭제 중...';
+    btnConfirmDelete.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> 삭제 중...';
 
     try {
       const res = await adminAuthFetch(`/admin/news/delete/${newsId}`, {
@@ -90,20 +94,24 @@ document.addEventListener('DOMContentLoaded', function () {
       const result = await res.json();
 
       if (result.status.code === 'OK_0000') {
-        showAlert('뉴스가 성공적으로 삭제되었습니다.', 'success');
+        showNotification('뉴스가 성공적으로 삭제되었습니다.', 'success');
 
         // 삭제 성공 후 목록 페이지로 이동
         setTimeout(() => {
-          window.location.href = '/admin/news/list';
+          // 페이드아웃 효과 후 이동
+          document.body.classList.add('fade-out');
+          setTimeout(() => {
+            window.location.href = '/admin/news/list';
+          }, 300);
         }, 1000);
       } else {
         throw new Error(result.message || '삭제 중 오류가 발생했습니다.');
       }
     } catch (err) {
       console.error(err);
-      showAlert('삭제 중 오류가 발생했습니다: ' + err.message, 'danger');
+      showNotification('삭제 중 오류가 발생했습니다: ' + err.message, 'danger');
     } finally {
-      btnConfirmDelete.innerHTML = '삭제';
+      btnConfirmDelete.innerHTML = '<i class="mdi mdi-trash-can me-1"></i> 삭제';
       btnConfirmDelete.disabled = false;
       deleteConfirmModal.hide();
     }
@@ -114,7 +122,18 @@ document.addEventListener('DOMContentLoaded', function () {
    * @param {string} message - 알림 메시지
    * @param {string} type - 알림 타입 (success, danger, warning, info)
    */
-  function showAlert(message, type = 'info') {
+  function showNotification(message, type = 'info') {
+    // Hyper 테마 토스트 알림 사용 (Hyper 템플릿에 포함된 경우)
+    if (window.Hyper && window.Hyper.Toast) {
+      window.Hyper.Toast.show({
+        text: message,
+        position: 'top-right',
+        hideAfter: 5000,
+        type: type
+      });
+      return;
+    }
+
     // 커스텀 알림 시스템 사용
     if (window.CustomNotification) {
       window.CustomNotification.show(message, type);
@@ -124,4 +143,32 @@ document.addEventListener('DOMContentLoaded', function () {
     // 기본 alert 사용
     alert(message);
   }
+
+  /**
+   * 페이지 로드 시 애니메이션 효과
+   */
+  function animatePageLoad() {
+    // 카드 요소들을 순차적으로 페이드인
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(20px)';
+      card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+      setTimeout(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, 100 * (index + 1));
+    });
+  }
+
+  // 페이지 떠날 때 페이드 아웃 효과를 위한 스타일 추가
+  const style = document.createElement('style');
+  style.textContent = `
+    body.fade-out {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+  `;
+  document.head.appendChild(style);
 });

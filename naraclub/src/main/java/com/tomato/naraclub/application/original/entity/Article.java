@@ -1,12 +1,13 @@
 package com.tomato.naraclub.application.original.entity;
 
+import com.tomato.naraclub.admin.original.dto.NewsArticleResponse;
 import com.tomato.naraclub.admin.user.entity.Admin;
-import com.tomato.naraclub.application.board.entity.BoardPostImage;
 import com.tomato.naraclub.application.comment.entity.ArticleComments;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
+import java.util.stream.Collectors;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
@@ -36,9 +37,13 @@ public class Article extends Audit{
     @Column(nullable = false)
     private String title;
 
-    @Comment("설명 / 내용")
-    @Column(length = 2000)
-    private String description;
+    @Comment("소제목")
+    @Column(nullable = false)
+    private String subTitle;
+
+    @Comment("전체 HTML 콘텐츠")
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
     @Comment("토마토 오리지날 타입")
     @Enumerated(EnumType.STRING)
@@ -74,7 +79,7 @@ public class Article extends Audit{
     private boolean isHot;
 
     @Comment("토마토 기사 ID")
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true)
     private String externalId;
 
     @Comment("이미지 목록")
@@ -88,4 +93,23 @@ public class Article extends Audit{
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 
+    public NewsArticleResponse convertDTO() {
+        return NewsArticleResponse.builder()
+                .articleId(id)
+                .title(title)
+                .subTitle(subTitle)
+                .content(content)
+                .category(category)
+                .type(type)
+                .thumbnailUrl(thumbnailUrl)
+                .viewCount(viewCount)
+                .commentCount(commentCount)
+                .isPublic(isPublic)
+                .publishedAt(publishedAt)
+                .isHot(isHot)
+                .authorName(author.getName()) // 작성자 이름 가져오기
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+    }
 }

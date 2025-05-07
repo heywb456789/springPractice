@@ -1,5 +1,6 @@
 package com.tomato.naraclub.admin.original.dto;
 
+import com.tomato.naraclub.application.comment.dto.CommentResponse;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,8 @@ import java.util.List;
 public class NewsArticleResponse {
     private Long articleId;
     private String title;
-    private String description;
+    private String subTitle;
+    private String content;
     private OriginalType type;
     private OriginalCategory category;
     private String thumbnailUrl;
@@ -31,5 +33,6 @@ public class NewsArticleResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> imageUrls;
+    private List<CommentResponse> comments;
     private boolean isDeleted;
 }

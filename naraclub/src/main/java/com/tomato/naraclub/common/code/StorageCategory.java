@@ -2,7 +2,9 @@ package com.tomato.naraclub.common.code;
 
 public enum StorageCategory {
     VIDEO("videos"),
-    IMAGE("images");
+    IMAGE("images"),
+    NEWS_IMAGE("news-images"),
+    ;
 
     private final String folder;
 

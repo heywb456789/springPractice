@@ -39,16 +39,16 @@
           <div class="col-md-3">
             <label for="searchType" class="form-label">검색 유형</label>
             <select class="form-select" id="searchType" name="searchType">
-              <option value="VIDEO_TITLE" th:selected="${param.searchType == 'VIDEO_TITLE'}">제목</option>
-              <option value="VIDEO_DESCRIPTION" th:selected="${param.searchType == 'VIDEO_DESCRIPTION'}">설명
+              <option value="VIDEO_TITLE" th:selected="${request.searchType == 'VIDEO_TITLE'}">제목</option>
+              <option value="VIDEO_DESCRIPTION" th:selected="${request.searchType == 'VIDEO_DESCRIPTION'}">설명
               </option>
-              <option value="VIDEO_AUTHOR" th:selected="${param.searchType == 'VIDEO_AUTHOR'}">등록자</option>
+              <option value="VIDEO_AUTHOR" th:selected="${request.searchType == 'VIDEO_AUTHOR'}">등록자</option>
             </select>
           </div>
           <div class="col-md-6">
             <label for="searchText" class="form-label">검색어</label>
             <input type="text" class="form-control" id="searchText" name="searchText"
-                   th:value="${param.searchText}" placeholder="검색어를 입력하세요">
+                   th:value="${request.searchText}" placeholder="검색어를 입력하세요">
           </div>
           <div class="col-md-3">
             <label for="category" class="form-label">카테고리</label>
@@ -56,7 +56,7 @@
               <option value="">전체</option>
               <option th:each="cat : ${categories}" th:value="${cat}"
                       th:text="${cat.displayName}"
-                      th:selected="${param.category == cat}">
+                      th:selected="${request.category == cat}">
                 카테고리 이름
               </option>
             </select>
@@ -64,49 +64,49 @@
           <div class="col-md-3">
             <label for="type" class="form-label">타입</label>
             <select class="form-select" id="type" name="type">
-              <option value="" th:selected="${param.type == null}">전체</option>
-              <option value="true" th:selected="${param.type == 'YOUTUBE_VIDEO'}">공개</option>
-              <option value="false" th:selected="${param.type == 'YOUTUBE_SHORTS'}">비공개</option>
+              <option value="" th:selected="${request.type == null}">전체</option>
+              <option value="true" th:selected="${request.type == 'YOUTUBE_VIDEO'}">공개</option>
+              <option value="false" th:selected="${request.type == 'YOUTUBE_SHORTS'}">비공개</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="publishStatus" class="form-label">공개 상태</label>
             <select class="form-select" id="publishStatus" name="publishStatus">
-              <option value="" th:selected="${param.publishStatus == null}">전체</option>
-              <option value="true" th:selected="${param.publishStatus == 'true'}">공개</option>
-              <option value="false" th:selected="${param.publishStatus == 'false'}">비공개</option>
+              <option value="" th:selected="${request.publishStatus == null}">전체</option>
+              <option value="true" th:selected="${request.publishStatus == 'true'}">공개</option>
+              <option value="false" th:selected="${request.publishStatus == 'false'}">비공개</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="isHot" class="form-label">핫 콘텐츠</label>
             <select class="form-select" id="isHot" name="isHot">
-              <option value="" th:selected="${param.isHot == null}">전체</option>
-              <option value="true" th:selected="${param.isHot == 'true'}">핫 콘텐츠만</option>
-              <option value="false" th:selected="${param.isHot == 'false'}">일반 콘텐츠만</option>
+              <option value="" th:selected="${request.isHot == null}">전체</option>
+              <option value="true" th:selected="${request.isHot == 'true'}">핫 콘텐츠만</option>
+              <option value="false" th:selected="${request.isHot == 'false'}">일반 콘텐츠만</option>
             </select>
           </div>
           <div class="col-md-3">
-            <label for="sortBy" class="form-label">정렬 기준</label>
-            <select class="form-select" id="sortBy" name="sortBy">
+            <label for="sortType" class="form-label">정렬 기준</label>
+            <select class="form-select" id="sortType" name="sortType">
               <option value="PUBLISHED"
-                      th:selected="${param.sortBy == 'PUBLISHED' || param.sortBy == null}">공개일
+                      th:selected="${request.sortType == 'PUBLISHED' || request.sortType == null}">공개일
               </option>
-              <option value="LATEST" th:selected="${param.sortBy == 'LATEST'}">등록일
+              <option value="LATEST" th:selected="${request.sortType == 'LATEST'}">등록일
               </option>
-              <option value="POPULAR" th:selected="${param.sortBy == 'POPULAR'}">조회수</option>
-              <option value="COMMENT" th:selected="${param.sortBy == 'COMMENT'}">댓글수
+              <option value="POPULAR" th:selected="${request.sortType == 'POPULAR'}">조회수</option>
+              <option value="COMMENT" th:selected="${request.sortType == 'COMMENT'}">댓글수
               </option>
-              <option value="TITLE" th:selected="${param.sortBy == 'TITLE'}">제목</option>
+              <option value="TITLE" th:selected="${request.sortType == 'TITLE'}">제목</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="sortDirection" class="form-label">정렬 방향</label>
             <select class="form-select" id="sortDirection" name="sortDirection">
               <option value="DESC"
-                      th:selected="${param.sortDirection == 'DESC' || param.sortDirection == null}">
+                      th:selected="${request.sortDirection == 'DESC' || request.sortDirection == null}">
                 내림차순
               </option>
-              <option value="ASC" th:selected="${param.sortDirection == 'ASC'}">오름차순</option>
+              <option value="ASC" th:selected="${request.sortDirection == 'ASC'}">오름차순</option>
             </select>
           </div>
           <div class="col-md-6">
@@ -114,7 +114,7 @@
             <div class="input-group date-range-input-group">
               <span class="input-group-text"><i class="fas fa-calendar"></i></span>
               <input type="text" class="form-control" id="dateRange" name="dateRange"
-                     th:value="${param.dateRange}" placeholder="날짜 범위 선택">
+                     th:value="${request.dateRange}" placeholder="날짜 범위 선택">
             </div>
           </div>
           <div class="col-md-6 d-flex align-items-end">

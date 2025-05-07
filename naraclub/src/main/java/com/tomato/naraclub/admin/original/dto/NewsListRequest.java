@@ -4,10 +4,13 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
+import com.tomato.naraclub.admin.original.code.NewsSearchType;
+import com.tomato.naraclub.admin.original.code.NewsSortType;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
 import com.tomato.naraclub.application.original.code.VideoSearchType;
 import com.tomato.naraclub.application.original.code.VideoSortType;
+import com.tomato.naraclub.application.original.entity.QArticle;
 import com.tomato.naraclub.application.original.entity.QVideo;
 import com.tomato.naraclub.common.interfaces.SearchTypeRequest;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -24,9 +27,17 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
+//searchType=VIDEO_AUTHOR
+// &searchText=%EC%82%BC%EC%84%B1
+// &category=
+// &publishStatus=
+// &isHot=
+// &sortBy=PUBLISHED
+// &sortDirection=DESC
+// &dateRange=
 public class NewsListRequest implements SearchTypeRequest {
     @Schema(description = "검색 항목")
-    private VideoSearchType searchType;
+    private NewsSearchType searchType;
 
     @Schema(description = "오리지널 타입")
     private OriginalType type;
@@ -35,7 +46,7 @@ public class NewsListRequest implements SearchTypeRequest {
     private OriginalCategory category;
 
     @Schema(description = "정렬 기준: LATEST, POPULAR, SHARED")
-    private VideoSortType sortType;
+    private NewsSortType sortType;
 
     @Schema(description = "정렬 방향: ASC, DESC")
     private Order sortDirection;
@@ -75,15 +86,33 @@ public class NewsListRequest implements SearchTypeRequest {
     }
 
     @Hidden
-    public void parseDateRange() {
-        if (dateRange != null && !dateRange.isBlank()) {
-            String[] parts = dateRange.split(" ~ ");
-            if (parts.length == 2) {
-                fromTime = LocalDateTime.parse(parts[0].trim(), DATE_RANGE_FORMATTER);
-                toTime = LocalDateTime.parse(parts[1].trim(), DATE_RANGE_FORMATTER);
+public void parseDateRange() {
+    if (dateRange != null && !dateRange.isBlank()) {
+        String[] parts = dateRange.split(" ~ ");
+        if (parts.length == 2) {
+            try {
+                // 날짜 형식이 yyyy-MM-dd인 경우 시간 부분 추가
+                String fromDateStr = parts[0].trim();
+                String toDateStr = parts[1].trim();
+
+                if (fromDateStr.length() == 10) { // yyyy-MM-dd 형식인 경우
+                    fromDateStr = fromDateStr + " 00:00:00";
+                }
+
+                if (toDateStr.length() == 10) { // yyyy-MM-dd 형식인 경우
+                    toDateStr = toDateStr + " 23:59:59";
+                }
+
+                fromTime = LocalDateTime.parse(fromDateStr, DATE_RANGE_FORMATTER);
+                toTime = LocalDateTime.parse(toDateStr, DATE_RANGE_FORMATTER);
+            } catch (Exception e) {
+                // 파싱 오류 처리
+                fromTime = null;
+                toTime = null;
             }
         }
     }
+}
 
     /**
      * 검색어가 없으면 조건 제외 GET /api/videos?searchType=BOARD_TITLE_CONTENT&searchText=토마토
@@ -97,19 +126,19 @@ public class NewsListRequest implements SearchTypeRequest {
     }
 
     @Hidden
-    public BooleanExpression getOriginalTypeCondition(QVideo video) {
+    public BooleanExpression getOriginalTypeCondition(QArticle article) {
         if (type == null) {
-            return video.type.ne(OriginalType.NEWS_ARTICLE);
+            return null;
         }
-        return video.type.eq(type);
+        return article.type.eq(type);
     }
 
     @Hidden
-    public BooleanExpression getOriginalCategoryCondition(QVideo video) {
+    public BooleanExpression getOriginalCategoryCondition(QArticle article) {
         if (category == null) {
             return null;
         }
-        return video.category.eq(category);
+        return article.category.eq(category);
     }
 
     /**
@@ -136,8 +165,8 @@ public class NewsListRequest implements SearchTypeRequest {
 
     @Hidden
     public OrderSpecifier<?> getSortOrder() {
-        VideoSortType st = (this.sortType != null ? this.sortType
-                : VideoSortType.LATEST);
+        NewsSortType st = (this.sortType != null ? this.sortType
+                : NewsSortType.LATEST);
         Order dir = (this.sortDirection != null ? this.sortDirection
                 : Order.DESC);
         return st.order(dir);
@@ -145,22 +174,22 @@ public class NewsListRequest implements SearchTypeRequest {
 
     @Hidden
     public BooleanExpression isNotDeleted() {
-        return QVideo.video.deleted.eq(false);
+        return QArticle.article.deleted.eq(false);
     }
 
     @Hidden
-    public BooleanExpression getPublishStatus(QVideo video) {
+    public BooleanExpression getPublishStatus(QArticle article) {
         if (publishStatus == null) {
             return null;
         }
-        return video.isPublic.eq(publishStatus);
+        return article.isPublic.eq(publishStatus);
     }
 
     @Hidden
-    public BooleanExpression getHotVideo(QVideo video) {
+    public BooleanExpression getHotVideo(QArticle article) {
         if (isHot == null) {
             return null;
         }
-        return video.isHot.eq(isHot);
+        return article.isHot.eq(isHot);
     }
 }

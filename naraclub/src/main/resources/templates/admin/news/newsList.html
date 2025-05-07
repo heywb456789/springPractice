@@ -25,7 +25,7 @@
   <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <h4 class="page-title">뉴스 목록</h4>
     <div class="page-actions">
-      <a href="/admin/news/create" class="btn btn-primary">
+      <a href="/admin/original/news/create" class="btn btn-primary">
         <i class="fas fa-plus"></i> 뉴스 작성
       </a>
     </div>
@@ -34,20 +34,26 @@
   <!-- Filter Card -->
   <div class="card mb-4">
     <div class="card-body">
-      <form id="searchForm" method="get" action="/admin/news/list">
+      <form id="searchForm" method="get" action="/admin/original/news/list">
         <div class="row g-3">
           <div class="col-md-3">
             <label for="searchType" class="form-label">검색 유형</label>
             <select class="form-select" id="searchType" name="searchType">
-              <option value="TITLE" th:selected="${param.searchType == 'TITLE'}">제목</option>
-              <option value="CONTENT" th:selected="${param.searchType == 'CONTENT'}">내용</option>
-              <option value="AUTHOR" th:selected="${param.searchType == 'AUTHOR'}">작성자</option>
+              <option value="ARTICLE_TITLE"
+                      th:selected="${searchRequest.searchType == 'ARTICLE_TITLE'}">제목
+              </option>
+              <option value="ARTICLE_CONTENT"
+                      th:selected="${searchRequest.searchType == 'ARTICLE_CONTENT'}">내용
+              </option>
+              <option value="ARTICLE_AUTHOR"
+                      th:selected="${searchRequest.searchType == 'ARTICLE_AUTHOR'}">작성자
+              </option>
             </select>
           </div>
           <div class="col-md-6">
             <label for="searchText" class="form-label">검색어</label>
             <input type="text" class="form-control" id="searchText" name="searchText"
-                   th:value="${param.searchText}" placeholder="검색어를 입력하세요">
+                   th:value="${searchRequest.searchText}" placeholder="검색어를 입력하세요">
           </div>
           <div class="col-md-3">
             <label for="category" class="form-label">카테고리</label>
@@ -55,7 +61,7 @@
               <option value="">전체</option>
               <option th:each="cat : ${categories}" th:value="${cat}"
                       th:text="${cat.displayName}"
-                      th:selected="${param.category == cat}">
+                      th:selected="${searchRequest.category == cat}">
                 카테고리 이름
               </option>
             </select>
@@ -63,39 +69,43 @@
           <div class="col-md-3">
             <label for="publishStatus" class="form-label">공개 상태</label>
             <select class="form-select" id="publishStatus" name="publishStatus">
-              <option value="" th:selected="${param.publishStatus == null}">전체</option>
-              <option value="true" th:selected="${param.publishStatus == 'true'}">공개</option>
-              <option value="false" th:selected="${param.publishStatus == 'false'}">비공개</option>
+              <option value="" th:selected="${searchRequest.publishStatus == null}">전체</option>
+              <option value="true" th:selected="${searchRequest.publishStatus == true}">공개</option>
+              <option value="false" th:selected="${searchRequest.publishStatus == false}">비공개
+              </option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="isHot" class="form-label">핫 뉴스</label>
             <select class="form-select" id="isHot" name="isHot">
-              <option value="" th:selected="${param.isHot == null}">전체</option>
-              <option value="true" th:selected="${param.isHot == 'true'}">핫 뉴스만</option>
-              <option value="false" th:selected="${param.isHot == 'false'}">일반 뉴스만</option>
+              <option value="" th:selected="${searchRequest.isHot == null}">전체</option>
+              <option value="true" th:selected="${searchRequest.isHot == true}">핫 뉴스만</option>
+              <option value="false" th:selected="${searchRequest.isHot == false}">일반 뉴스만</option>
             </select>
           </div>
           <div class="col-md-3">
-            <label for="sortBy" class="form-label">정렬 기준</label>
-            <select class="form-select" id="sortBy" name="sortBy">
+            <label for="sortType" class="form-label">정렬 기준</label>
+            <select class="form-select" id="sortType" name="sortType">
               <option value="PUBLISHED"
-                      th:selected="${param.sortBy == 'PUBLISHED' || param.sortBy == null}">공개일
+                      th:selected="${searchRequest.sortType == 'PUBLISHED' || searchRequest.sortType == null}">
+                공개일
               </option>
-              <option value="LATEST" th:selected="${param.sortBy == 'LATEST'}">등록일
+              <option value="LATEST" th:selected="${searchRequest.sortType == 'LATEST'}">등록일
               </option>
-              <option value="POPULAR" th:selected="${param.sortBy == 'POPULAR'}">조회수</option>
-              <option value="TITLE" th:selected="${param.sortBy == 'TITLE'}">제목</option>
+              <option value="POPULAR" th:selected="${searchRequest.sortType == 'POPULAR'}">조회수
+              </option>
+              <option value="TITLE" th:selected="${searchRequest.sortType == 'TITLE'}">제목</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="sortDirection" class="form-label">정렬 방향</label>
             <select class="form-select" id="sortDirection" name="sortDirection">
               <option value="DESC"
-                      th:selected="${param.sortDirection == 'DESC' || param.sortDirection == null}">
+                      th:selected="${searchRequest.sortDirection == 'DESC' || searchRequest.sortDirection == null}">
                 내림차순
               </option>
-              <option value="ASC" th:selected="${param.sortDirection == 'ASC'}">오름차순</option>
+              <option value="ASC" th:selected="${searchRequest.sortDirection == 'ASC'}">오름차순
+              </option>
             </select>
           </div>
           <div class="col-md-6">
@@ -103,7 +113,7 @@
             <div class="input-group date-range-input-group">
               <span class="input-group-text"><i class="fas fa-calendar"></i></span>
               <input type="text" class="form-control" id="dateRange" name="dateRange"
-                     th:value="${param.dateRange}" placeholder="날짜 범위 선택">
+                     th:value="${searchRequest.dateRange}" placeholder="날짜 범위 선택">
             </div>
           </div>
           <div class="col-md-6 d-flex align-items-end">
@@ -129,9 +139,9 @@
         </span>
       </div>
       <div class="header-actions">
-        <button class="btn btn-sm btn-outline-primary me-2" id="btnExportCSV">
-          <i class="fas fa-download"></i> CSV 내보내기
-        </button>
+        <!--        <button class="btn btn-sm btn-outline-primary me-2" id="btnExportCSV">-->
+        <!--          <i class="fas fa-download"></i> CSV 내보내기-->
+        <!--        </button>-->
         <div class="btn-group">
           <button type="button" class="btn btn-sm btn-outline-secondary" id="btnViewGrid">
             <i class="fas fa-th-large"></i>
@@ -165,20 +175,21 @@
           </td>
         </tr>
         <tr th:unless="${newsList.empty}" th:each="news : ${newsList}">
-          <td th:text="${news.newsId}">1</td>
+          <td th:text="${news.articleId}">1</td>
           <td>
             <div class="thumbnail-wrapper">
               <img th:src="${news.thumbnailUrl}" class="thumbnail-img" alt="썸네일">
             </div>
           </td>
           <td>
-            <a th:href="@{/admin/news/{id}(id=${news.newsId})}" class="news-title-link" th:text="${news.title}">뉴스 제목</a>
+            <a th:href="@{/admin/original/news/{id}(id=${news.articleId})}" class="news-title-link"
+               th:text="${news.title}">뉴스 제목</a>
             <div class="news-meta text-muted">
               <small th:if="${news.isHot}" class="ms-2">
                 <i class="fas fa-fire text-warning"></i> 핫 뉴스
               </small>
               <small class="ms-2">
-                <i class="fas fa-user"></i> <span th:text="${news.author}">작성자</span>
+                <i class="fas fa-user"></i> <span th:text="${news.authorName}">작성자</span>
               </small>
             </div>
           </td>
@@ -195,15 +206,15 @@
           </td>
           <td>
             <div class="btn-group">
-              <a th:href="@{/admin/news/{id}(id=${news.newsId})}"
+              <a th:href="@{/admin/original/news/{id}(id=${news.articleId})}"
                  class="btn btn-sm btn-outline-primary">
                 <i class="fas fa-eye"></i>
               </a>
-              <a th:href="@{/admin/news/update/{id}(id=${news.newsId})}"
+              <a th:href="@{/admin/original/news/update/{id}(id=${news.articleId})}"
                  class="btn btn-sm btn-outline-secondary">
                 <i class="fas fa-edit"></i>
               </a>
-              <button th:data-news-id="${news.newsId}"
+              <button th:data-news-id="${news.articleId}"
                       class="btn btn-sm btn-outline-danger btn-delete">
                 <i class="fas fa-trash"></i>
               </button>
@@ -224,16 +235,17 @@
             </div>
             <div class="news-info p-3">
               <h6 class="news-grid-title">
-                <a th:href="@{/admin/news/{id}(id=${news.newsId})}" th:text="${news.title}">뉴스 제목</a>
+                <a th:href="@{/admin/original/news/{id}(id=${news.articleId})}"
+                   th:text="${news.title}">뉴스 제목</a>
               </h6>
               <div class="news-grid-meta d-flex justify-content-between align-items-center">
                 <div class="text-muted">
                   <small>
                     <i class="fas fa-eye"></i> <span
-                          th:text="${#numbers.formatInteger(news.viewCount, 0, 'COMMA')}">0</span>
+                      th:text="${#numbers.formatInteger(news.viewCount, 0, 'COMMA')}">0</span>
                   </small>
                   <small class="ms-2">
-                    <i class="fas fa-user"></i> <span th:text="${news.author}">작성자</span>
+                    <i class="fas fa-user"></i> <span th:text="${news.authorName}">작성자</span>
                   </small>
                 </div>
                 <div>
@@ -246,15 +258,15 @@
                 <small class="text-muted"
                        th:text="${#temporals.format(news.createdAt, 'yyyy-MM-dd')}">2023-01-01</small>
                 <div class="btn-group btn-group-sm">
-                  <a th:href="@{/admin/news/{id}(id=${news.newsId})}"
+                  <a th:href="@{/admin/original/news/{id}(id=${news.articleId})}"
                      class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-eye"></i>
                   </a>
-                  <a th:href="@{/admin/news/update/{id}(id=${news.newsId})}"
+                  <a th:href="@{/admin/original/news/update/{id}(id=${news.articleId})}"
                      class="btn btn-sm btn-outline-secondary">
                     <i class="fas fa-edit"></i>
                   </a>
-                  <button th:data-news-id="${news.newsId}"
+                  <button th:data-news-id="${news.articleId}"
                           class="btn btn-sm btn-outline-danger btn-delete">
                     <i class="fas fa-trash"></i>
                   </button>
@@ -277,7 +289,7 @@
           <!-- First Page -->
           <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/news/list(page=0, size=${newsList.size}, searchType=${param.searchType}, searchText=${param.searchText}, category=${param.category}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/news/list(page=0, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="First">
               <span aria-hidden="true">&laquo;&laquo;</span>
             </a>
@@ -286,7 +298,7 @@
           <!-- Previous Page -->
           <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/news/list(page=${currentPage - 2}, size=${newsList.size}, searchType=${param.searchType}, searchText=${param.searchText}, category=${param.category}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/news/list(page=${currentPage - 2}, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
@@ -297,14 +309,14 @@
               th:each="pageNumber : ${#numbers.sequence(currentPage - 2 <= 0 ? 1 : currentPage - 2, currentPage + 2 >= totalPages ? totalPages : currentPage + 2)}"
               th:classappend="${pageNumber == currentPage ? 'active' : ''}">
             <a class="page-link"
-               th:href="@{/admin/news/list(page=${pageNumber - 1}, size=${newsList.size}, searchType=${param.searchType}, searchText=${param.searchText}, category=${param.category}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/news/list(page=${pageNumber - 1}, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                th:text="${pageNumber}">1</a>
           </li>
 
           <!-- Next Page -->
           <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/news/list(page=${currentPage}, size=${newsList.size}, searchType=${param.searchType}, searchText=${param.searchText}, category=${param.category}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/news/list(page=${currentPage}, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>
@@ -313,7 +325,7 @@
           <!-- Last Page -->
           <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/news/list(page=${totalPages - 1}, size=${newsList.size}, searchType=${param.searchType}, searchText=${param.searchText}, category=${param.category}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/news/list(page=${totalPages - 1}, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Last">
               <span aria-hidden="true">&raquo;&raquo;</span>
             </a>
@@ -351,7 +363,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
   <script
-          src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/plugins/rangePlugin.min.js"></script>
+      src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/plugins/rangePlugin.min.js"></script>
   <script th:src="@{/assets/admin/js/newsList.js}" type="module"></script>
 </customJS>
 </body>
