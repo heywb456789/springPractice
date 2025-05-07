@@ -1,5 +1,6 @@
 import {optionalAuthFetch} from '../commonFetch.js';
 import VideoService from "./video-service.js";
+import NewsArticleService from "./article-service.js";
 
 // 현재 활성화된 탭과 컨텐츠 타입 매핑
 const TAB_CONTENT_TYPE = {
@@ -79,8 +80,14 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
   try {
     // console.log(`API 호출: 페이지=${page}, 크기=${size}, 타입=${contentType}`);
     // API 호출
-    const response = await VideoService.getLatestVideos(page, size,
+    console.log(contentType);
+    let response = '';
+    if(contentType === 'NEWS_ARTICLE'){
+      response = await NewsArticleService.getLatestArticles(page, size, contentType, keyword);
+    }else{
+      response = await VideoService.getLatestVideos(page, size,
         contentType, keyword);
+    }
 
     // 응답 데이터 확인
     if (!response || !response.response || !response.response.data) {
