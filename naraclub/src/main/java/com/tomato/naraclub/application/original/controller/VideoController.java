@@ -22,6 +22,7 @@ public class VideoController {
 
     private final VideoService videoService;
 
+    @Deprecated
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDTO<VideoResponse> upload(@ModelAttribute @Valid VideoUploadRequest req) {
 

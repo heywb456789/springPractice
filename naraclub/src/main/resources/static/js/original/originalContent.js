@@ -1,6 +1,6 @@
 import {optionalAuthFetch} from '../commonFetch.js';
 import VideoService from "./video-service.js";
-import NewsArticleService from "./article-service.js";
+import NewsArticleService from "./news-service.js";
 
 // 현재 활성화된 탭과 컨텐츠 타입 매핑
 const TAB_CONTENT_TYPE = {
@@ -83,7 +83,7 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
     console.log(contentType);
     let response = '';
     if(contentType === 'NEWS_ARTICLE'){
-      response = await NewsArticleService.getLatestArticles(page, size, contentType, keyword);
+      response = await NewsArticleService.getNewsList(page, size, '', keyword);
     }else{
       response = await VideoService.getLatestVideos(page, size,
         contentType, keyword);
