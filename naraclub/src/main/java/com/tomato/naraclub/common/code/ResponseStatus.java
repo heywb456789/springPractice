@@ -41,6 +41,8 @@ public enum ResponseStatus {
 
   ARTICLE_NOT_EXIST("ER_6001","비디오가 존재하지 않습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
   THUMBNAIL_IS_NECESSARY("ER_6002","썸네일은 필수 입니다.", HttpStatus.BAD_REQUEST ),
+
+  ACTIVITY_NOT_EXIST("ER_7001","활동내역이 존재하지 않습니다.", HttpStatus.BAD_REQUEST ),
   ;
   @JsonProperty("code")
   private final String code;

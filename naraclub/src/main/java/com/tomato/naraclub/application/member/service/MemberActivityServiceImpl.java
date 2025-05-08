@@ -12,6 +12,7 @@ import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.ResponseStatus;
 import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.exception.APIException;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -61,5 +62,23 @@ public class MemberActivityServiceImpl implements MemberActivityService {
             .build());
 
         return saved.convertDTO();
+    }
+
+    @Override
+    @Transactional
+    public MemberActivityResponse deleteMemberActivity(Long id, MemberUserDetails userDetails) {
+        Member member = memberRepository.findByIdAndStatus(userDetails.getMember().getId(), MemberStatus.ACTIVE)
+            .orElseThrow(() -> new APIException(ResponseStatus.FORBIDDEN));
+
+        MemberActivity memberActivity = memberActivityRepository.findById(id)
+            .orElseThrow(() -> new APIException(ResponseStatus.ARTICLE_NOT_EXIST));
+
+        if(!Objects.equals(memberActivity.getAuthor().getId(), member.getId())) {
+            throw new APIException(ResponseStatus.FORBIDDEN);
+        }
+
+        memberActivity.delete();
+
+        return new MemberActivityResponse();
     }
 }

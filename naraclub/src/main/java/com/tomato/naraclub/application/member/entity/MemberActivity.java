@@ -76,4 +76,8 @@ public class MemberActivity extends Audit {
             .createdAt(createdAt)
             .build();
     }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }

@@ -92,7 +92,7 @@ public class SecurityConfig {
                     "/login/**", "/main/**", "/board/**", "/components/**",
                     "/bootstrap/**", "/css/**", "/js/**", "/images/**",
                     "/favicon.ico", "/uploads/**", "/vote/**", "/original/**",
-                        "/assets/**", "/side/**"
+                        "/assets/**", "/side/**", "/mypage/**"
                 ).permitAll()
 
                 // 4) 그 외 모든 요청은 인증 필요

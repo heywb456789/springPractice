@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const selSec = document.getElementById('filter-section');
   const selFld = document.getElementById('filter-field');
   const searchIcon = searchBtn.querySelector('i');
+  const myPageBtn = document.querySelector('.profile-button');
 
   // 패널 토글
   searchBtn.addEventListener('click', () => {
@@ -31,6 +32,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       input.focus();
     }
   });
+
+  //마이페이지 클릭함수
+  myPageBtn.addEventListener('click',()=>{
+    window.location.href = '/mypage/mypage.html'
+  })
 
   // 검색 실행 함수
   function doHeaderSearch() {

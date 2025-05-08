@@ -373,7 +373,7 @@ async function deleteActivity(id, stage) {
     }
 
     // 현재 페이지 데이터 새로고침
-    fetchActivities(currentPage);
+    fetchActivities(0);
 
     // 삭제 완료 메시지
     showSuccessMessage('활동 기록이 삭제되었습니다.');

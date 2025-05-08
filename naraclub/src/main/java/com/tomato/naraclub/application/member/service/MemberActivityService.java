@@ -19,4 +19,6 @@ public interface MemberActivityService {
     ListDTO<MemberActivityResponse> getMemberActivities(MemberUserDetails userDetails, Pageable pageable);
 
     MemberActivityResponse createMemberActivity(MemberUserDetails userDetails, MemberActivityRequest activity);
+
+    MemberActivityResponse deleteMemberActivity(Long id, MemberUserDetails userDetails);
 }
