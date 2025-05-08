@@ -17,14 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.user.entity
- * @fileName : Admin
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @Table(
     name = "t_admin",
     indexes = {

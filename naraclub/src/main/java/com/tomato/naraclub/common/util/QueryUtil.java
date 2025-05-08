@@ -16,20 +16,23 @@ public class QueryUtil {
     throw new IllegalStateException("Utility class");
   }
 
-
+  // 단순 변환용: 필드 필터링 없이 전체 Sort 변환
   public static OrderSpecifier<?>[] convertOrders(Sort sort) {
     return convertOrders(sort, null);
   }
 
+  // 필드 필터링을 포함한 변환: DTO 필드명 기준으로 없는 필드는 무시
   public static <T> OrderSpecifier<?>[] convertOrders(Sort sort, Class<T> responseClass) {
     if (sort.isUnsorted()) {
       return new OrderSpecifier[0];
     }
+    // 클래스가 지정되지 않으면 전체 변환
     if (responseClass == null) {
       return sort.toList().stream()
           .map(QueryUtil::convertOrder)
           .toArray(OrderSpecifier[]::new);
     }
+    // 클래스가 지정된 경우: 존재하는 필드만 필터링
     var fieldNames = Arrays.stream(responseClass.getDeclaredFields()).map(Field::getName).toList();
     return sort.toList().stream()
         .filter(order -> fieldNames.contains(order.getProperty()))

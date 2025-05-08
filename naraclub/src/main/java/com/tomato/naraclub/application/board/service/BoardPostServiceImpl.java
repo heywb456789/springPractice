@@ -51,9 +51,9 @@ public class BoardPostServiceImpl implements BoardPostService {
     public BoardPostResponse getPost(Long postId, MemberUserDetails userDetails, HttpServletRequest request ) {
 
         // 0) 요청에서 IP, User-Agent, deviceType 파싱
-        String ip         = UserDeviceInfoUtil.extractClientIp(request);
-        String userAgent  = UserDeviceInfoUtil.defaultString(request.getHeader("User-Agent"));
-        String deviceType = UserDeviceInfoUtil.determineDeviceType(userAgent);
+        String ip         = UserDeviceInfoUtil.getClientIp(request);
+        String userAgent  = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
+        String deviceType = UserDeviceInfoUtil.getDeviceType(userAgent);
 
         // 1) 로그인 정보 있으면 좋아요 여부 내려주기
         Optional<Member> memberOpt = Optional.ofNullable(userDetails)

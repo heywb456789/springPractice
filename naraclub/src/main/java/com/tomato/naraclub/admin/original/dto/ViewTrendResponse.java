@@ -6,14 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.original.dto
- * @fileName : ViewTrendResponse
- * @date : 2025-05-02
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

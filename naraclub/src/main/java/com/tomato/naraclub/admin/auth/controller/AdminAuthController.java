@@ -10,14 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.auth.controller
- * @fileName : AdminAuthController
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @Controller
 @RequestMapping("/admin/auth")
 public class AdminAuthController {

@@ -11,6 +11,7 @@ import com.tomato.naraclub.common.audit.Audit;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -45,11 +46,13 @@ public class VotePost extends Audit {
 
     @Comment("투표 선택지")
     @OneToMany(mappedBy = "votePost", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VoteOption> voteOptions;
+    @Builder.Default
+    private List<VoteOption> voteOptions = new ArrayList<>();
 
     @Comment("댓글 목록")
     @OneToMany(mappedBy = "votePost", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VoteComments> comments;
+    @Builder.Default
+    private List<VoteComments> comments = new ArrayList<>();
 
     @Comment("댓글 수")
     private long commentCount;
@@ -75,7 +78,8 @@ public class VotePost extends Audit {
     protected LocalDateTime endDate;
 
     @Column(name = "is_deleted", nullable = false)
-    private boolean deleted;
+    @Builder.Default
+    private boolean deleted = false;
 
     public void increment() {
         this.voteCount++;

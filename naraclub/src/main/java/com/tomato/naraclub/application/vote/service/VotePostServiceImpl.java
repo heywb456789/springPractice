@@ -1,8 +1,5 @@
 package com.tomato.naraclub.application.vote.service;
 
-import com.tomato.naraclub.application.board.entity.BoardPost;
-import com.tomato.naraclub.application.board.entity.BoardPostLike;
-import com.tomato.naraclub.application.board.entity.BoardPostViewHistory;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.security.MemberUserDetails;
@@ -61,9 +58,9 @@ public class VotePostServiceImpl implements VotePostService {
     @Override
     public VotePostResponse getVoteDetailById(Long id, MemberUserDetails userDetails, HttpServletRequest request) {
         // 0) 요청에서 IP, User-Agent, deviceType 파싱
-        String ip         = UserDeviceInfoUtil.extractClientIp(request);
-        String userAgent  = UserDeviceInfoUtil.defaultString(request.getHeader("User-Agent"));
-        String deviceType = UserDeviceInfoUtil.determineDeviceType(userAgent);
+        String ip         = UserDeviceInfoUtil.getClientIp(request);
+        String userAgent  = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
+        String deviceType = UserDeviceInfoUtil.getDeviceType(userAgent);
 
         // 1) 로그인 정보 있으면 좋아요 여부 내려주기
         Optional<Member> member = Optional.ofNullable(userDetails)

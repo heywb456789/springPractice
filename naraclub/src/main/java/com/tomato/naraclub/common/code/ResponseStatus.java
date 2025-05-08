@@ -21,7 +21,7 @@ public enum ResponseStatus {
   INTERNAL_SERVER_ERROR("ER_9999", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   EXIST_USER("ER_1001", "이미 가입된 계정입니다.", HttpStatus.BAD_REQUEST),
   WITHDRAWAL_USER("ER_1002", "탈퇴한 회원입니다. 재가입 해주세요.", HttpStatus.UNAUTHORIZED),
-  FORBIDDEN("ER_1003", "권한이 없는 사용자입니다.", HttpStatus.FORBIDDEN),
+  FORBIDDEN("ER_1003", "권한이 없는 사용자입니다. 고객센터에 문의 부탁드립니다.", HttpStatus.FORBIDDEN),
   UNAUTHORIZED("ER_1004", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
   UNAUTHORIZED_ID_PW("ER_1005", "아이디 비밀번호를 확인해주세요.", HttpStatus.UNAUTHORIZED),
 

@@ -1,11 +1,14 @@
 package com.tomato.naraclub.application.member.entity;
 
 import com.tomato.naraclub.application.member.dto.MemberDTO;
+import com.tomato.naraclub.application.vote.entity.VoteOption;
 import com.tomato.naraclub.common.audit.Audit;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.MemberRole;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
@@ -73,6 +76,11 @@ public class Member extends Audit {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inviter_id")
     private Member inviter;    // 추천인
+
+    @Comment("활동 내역")
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MemberActivity> memberActivities = new ArrayList<>();
 
     public void setStatus(MemberStatus status) {
         this.status = status;

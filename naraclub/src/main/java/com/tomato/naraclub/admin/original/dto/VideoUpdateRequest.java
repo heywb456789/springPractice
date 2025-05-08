@@ -12,14 +12,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.original.dto
- * @fileName : VideoUpdateRequest
- * @date : 2025-05-02
- * @description :
- * @AUTHOR : MinjaeKim
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

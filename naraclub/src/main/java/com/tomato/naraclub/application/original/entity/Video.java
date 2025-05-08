@@ -11,6 +11,7 @@ import com.tomato.naraclub.application.search.code.SearchCategory;
 import com.tomato.naraclub.application.search.dto.SearchDTO;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -72,7 +73,8 @@ public class Video extends Audit {
 
     @Comment("공개 여부")
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean isPublic;
+    @Builder.Default
+    private boolean isPublic = false;
 
     @Comment("공개 시간")
     @Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
@@ -80,7 +82,8 @@ public class Video extends Audit {
 
     @Comment("핫 인지 아닌지")
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean isHot;
+    @Builder.Default
+    private boolean isHot = false;
 
     @Comment("유튜브 영상 ID")
     @Column(nullable = true)
@@ -88,14 +91,16 @@ public class Video extends Audit {
 
     @Comment("댓글 목록")
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VideoComments> comments;
+    @Builder.Default
+    private List<VideoComments> comments = new ArrayList<>();
 
     @Comment("댓글 수")
     @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long commentCount;
 
     @Column(name = "is_deleted", nullable = false)
-    private boolean deleted;
+    @Builder.Default
+    private boolean deleted = false;
 
     public VideoResponse convertDTO() {
         return VideoResponse.builder()

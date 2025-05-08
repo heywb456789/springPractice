@@ -4,6 +4,7 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tomato.naraclub.admin.original.dto.NewsArticleResponse;
@@ -12,6 +13,9 @@ import com.tomato.naraclub.application.original.entity.QArticle;
 import com.tomato.naraclub.application.original.entity.QArticleViewHistory;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.dto.ListDTO;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
@@ -26,6 +30,11 @@ public class NewsArticleCustomRepositoryImpl implements NewsArticleCustomReposit
     public ListDTO<NewsArticleResponse> getNewsList(NewsListRequest request, MemberUserDetails userDetails, Pageable pageable) {
         QArticle qArticle = QArticle.article;
         QArticleViewHistory viewHistory = QArticleViewHistory.articleViewHistory;
+
+        Long memberId = Optional.ofNullable(userDetails)
+                .map(ud -> ud.getMember().getId())
+                .orElse(null);
+
 
         Predicate condition = ExpressionUtils.allOf(
                 request.getSearchCondition(),
@@ -42,9 +51,19 @@ public class NewsArticleCustomRepositoryImpl implements NewsArticleCustomReposit
                 .from(qArticle)
                 .where(condition);
 
-        List<NewsArticleResponse> articles = query
-                .select(getNewsFields(qArticle))
-                .from(qArticle)
+        JPAQuery<NewsArticleResponse> select = query
+                .select(getNewsFields(memberId, qArticle, viewHistory))
+                .from(qArticle);
+
+        if(memberId != null) {
+            select.leftJoin(viewHistory)
+                .on(
+                    viewHistory.reader.id.eq(memberId),
+                    viewHistory.article.id.eq(qArticle.id)
+                );
+        }
+
+        List<NewsArticleResponse> articles = select
                 .where(condition)
                 .orderBy(request.getSortOrder())
                 .offset(pageable.getOffset())
@@ -54,11 +73,26 @@ public class NewsArticleCustomRepositoryImpl implements NewsArticleCustomReposit
         return ListDTO.of(countQuery, articles, pageable);
     }
 
-    private QBean<NewsArticleResponse> getNewsFields(QArticle qArticle) {
+    private QBean<NewsArticleResponse> getNewsFields(Long memberId, QArticle qArticle,
+        QArticleViewHistory viewHistory) {
+
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfToday = LocalDateTime.now().plusDays(1);
+
+        BooleanExpression createdToday = qArticle
+            .publishedAt.goe(startOfToday)
+            .and(qArticle.publishedAt.lt(endOfToday));
+
+        BooleanExpression noHistory = viewHistory.id.isNull();
+
+        BooleanExpression isNewExpr = (memberId == null ? createdToday
+                                                        : createdToday.and(noHistory));
+
         return Projections.fields(
                 NewsArticleResponse.class,
                 qArticle.id.as("articleId"),
                 qArticle.title,
+                qArticle.subTitle,
                 qArticle.content,
                 qArticle.type,
                 qArticle.category,
@@ -68,6 +102,7 @@ public class NewsArticleCustomRepositoryImpl implements NewsArticleCustomReposit
                 qArticle.publishedAt,
                 qArticle.isPublic,
                 qArticle.isHot,
+                isNewExpr.as("isNew"),
                 qArticle.author.name.as("authorName"),
                 qArticle.createdAt,
                 qArticle.updatedAt

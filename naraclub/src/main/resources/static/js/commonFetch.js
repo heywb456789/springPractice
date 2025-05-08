@@ -1,5 +1,16 @@
 // commonFetch.js
 
+export class FetchError extends Error {
+  constructor(status, statusCode, statusMessage, responseBody) {
+    super(statusMessage || `HTTP ${status}`);
+    this.name = 'FetchError';
+    this.httpStatus = status;
+    this.statusCode = statusCode;
+    this.statusMessage = statusMessage;
+    this.responseBody = responseBody;
+  }
+}
+
 export async function checkAuthAndRedirect(redirectUrl, validatePath = '/api/auth/validate') {
   try {
     const token = localStorage.getItem('accessToken');
@@ -83,7 +94,7 @@ export async function authFetch(url, options = {}) {
   }
 
   if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
+    throw res;
   }
   return res;
 }

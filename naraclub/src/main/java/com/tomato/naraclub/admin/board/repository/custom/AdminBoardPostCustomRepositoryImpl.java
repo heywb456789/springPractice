@@ -17,14 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.board.repository.custom
- * @fileName : AdminBoardPostCustomRepositoryImpl
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @RequiredArgsConstructor
 public class AdminBoardPostCustomRepositoryImpl implements AdminBoardPostCustomRepository {
 

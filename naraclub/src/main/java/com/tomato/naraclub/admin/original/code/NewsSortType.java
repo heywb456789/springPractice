@@ -6,14 +6,7 @@ import com.querydsl.core.types.Path;
 import com.tomato.naraclub.application.original.entity.QArticle;
 import com.tomato.naraclub.application.original.entity.QVideo;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.original.code
- * @fileName : NewsSortType
- * @date : 2025-05-07
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 public enum NewsSortType {
     LATEST   (QArticle.article.createdAt),
   PUBLISHED(QArticle.article.publishedAt),

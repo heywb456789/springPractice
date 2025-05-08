@@ -11,14 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.board.controller
- * @fileName : AdminBoardRestController
- * @date : 2025-04-29
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @RestController
 @RequestMapping("/admin/board")
 @RequiredArgsConstructor

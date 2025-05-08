@@ -22,14 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.original.controller
- * @fileName : AdminVideoRestController
- * @date : 2025-05-02
- * @description :
- * @AUTHOR : MinjaeKim
- */
 @RestController
 @RequestMapping("/admin/original/video")
 @RequiredArgsConstructor

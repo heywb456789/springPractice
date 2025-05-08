@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -47,6 +48,7 @@ public class VideoComments extends Audit {
     @JoinColumn(name = "video_id", nullable = false)
     private Video video;
 
+    @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 

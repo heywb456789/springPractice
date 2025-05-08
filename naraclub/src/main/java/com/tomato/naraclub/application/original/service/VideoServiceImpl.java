@@ -79,9 +79,9 @@ public class VideoServiceImpl implements VideoService {
     @Transactional
     public VideoResponse getVideoDetail(Long id, MemberUserDetails userDetails, HttpServletRequest request) {
         // 0) 요청에서 IP, User-Agent, deviceType 파싱
-        String ip         = UserDeviceInfoUtil.extractClientIp(request);
-        String userAgent  = UserDeviceInfoUtil.defaultString(request.getHeader("User-Agent"));
-        String deviceType = UserDeviceInfoUtil.determineDeviceType(userAgent);
+        String ip         = UserDeviceInfoUtil.getClientIp(request);
+        String userAgent  = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
+        String deviceType = UserDeviceInfoUtil.getDeviceType(userAgent);
 
         //0-1) 회원 있냥
         Optional<Member> memberOpt = Optional.ofNullable(userDetails)
@@ -94,18 +94,16 @@ public class VideoServiceImpl implements VideoService {
         //2) 조회수 업 업업
         video.increaseViewCount();
 
-        memberOpt.ifPresent(member -> {
-            viewHistoryRepository.save(
-                    VideoViewHistory.builder()
-                            .reader(member)
-                            .video(video)
-                            .viewedAt(LocalDateTime.now())
-                            .ipAddress(ip)
-                            .userAgent(userAgent)
-                            .deviceType(deviceType)
-                            .build()
-            );
-        });
+        memberOpt.ifPresent(member -> viewHistoryRepository.save(
+                VideoViewHistory.builder()
+                        .reader(member)
+                        .video(video)
+                        .viewedAt(LocalDateTime.now())
+                        .ipAddress(ip)
+                        .userAgent(userAgent)
+                        .deviceType(deviceType)
+                        .build()
+        ));
 
         return video.convertDTO();
     }

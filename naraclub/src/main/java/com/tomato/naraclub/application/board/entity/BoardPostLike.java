@@ -30,10 +30,6 @@ import org.hibernate.annotations.Comment;
 @ToString(callSuper = true)
 public class BoardPostLike extends Audit {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Comment("좋아요 누른 회원")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)

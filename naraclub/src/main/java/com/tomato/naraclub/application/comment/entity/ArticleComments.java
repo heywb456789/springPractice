@@ -7,6 +7,7 @@ import com.tomato.naraclub.application.original.entity.Video;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,12 +37,12 @@ public class ArticleComments extends Audit {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-
     @Comment("투표 게시글")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id", nullable = false)
     private Article article;
 
+    @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 

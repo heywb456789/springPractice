@@ -24,14 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.original.controller
- * @fileName : VideoController
- * @date : 2025-05-02
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/original/video")

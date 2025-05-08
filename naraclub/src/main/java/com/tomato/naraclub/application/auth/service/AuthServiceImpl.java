@@ -67,14 +67,14 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = tokenProvider.createRefreshToken(member, authRequest.isAutoLogin());
 
         LocalDateTime expiryDate = tokenProvider.getExpirationDate(refreshToken);
-        String userAgent  = UserDeviceInfoUtil.defaultString(servletRequest.getHeader("User-Agent"));
+        String userAgent  = UserDeviceInfoUtil.getUserAgent(servletRequest.getHeader("User-Agent"));
 
         refreshTokenRepository.save(RefreshToken.builder()
                 .member(member)
                 .refreshToken(refreshToken)
                 .expiryDate(expiryDate)
-                .ipAddress(UserDeviceInfoUtil.extractClientIp(servletRequest))  // IP 주소 가져오기
-                .deviceType(UserDeviceInfoUtil.determineDeviceType(userAgent))  // Custom 헤더 또는 파싱
+                .ipAddress(UserDeviceInfoUtil.getClientIp(servletRequest))  // IP 주소 가져오기
+                .deviceType(UserDeviceInfoUtil.getDeviceType(userAgent))  // Custom 헤더 또는 파싱
                 .userAgent(userAgent)
                 .lastUsedAt(LocalDateTime.now())
                 .build());

@@ -20,14 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.board.service
- * @fileName : BoardServiceImpl
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @Service
 @Slf4j
 @RequiredArgsConstructor

@@ -1,10 +1,10 @@
-import { optionalAuthFetch, authFetch } from '../commonFetch.js';
+import {optionalAuthFetch, authFetch} from '../commonFetch.js';
 
 // 전역 변수
 let newsData = null;
 
 // 문서 로드 완료 시 실행
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // 뒤로가기 버튼 초기화
   initBackButton();
 
@@ -27,12 +27,13 @@ document.addEventListener('DOMContentLoaded', function() {
 function initBackButton() {
   const backButton = document.getElementById('backButton');
   if (backButton) {
-    backButton.addEventListener('click', function() {
+    backButton.addEventListener('click', function () {
       // 이전 페이지로 이동 (히스토리가 있는 경우)
       if (window.history.length > 1) {
         window.history.back();
       } else {
         // 히스토리가 없는 경우 목록 페이지로 이동
+        sessionStorage.setItem('currentContentTab', 'article');
         window.location.href = '/original/originalContent.html';
       }
     });
@@ -73,9 +74,15 @@ async function loadNewsData() {
   }
 
   // 로딩 상태 표시
-  if (loadingElement) loadingElement.style.display = 'flex';
-  if (errorElement) errorElement.style.display = 'none';
-  if (newsDetailContainer) newsDetailContainer.style.display = 'none';
+  if (loadingElement) {
+    loadingElement.style.display = 'flex';
+  }
+  if (errorElement) {
+    errorElement.style.display = 'none';
+  }
+  if (newsDetailContainer) {
+    newsDetailContainer.style.display = 'none';
+  }
 
   try {
     // API 호출
@@ -97,31 +104,19 @@ async function loadNewsData() {
     updateNewsUI(newsData);
 
     // 관련 뉴스 로드
-    loadRelatedNews(newsId);
-
-    // 뉴스 조회수 증가 API 호출
-    incrementViewCount(newsId);
+    // loadRelatedNews(newsId);
 
     // 로딩 상태 숨김, 뉴스 컨테이너 표시
-    if (loadingElement) loadingElement.style.display = 'none';
-    if (newsDetailContainer) newsDetailContainer.style.display = 'block';
+    if (loadingElement) {
+      loadingElement.style.display = 'none';
+    }
+    if (newsDetailContainer) {
+      newsDetailContainer.style.display = 'block';
+    }
 
   } catch (error) {
     console.error('뉴스 데이터 로드 오류:', error);
     showError('뉴스 정보를 불러오는 데 실패했습니다.');
-  }
-}
-
-/**
- * 뉴스 조회수 증가
- */
-async function incrementViewCount(newsId) {
-  try {
-    await optionalAuthFetch(`/api/news/${newsId}/view`, {
-      method: 'POST'
-    });
-  } catch (error) {
-    console.error('조회수 증가 실패:', error);
   }
 }
 
@@ -132,10 +127,13 @@ async function loadRelatedNews(newsId) {
   const relatedNewsContainer = document.getElementById('relatedNewsContainer');
   const relatedNewsSection = document.getElementById('relatedNewsSection');
 
-  if (!relatedNewsContainer || !relatedNewsSection) return;
+  if (!relatedNewsContainer || !relatedNewsSection) {
+    return;
+  }
 
   try {
-    const response = await optionalAuthFetch(`/api/news/${newsId}/related?limit=5`);
+    const response = await optionalAuthFetch(
+        `/api/news/${newsId}/related?limit=5`);
 
     if (!response.ok) {
       if (response.status === 204) {
@@ -148,7 +146,8 @@ async function loadRelatedNews(newsId) {
 
     const data = await response.json();
 
-    if (!data.response || !data.response.data || data.response.data.length === 0) {
+    if (!data.response || !data.response.data || data.response.data.length
+        === 0) {
       // 관련 뉴스 없음
       relatedNewsSection.style.display = 'none';
       return;
@@ -176,10 +175,13 @@ function createRelatedNewsHTML(items) {
 
     return `
       <div class="related-news-item" data-id="${item.id || item.newsId}">
-        ${hasImage ? `<img src="${item.thumbnailUrl}" alt="${item.title}" class="related-news-image">` : ''}
+        ${hasImage
+        ? `<img src="${item.thumbnailUrl}" alt="${item.title}" class="related-news-image">`
+        : ''}
         <div class="related-news-info">
           <h4 class="related-news-title">${item.title}</h4>
-          <span class="related-news-date">${formatDate(item.publishedAt || item.createdAt)}</span>
+          <span class="related-news-date">${formatDate(
+        item.publishedAt || item.createdAt)}</span>
         </div>
       </div>
     `;
@@ -193,9 +195,11 @@ function initRelatedNewsClick() {
   const relatedNewsItems = document.querySelectorAll('.related-news-item');
 
   relatedNewsItems.forEach(item => {
-    item.addEventListener('click', function() {
+    item.addEventListener('click', function () {
       const newsId = this.getAttribute('data-id');
-      if (!newsId) return;
+      if (!newsId) {
+        return;
+      }
 
       // 현재 페이지 URL 업데이트
       window.location.href = `/news/newsDetail.html?id=${newsId}`;
@@ -231,33 +235,14 @@ function updateNewsUI(data) {
   // 날짜 업데이트
   const dateElement = document.getElementById('newsDate');
   if (dateElement) {
-    dateElement.textContent = formatDate(data.publishedAt || data.createdAt, true);
+    dateElement.textContent = formatDate(data.publishedAt || data.createdAt,
+        true);
   }
 
   // 조회수 업데이트
   const viewsElement = document.getElementById('newsViews');
   if (viewsElement) {
     viewsElement.textContent = `조회 ${formatNumber(data.viewCount || 0)}`;
-  }
-
-  // 썸네일 이미지 업데이트
-  const thumbnailElement = document.getElementById('newsThumbnail');
-  const thumbnailContainer = document.getElementById('newsThumbnailContainer');
-  const captionElement = document.getElementById('thumbnailCaption');
-
-  if (thumbnailElement && thumbnailContainer) {
-    if (data.thumbnailUrl && data.thumbnailUrl.trim() !== '') {
-      thumbnailElement.src = data.thumbnailUrl;
-      thumbnailElement.alt = data.thumbnailCaption || data.title;
-      thumbnailContainer.style.display = 'block';
-
-      if (captionElement) {
-        captionElement.textContent = data.thumbnailCaption || '';
-        captionElement.style.display = data.thumbnailCaption ? 'block' : 'none';
-      }
-    } else {
-      thumbnailContainer.style.display = 'none';
-    }
   }
 
   // 뉴스 내용 업데이트
@@ -274,7 +259,7 @@ function updateNewsUI(data) {
     // 이미지 로딩 에러 처리
     const images = contentElement.querySelectorAll('img');
     images.forEach(img => {
-      img.onerror = function() {
+      img.onerror = function () {
         this.style.display = 'none';
       };
 
@@ -327,8 +312,12 @@ function showError(message) {
   const errorMessageElement = errorElement?.querySelector('.error-message');
   const newsDetailContainer = document.getElementById('newsDetailContainer');
 
-  if (loadingElement) loadingElement.style.display = 'none';
-  if (newsDetailContainer) newsDetailContainer.style.display = 'none';
+  if (loadingElement) {
+    loadingElement.style.display = 'none';
+  }
+  if (newsDetailContainer) {
+    newsDetailContainer.style.display = 'none';
+  }
 
   if (errorElement) {
     errorElement.style.display = 'flex';
@@ -362,27 +351,27 @@ function shareNews() {
       title: title,
       url: shareUrl
     })
-      .then(() => console.log('공유 성공'))
-      .catch((error) => console.log('공유 실패:', error));
+    .then(() => console.log('공유 성공'))
+    .catch((error) => console.log('공유 실패:', error));
   } else {
     // 지원되지 않는 경우 URL 복사
     navigator.clipboard.writeText(shareUrl)
-      .then(() => {
-        alert('뉴스 주소가 복사되었습니다.');
-      })
-      .catch(err => {
-        console.error('URL 복사 실패:', err);
+    .then(() => {
+      alert('뉴스 주소가 복사되었습니다.');
+    })
+    .catch(err => {
+      console.error('URL 복사 실패:', err);
 
-        // 대체 방법
-        const tempInput = document.createElement('input');
-        document.body.appendChild(tempInput);
-        tempInput.value = shareUrl;
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
+      // 대체 방법
+      const tempInput = document.createElement('input');
+      document.body.appendChild(tempInput);
+      tempInput.value = shareUrl;
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
 
-        alert('뉴스 주소가 복사되었습니다.');
-      });
+      alert('뉴스 주소가 복사되었습니다.');
+    });
   }
 }
 
@@ -490,17 +479,21 @@ function initComments() {
   if (submitBtn && input) {
     submitBtn.addEventListener('click', () => {
       const content = input.value.trim();
-      if (!content) return;
+      if (!content) {
+        return;
+      }
       submitComment(content);
       input.value = '';
     });
 
     // 엔터 키 제출
-    input.addEventListener('keypress', function(e) {
+    input.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         const content = this.value.trim();
-        if (!content) return;
+        if (!content) {
+          return;
+        }
         submitComment(content);
         this.value = '';
       }
@@ -509,12 +502,14 @@ function initComments() {
 
   // 댓글 목록 로드 (인증 선택)
   async function loadComments() {
-    if (!newsId || !list) return;
+    if (!newsId || !list) {
+      return;
+    }
 
     loading = true;
     try {
       const res = await optionalAuthFetch(
-        `/api/news/${newsId}/comments?page=${page}&size=${pageSize}`
+          `/api/news/${newsId}/comments?page=${page}&size=${pageSize}`
       );
 
       if (!res.ok) {
@@ -543,7 +538,8 @@ function initComments() {
         if (noCommentsEl) {
           noCommentsEl.style.display = 'none';
         }
-        items.forEach(c => list.insertAdjacentHTML('afterbegin', renderComment(c)));
+        items.forEach(
+            c => list.insertAdjacentHTML('afterbegin', renderComment(c)));
         page++;
       }
 
@@ -563,21 +559,23 @@ function initComments() {
 
   // 댓글 등록 (인증 필수)
   async function submitComment(content) {
-    if (!newsId) return;
+    if (!newsId) {
+      return;
+    }
 
     try {
       const res = await authFetch(
-        `/api/news/${newsId}/comments`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ content })
-        }
+          `/api/news/${newsId}/comments`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({content})
+          }
       );
 
-      const { response: comment } = await res.json();
+      const {response: comment} = await res.json();
       if (list) {
         list.insertAdjacentHTML('beforeend', renderComment(comment));
       }
@@ -586,11 +584,31 @@ function initComments() {
       }
 
     } catch (error) {
-      console.error('댓글 등록 오류:', error);
-      if (error.message && error.message.includes('Unauthorized')) {
-        alert('댓글 등록을 위해 로그인 후 이용해주세요.');
-        window.location.href = '/login/login.html';
+
+      if (error instanceof Response) {
+        // Response 객체를 JSON 파싱
+        let errJson;
+        try {
+          errJson = await error.json();
+        } catch {
+          errJson = null;
+        }
+
+        const statusCode = errJson?.status?.code;
+        const statusMessage = errJson?.status?.message;
+
+        console.log('API 상태코드:', statusCode);
+        console.log('메시지:', statusMessage);
+        console.log('전체 응답:', errJson);
+
+        if (statusCode === 'UNAUTHORIZED' || error.status === 401) {
+          alert('댓글 등록을 위해 로그인 후 이용해주세요.');
+          return window.location.href = '/login/login.html';
+        }
+
+        alert(statusMessage || '댓글 등록 중 오류가 발생했습니다.');
       } else {
+        console.error('기타 오류:', error);
         alert('댓글 등록 중 오류가 발생했습니다.');
       }
     }
@@ -600,15 +618,17 @@ function initComments() {
   if (list) {
     list.addEventListener('click', async e => {
       const item = e.target.closest('.comment-item');
-      if (!item) return;
+      if (!item) {
+        return;
+      }
 
       const id = item.dataset.id;
 
       if (e.target.classList.contains('delete-btn')) {
         try {
           await authFetch(
-            `/api/news/${newsId}/comments/${id}`,
-            { method: 'DELETE' }
+              `/api/news/${newsId}/comments/${id}`,
+              {method: 'DELETE'}
           );
           item.remove();
 
@@ -622,14 +642,14 @@ function initComments() {
           p.contentEditable = false;
           try {
             await authFetch(
-              `/api/news/${newsId}/comments/${id}`,
-              {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ content: p.textContent.trim() })
-              }
+                `/api/news/${newsId}/comments/${id}`,
+                {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({content: p.textContent.trim()})
+                }
             );
           } catch (error) {
             console.error('수정 오류:', error);

@@ -12,7 +12,7 @@ public class UserDeviceInfoUtil {
     /**
      * 클라이언트 IP 추출 (프록시 헤더 우선)
      */
-    public static String extractClientIp(HttpServletRequest request) {
+    public static String getClientIp(HttpServletRequest request) {
         for (String header : List.of(
                 "X-Forwarded-For",
                 "Proxy-Client-IP",
@@ -31,7 +31,7 @@ public class UserDeviceInfoUtil {
     /**
      * User-Agent 기반 디바이스 유형 판별
      */
-    public static String determineDeviceType(String userAgent) {
+    public static String getDeviceType(String userAgent) {
         if (userAgent == null) {
             return "UNKNOWN";
         }
@@ -48,7 +48,7 @@ public class UserDeviceInfoUtil {
     /**
      * 널 세이프 문자열 반환
      */
-    public static String defaultString(String s) {
+    public static String getUserAgent(String s) {
         return (s == null ? "" : s);
     }
 }

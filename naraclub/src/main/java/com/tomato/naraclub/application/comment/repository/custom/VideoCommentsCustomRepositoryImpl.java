@@ -44,7 +44,7 @@ public class VideoCommentsCustomRepositoryImpl implements VideoCommentsCustomRep
         // content 쿼리 (최신순)
         List<CommentResponse> content = query
             .select(
-                getVoteCommentFields(userId)
+                getVideoCommentFields(userId)
             )
             .from(qVideoComments)
             .where(condition)
@@ -56,7 +56,7 @@ public class VideoCommentsCustomRepositoryImpl implements VideoCommentsCustomRep
         return ListDTO.of(countQuery, content, pageable);
     }
 
-    private QBean<CommentResponse> getVoteCommentFields(Long userId) {
+    private QBean<CommentResponse> getVideoCommentFields(Long userId) {
         QVideoComments qVideoComments = QVideoComments.videoComments;
         return Projections.fields(
             CommentResponse.class,

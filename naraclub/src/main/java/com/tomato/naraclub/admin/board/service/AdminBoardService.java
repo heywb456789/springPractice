@@ -8,14 +8,7 @@ import com.tomato.naraclub.application.comment.dto.CommentRequest;
 import com.tomato.naraclub.common.dto.ListDTO;
 import org.springframework.data.domain.Pageable;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.board.service
- * @fileName : BoardService
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 public interface AdminBoardService {
 
     AdminBoardDto getBoardDetail(Long id);

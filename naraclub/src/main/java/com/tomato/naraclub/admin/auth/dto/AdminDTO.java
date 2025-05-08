@@ -7,14 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.auth.dto
- * @fileName : AdminDTO
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

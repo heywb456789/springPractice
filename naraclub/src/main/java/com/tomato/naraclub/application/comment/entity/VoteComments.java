@@ -6,6 +6,7 @@ import com.tomato.naraclub.application.vote.entity.VotePost;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,6 +41,7 @@ public class VoteComments extends Audit {
     @JoinColumn(name = "vote_post_id", nullable = false)
     private VotePost votePost;
 
+    @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 

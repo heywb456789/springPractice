@@ -21,4 +21,6 @@ public class MemberController {
         return ResponseEntity.ok(memberService.enrollInviteCode(request.getInviteCode(), userDetails));
     }
 
+
+
 }

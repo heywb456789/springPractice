@@ -43,6 +43,7 @@ public class BoardComments extends Audit {
     @JoinColumn(name = "board_post_id", nullable = false)
     private BoardPost boardPost;
 
+    @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 

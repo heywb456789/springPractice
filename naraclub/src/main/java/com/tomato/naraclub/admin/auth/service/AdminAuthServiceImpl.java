@@ -24,14 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.auth.service
- * @fileName : AdminAuthServiceImpl
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -61,14 +54,14 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             req.getAutoLogin());
 
         LocalDateTime expiryDate = jwtProvider.getExpirationDate(refreshToken);
-        String userAgent  = UserDeviceInfoUtil.defaultString(request.getHeader("User-Agent"));
+        String userAgent  = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
 
         adminRefreshTokenRepository.save(AdminRefreshToken.builder()
             .admin(user.getAdmin())
             .refreshToken(refreshToken)
             .expiryDate(expiryDate)
-            .ipAddress(UserDeviceInfoUtil.extractClientIp(request))  // IP 주소 가져오기
-            .deviceType(UserDeviceInfoUtil.determineDeviceType(userAgent))  // Custom 헤더 또는 파싱
+            .ipAddress(UserDeviceInfoUtil.getClientIp(request))  // IP 주소 가져오기
+            .deviceType(UserDeviceInfoUtil.getDeviceType(userAgent))  // Custom 헤더 또는 파싱
             .userAgent(userAgent)
             .lastUsedAt(LocalDateTime.now())
             .build());
@@ -104,14 +97,14 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         String refreshToken = jwtProvider.createRefreshTokenForAdmin(saved, false);
 
         LocalDateTime expiryDate = jwtProvider.getExpirationDate(refreshToken);
-        String userAgent  = UserDeviceInfoUtil.defaultString(request.getHeader("User-Agent"));
+        String userAgent  = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
 
         adminRefreshTokenRepository.save(AdminRefreshToken.builder()
             .admin(saved)
             .refreshToken(refreshToken)
             .expiryDate(expiryDate)
-            .ipAddress(UserDeviceInfoUtil.extractClientIp(request))  // IP 주소 가져오기
-            .deviceType(UserDeviceInfoUtil.determineDeviceType(userAgent))  // Custom 헤더 또는 파싱
+            .ipAddress(UserDeviceInfoUtil.getClientIp(request))  // IP 주소 가져오기
+            .deviceType(UserDeviceInfoUtil.getDeviceType(userAgent))  // Custom 헤더 또는 파싱
             .userAgent(userAgent)
             .lastUsedAt(LocalDateTime.now())
             .build());

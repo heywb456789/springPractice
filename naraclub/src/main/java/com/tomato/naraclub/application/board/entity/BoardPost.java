@@ -8,6 +8,7 @@ import com.tomato.naraclub.application.search.code.SearchCategory;
 import com.tomato.naraclub.application.search.dto.SearchDTO;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
@@ -48,7 +49,8 @@ public class BoardPost extends Audit {
 
     @Comment("댓글 목록")
     @OneToMany(mappedBy = "boardPost", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BoardComments> comments;
+    @Builder.Default
+    private List<BoardComments> comments = new ArrayList<>();
 
     @Comment("댓글 수")
     private long commentCount;
@@ -67,13 +69,16 @@ public class BoardPost extends Audit {
 
     @Comment("핫 여부")
     @Column(name = "is_hot", nullable = false, columnDefinition = "TINYINT(1) default 0")
-    private boolean isHot;
+    @Builder.Default
+    private boolean isHot=false;
 
     @Comment("이미지 목록")
     @OneToMany(mappedBy = "boardPost", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BoardPostImage> images;
+    @Builder.Default
+    private List<BoardPostImage> images = new ArrayList<>();
 
     @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
     private boolean deleted = false;
 
     public void increaseViewCount(){

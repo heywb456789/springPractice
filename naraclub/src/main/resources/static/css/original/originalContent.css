@@ -383,6 +383,15 @@
   border-bottom: 1px solid #f0f0f0;
   padding-bottom: 15px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.article-item:hover {
+  background-color: #f8f9fa;
+}
+
+.article-item:last-child {
+  border-bottom: none;
 }
 
 .article-thumbnail {
@@ -391,13 +400,20 @@
   object-fit: cover;
   border-radius: 4px;
   margin-right: 12px;
+  flex-shrink: 0;
 }
 
 .article-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  cursor: pointer;
+}
+
+.article-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 5px;
 }
 
 .article-title {
@@ -415,28 +431,52 @@
 
 .article-meta {
   display: flex;
+  align-items: center;
   font-size: 12px;
   color: #868e96;
+  gap: 10px;
 }
 
 .article-date {
-  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.article-views {
+  display: flex;
+  align-items: center;
+}
+
+.article-views::before {
+  content: "\f06e";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 400;
+  margin-right: 5px;
+  font-size: 12px;
 }
 
 .article-badge {
   display: inline-block;
   font-size: 10px;
-  padding: 1px 4px;
-  border-radius: 2px;
+  padding: 1px 5px;
+  border-radius: 3px;
   color: white;
   font-weight: bold;
-  margin-right: 5px;
   vertical-align: middle;
 }
 
 .article-badge.badge-new {
   background-color: #e03131;
 }
+
+.article-badge.badge-hot {
+  background-color: #f59f00;
+}
+
+.article-badge.badge-category {
+  background-color: #4263eb;
+}
+
 
 /* 페이지네이션 */
 .pagination-container {

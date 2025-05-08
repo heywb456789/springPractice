@@ -8,14 +8,7 @@ import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.original.code
- * @fileName : NewsSearchType
- * @date : 2025-05-07
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 @Getter
 @AllArgsConstructor
 public enum NewsSearchType implements SearchTypeEnum {

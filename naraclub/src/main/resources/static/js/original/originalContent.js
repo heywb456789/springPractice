@@ -375,18 +375,22 @@ function createArticleListHTML(items) {
   return items.map(item => {
     const isNew = isItemNew(item.publishedAt || item.createdAt);
     const articleId = item.articleId || item.id;
+    const isHot = item.hot === true; // hot 속성 확인
+    const category = getCategoryDisplayName(item.category); // 카테고리 표시명 가져오기
 
     return `
       <div class="article-item" data-id="${articleId}">
         <img src="${item.thumbnailUrl}" alt="${item.title}" class="article-thumbnail">
-        <div class="article-info" data-id="${articleId}">
-          <h3 class="article-title">
+        <div class="article-info">
+          <div class="article-badges">
+            ${category ? `<span class="article-badge badge-category">${category}</span>` : ''}
             ${isNew ? '<span class="article-badge badge-new">N</span>' : ''}
-            ${item.title}
-          </h3>
+            ${isHot ? '<span class="article-badge badge-hot">HOT</span>' : ''}
+          </div>
+          <h3 class="article-title">${item.title}</h3>
           <div class="article-meta">
-            <span class="article-date">${formatDate(
-        item.publishedAt || item.createdAt)}</span>
+            <span class="article-date">${formatDate(item.publishedAt || item.createdAt)}</span>
+            ${item.viewCount ? `<span class="article-views">조회 ${formatViews(item.viewCount)}</span>` : ''}
           </div>
         </div>
       </div>
@@ -395,6 +399,28 @@ function createArticleListHTML(items) {
 }
 
 /**
+ * 카테고리 코드를 표시용 이름으로 변환
+ */
+function getCategoryDisplayName(category) {
+  const categoryMap = {
+    'ECONOMY': '경제',
+    'STOCK': '주식',
+    'POLITICS': '정치',
+    'SOCIETY': '사회',
+    'GLOBAL': '국제',
+    'TECH': 'IT/과학',
+    'CULTURE': '문화',
+    'SPORTS': '스포츠'
+  };
+
+  return categoryMap[category] || '';
+}
+
+/**
+ * 콘텐츠 아이템 클릭 이벤트 초기화
+ * @param {string} tab - 탭 종류
+ */
+/**
  * 콘텐츠 아이템 클릭 이벤트 초기화
  * @param {string} tab - 탭 종류
  */
@@ -402,11 +428,11 @@ function initContentItemsClick(tab) {
   // 아이템 전체 클릭 이벤트
   const items = document.querySelectorAll(`.${tab}-item`);
   items.forEach(item => {
-    item.addEventListener('click', function (e) {
+    item.addEventListener('click', function(e) {
       // 비디오 영역 클릭 시 미리보기가 시작된 경우 이벤트 중지
-      if (e.target.closest('.video-thumbnail-container')
-          && e.currentTarget.querySelector('.hover-video')?.style.opacity
-          === '1') {
+      if (tab !== 'article' &&
+          e.target.closest('.video-thumbnail-container') &&
+          e.currentTarget.querySelector('.hover-video')?.style.opacity === '1') {
         return;
       }
 
@@ -420,22 +446,25 @@ function initContentItemsClick(tab) {
     });
   });
 
-  // 제목 및 정보 영역 클릭 이벤트
-  const infoItems = document.querySelectorAll(
-      `.${tab}-info, .${tab}-title, .${tab}-overlay`);
-  infoItems.forEach(info => {
-    info.addEventListener('click', function (e) {
-      e.stopPropagation(); // 상위 요소 이벤트 전파 방지
+  // 비디오/쇼츠 탭에만 필요한 추가 이벤트 처리
+  if (tab !== 'article') {
+    // 제목 및 정보 영역 클릭 이벤트
+    const infoItems = document.querySelectorAll(
+        `.${tab}-info, .${tab}-title, .${tab}-overlay`);
+    infoItems.forEach(info => {
+      info.addEventListener('click', function(e) {
+        e.stopPropagation(); // 상위 요소 이벤트 전파 방지
 
-      const contentId = this.getAttribute('data-id');
-      if (!contentId) {
-        return;
-      }
+        const contentId = this.getAttribute('data-id');
+        if (!contentId) {
+          return;
+        }
 
-      // 콘텐츠 상세 페이지로 이동
-      navigateToDetail(tab, contentId);
+        // 콘텐츠 상세 페이지로 이동
+        navigateToDetail(tab, contentId);
+      });
     });
-  });
+  }
 }
 
 /**
@@ -452,9 +481,11 @@ function navigateToDetail(tab, contentId) {
       detailPage = '/original/videoDetail.html';
       break;
     case 'article':
-      detailPage = '/original/articleDetail.html';
+      detailPage = '/original/newsDetail.html';
       break;
   }
+
+  saveCurrentTab(tab);
 
   window.location.href = `${detailPage}?id=${contentId}`;
 }
@@ -629,7 +660,7 @@ function initTabsEvent() {
   });
 }
 
-// 탭 클릭 핸들러 함수 분리
+// 탭 클릭 핸들러 함수 수정
 function handleTabClick(event) {
   const tabType = this.getAttribute('data-tab');
 
@@ -638,11 +669,11 @@ function handleTabClick(event) {
     return;
   }
 
-  // 모든 탭 비활성화
+  // 모든 탭 비활성화 (명시적으로 모든 탭에서 active 클래스 제거)
   const allTabs = document.querySelectorAll('.content-tabs .content-tab-item');
   allTabs.forEach(item => item.classList.remove('active'));
 
-  // 클릭한 탭 활성화
+  // 클릭한 탭만 활성화
   this.classList.add('active');
 
   // 스크롤 옵저버 해제
@@ -661,6 +692,10 @@ function handleTabClick(event) {
     list.classList.remove('active');
     list.style.display = 'none';
   });
+
+  // 현재 탭 저장
+  currentTab = tabType;
+  sessionStorage.setItem('currentContentTab', tabType);
 
   // 새 콘텐츠 로드
   loadContent(tabType, 0, PAGE_SIZE);
@@ -842,10 +877,14 @@ function formatDuration(seconds) {
       remainingSeconds).padStart(2, '0')}`;
 }
 
+function saveCurrentTab(tab) {
+  sessionStorage.setItem('currentContentTab', tab);
+}
+
 // 전역 함수 노출 (retry 버튼 등에서 사용)
 window.loadContent = loadContent;
 
-// 페이지 로드 시 실행
+// 페이지 로드 시 실행되는 코드 수정
 document.addEventListener('DOMContentLoaded', function () {
   if (window.originalContentInitialized) {
     return;
@@ -856,10 +895,27 @@ document.addEventListener('DOMContentLoaded', function () {
   initTabsEvent();
   initSearch();
 
-  // 첫 진입 시 video 탭 활성화
-  document.querySelector('.content-tab-item[data-tab="video"]')?.classList.add(
-      'active');
+  // 세션 스토리지에서 마지막으로 선택한 탭 가져오기
+  const lastTab = sessionStorage.getItem('currentContentTab') || 'video';
 
-  // 초기 콘텐츠 로드
-  loadContent('video', 0, PAGE_SIZE);
+  // 먼저 모든 탭의 활성화 상태를 제거 (중요: 중복 활성화 방지)
+  const allTabs = document.querySelectorAll('.content-tabs .content-tab-item');
+  allTabs.forEach(item => item.classList.remove('active'));
+
+  // 해당 탭 활성화
+  const tabToActivate = document.querySelector(`.content-tab-item[data-tab="${lastTab}"]`);
+  if (tabToActivate) {
+    tabToActivate.classList.add('active');
+    currentTab = lastTab;
+  } else {
+    // 탭을 찾지 못한 경우 기본 탭(video) 활성화
+    const defaultTab = document.querySelector('.content-tab-item[data-tab="video"]');
+    if (defaultTab) {
+      defaultTab.classList.add('active');
+      currentTab = 'video';
+    }
+  }
+
+  // 선택된 탭의 콘텐츠 로드
+  loadContent(currentTab, 0, PAGE_SIZE);
 });

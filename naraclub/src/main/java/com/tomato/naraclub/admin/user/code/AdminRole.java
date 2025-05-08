@@ -3,14 +3,7 @@ package com.tomato.naraclub.admin.user.code;
 import java.util.Arrays;
 import org.springframework.security.core.GrantedAuthority;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.user.code
- * @fileName : AdminRole
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 public enum AdminRole implements GrantedAuthority {
     ADMIN
     ;

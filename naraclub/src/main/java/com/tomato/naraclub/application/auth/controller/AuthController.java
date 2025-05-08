@@ -10,6 +10,7 @@ import com.tomato.naraclub.application.oneld.dto.OneIdResponse;
 import com.tomato.naraclub.application.oneld.dto.OneIdVerifyResponse;
 import com.tomato.naraclub.application.oneld.service.TomatoAuthService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
+import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.ResponseStatus;
 import com.tomato.naraclub.common.dto.ResponseDTO;
 import com.tomato.naraclub.common.exception.BadRequestException;
@@ -44,9 +45,8 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseDTO<MemberDTO> me(Authentication authentication) {
-        Long memberId = Long.parseLong(authentication.getName());
-        Member member = memberRepository.findById(memberId)
+    public ResponseDTO<MemberDTO> me(@AuthenticationPrincipal MemberUserDetails user) {
+        Member member = memberRepository.findByIdAndStatus(user.getMember().getId(), MemberStatus.ACTIVE)
             .orElseThrow(() -> new BadRequestException("존재하지 않는 회원입니다."));
         return ResponseDTO.ok(member.convertDTO());
     }

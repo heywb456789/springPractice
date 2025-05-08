@@ -4,7 +4,6 @@
  * 공통 컴포넌트 로드 및 관리
  */
 
-
 // 페이지 로드 완료 시 실행
 document.addEventListener('DOMContentLoaded', async () => {
   const loaded = await loadCommonComponents();
@@ -14,12 +13,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // --- 헤더 검색 토글 & 실행 ---
   const searchBtn = document.querySelector('.search-button');
-  const panel   = document.querySelector('.header-search-panel');
-  const submit  = document.getElementById('header-search-submit');
-  const input   = document.getElementById('header-search-input');
-  const selSec  = document.getElementById('filter-section');
-  const selFld  = document.getElementById('filter-field');
-  const searchIcon  = searchBtn.querySelector('i');
+  const panel = document.querySelector('.header-search-panel');
+  const submit = document.getElementById('header-search-submit');
+  const input = document.getElementById('header-search-input');
+  const selSec = document.getElementById('filter-section');
+  const selFld = document.getElementById('filter-field');
+  const searchIcon = searchBtn.querySelector('i');
 
   // 패널 토글
   searchBtn.addEventListener('click', () => {
@@ -27,38 +26,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     panel.style.display = isOpen ? 'flex' : 'none';
     // 아이콘 토글
     searchIcon.classList.toggle('fa-search', !isOpen);
-    searchIcon.classList.toggle('fa-times',  isOpen);
-    if (isOpen) input.focus();
+    searchIcon.classList.toggle('fa-times', isOpen);
+    if (isOpen) {
+      input.focus();
+    }
   });
 
   // 검색 실행 함수
   function doHeaderSearch() {
     const section = selSec.value;   // all | original | board | vote
-    const field   = selFld.value;   // all | title | content | author
+    const field = selFld.value;   // all | title | content | author
     const keyword = input.value.trim();
-    if (!keyword) return;
+    if (!keyword) {
+      return;
+    }
 
     // 매핑 테이블
-    const mapCategory = { all: 'ALL', video: 'ORIGINAL_VIDEO', shorts: 'ORIGINAL_SHORTS',
-  article: 'ORIGINAL_NEWS', board: 'BOARD_POST', vote: 'VOTE_POST' };
-    const mapSection  = { all:'ALL', title:'TITLE', content:'CONTENT', author:'AUTHOR' };
+    const mapCategory = {
+      all: 'ALL', video: 'ORIGINAL_VIDEO', shorts: 'ORIGINAL_SHORTS',
+      article: 'ORIGINAL_NEWS', board: 'BOARD_POST', vote: 'VOTE_POST'
+    };
+    const mapSection = {
+      all: 'ALL',
+      title: 'TITLE',
+      content: 'CONTENT',
+      author: 'AUTHOR'
+    };
 
     const params = new URLSearchParams({
       searchCategory: mapCategory[section] || 'ALL',
-      searchSection:  mapSection[field]   || 'ALL',
-      searchKeyword:  keyword,
-      page:           '0',
-      size:           '10'
+      searchSection: mapSection[field] || 'ALL',
+      searchKeyword: keyword,
+      page: '0',
+      size: '10'
     });
 
     // 통합 검색 페이지로 리다이렉트
     window.location.href = `/main/search.html?${params.toString()}`;
   }
 
-  submit.addEventListener('click',    doHeaderSearch);
-  input.addEventListener ('keypress', e => { if (e.key==='Enter') doHeaderSearch(); });
+  submit.addEventListener('click', doHeaderSearch);
+  input.addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      doHeaderSearch();
+    }
+  });
 });
-
 
 /**
  * 공통 컴포넌트 로드 함수
@@ -142,11 +155,11 @@ function injectDefaultComponents() {
           </div>
         </div>
         <div class="side-menu-content">
-          <div class="side-menu-item" data-page="popular">인기글 게제</div>
-          <div class="side-menu-item" data-page="write">게시물 작성</div>
-          <div class="side-menu-item" data-page="news">게시판(뉴스)</div>
-          <div class="side-menu-item" data-page="community">게시판(커뮤니티)</div>
-          <div class="side-menu-item" data-page="exchange">환전계 보도</div>
+          <div class="side-menu-item" data-page="home">클럽 홈</div>
+          <div class="side-menu-item" data-page="write">리워드 정책</div>
+          <div class="side-menu-item" data-page="news">계정인증(엑스)</div>
+          <div class="side-menu-item" data-page="community">계정인증(디시인사이드)</div>
+          <div class="side-menu-item" data-page="exchange">활동내역 업로드</div>
         </div>
       </div>
     `;
@@ -181,7 +194,7 @@ function injectDefaultComponents() {
   if (tabMenuContainer) {
     tabMenuContainer.innerHTML = `
       <div class="tab-menu">
-        <div class="tab-item" data-page="home">공식홈</div>
+        <div class="tab-item" data-page="home">클럽홈</div>
         <div class="tab-item" data-page="original">오리지널</div>
         <div class="tab-item" data-page="board">최근게시글</div>
         <div class="tab-item" data-page="vote">투표광장</div>
@@ -330,11 +343,11 @@ function initTabMenu() {
 function navigateToPage(page) {
   // 페이지별 URL 매핑
   const pageUrls = {
-    'popular': '/popular.html',
-    'write': '/boardWrite.html',
-    'news': '/newsList.html',
-    'community': '/boardList.html',
-    'exchange': '/exchange.html'
+    'home': '/main/main.html',
+    'rewards': '/side/rewards.html',
+    'link-x': '/side/link-x.html',
+    'link-dc': '/side/link-dc.html',
+    'upload': '/side/activity.html'
   };
 
   // 해당 페이지로 이동

@@ -43,7 +43,18 @@ function initBackButton() {
       if (window.history.length > 1) {
         window.history.back();
       } else {
-        // 히스토리가 없는 경우 목록 페이지로 이동
+        // 히스토리가 없는 경우, videoData를 확인하기 전에 기본값으로 'video' 탭 설정
+        let tabType = 'video';
+
+        // videoData가 로드된 경우에만 콘텐츠 타입 확인
+        if (videoData && videoData.originalType) {
+          tabType = videoData.originalType === 'YOUTUBE_SHORTS' ? 'shorts' : 'video';
+        }
+
+        // 현재 탭 정보 저장
+        sessionStorage.setItem('currentContentTab', tabType);
+
+        // 목록 페이지로 이동
         window.location.href = '/original/originalContent.html';
       }
     });

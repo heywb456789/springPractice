@@ -9,14 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/**
- * @author : MinjaeKim
- * @packageName : com.tomato.naraclub.admin.board.repository
- * @fileName : AdminBoardPostRepository
- * @date : 2025-04-28
- * @description :
- * @AUTHOR : MinjaeKim
- */
+
 public interface AdminBoardPostRepository extends JpaRepository<BoardPost , Long>,
     AdminBoardPostCustomRepository {
 
