@@ -84,6 +84,11 @@
 .profile-name.editing {
   max-width: 200px;
 }
+.edit-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 
 .user-name-input {
   font-size: 18px;
@@ -121,6 +126,25 @@
 
 .edit-name-btn.save-btn:hover {
   color: #08a57a;
+}
+
+.cancel-edit-btn {
+  background: none;
+  border: none;
+  color: #fa5c7c;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.cancel-edit-btn:hover {
+  color: #f84c70;
 }
 
 .profile-level {

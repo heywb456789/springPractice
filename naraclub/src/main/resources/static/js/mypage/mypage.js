@@ -189,6 +189,7 @@ async function uploadProfileImage(file) {
 
 function initNameEdit() {
     const editNameBtn = document.getElementById('editNameBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
     const userNameElement = document.getElementById('userName');
 
     // 원래 이름 저장
@@ -196,6 +197,7 @@ function initNameEdit() {
         userNameElement.setAttribute('data-original-name', userNameElement.textContent);
     }
 
+    // 수정 버튼 클릭 이벤트
     editNameBtn.addEventListener('click', function() {
         // 현재 텍스트 가져오기
         const currentName = userNameElement.getAttribute('data-original-name') || userNameElement.textContent;
@@ -205,50 +207,10 @@ function initNameEdit() {
         const isEditing = userNameElement.classList.contains('editing');
 
         if (!isEditing) {
-            console.log("편집 모드로 전환");
-
             // 편집 모드로 전환
-            userNameElement.classList.add('editing');
-
-            // 입력 필드 생성 및 추가
-            const inputField = document.createElement('input');
-            inputField.type = 'text';
-            inputField.id = 'userNameInput';
-            inputField.className = 'user-name-input';
-            inputField.value = currentName;
-
-            // 기존 내용 비우고 입력 필드 추가
-            userNameElement.innerHTML = '';
-            userNameElement.appendChild(inputField);
-
-            // 버튼 변경
-            editNameBtn.innerHTML = '';
-            const checkIcon = document.createElement('i');
-            checkIcon.className = 'fa-solid fa-check';
-            editNameBtn.appendChild(checkIcon);
-            editNameBtn.classList.add('save-btn');
-
-            // 입력 필드에 자동 포커스
-            inputField.focus();
-            inputField.select(); // 텍스트 전체 선택
-
-            // 입력 필드에 엔터 키 이벤트 추가
-            inputField.addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    const newName = inputField.value.trim();
-
-                    if (newName && newName !== currentName) {
-                        updateUserName(newName);
-                    } else {
-                        cancelNameEdit();
-                    }
-                }
-            });
+            startEditMode();
         } else {
-            console.log("저장 모드 실행");
-
-            // 입력 필드에서 값 가져오기
+            // 저장 모드 (이름 업데이트)
             const inputField = document.getElementById('userNameInput');
             if (!inputField) {
                 console.error("입력 필드를 찾을 수 없음");
@@ -260,28 +222,55 @@ function initNameEdit() {
             if (newName && newName !== currentName) {
                 // 새 이름으로 업데이트 API 호출
                 updateUserName(newName);
+            } else if (!newName) {
+                // 이름이 비어있으면 경고
+                alert('이름을 입력해주세요.');
+                inputField.focus();
             } else {
-                // 이름이 없거나 변경되지 않았으면 원래 이름으로 되돌림
+                // 이름이 변경되지 않았으면 편집 모드 종료
                 cancelNameEdit();
             }
         }
     });
 
-    // 외부 클릭 시 편집 모드 종료
-    document.addEventListener('click', function(event) {
-        const userNameElement = document.getElementById('userName');
-        const editNameBtn = document.getElementById('editNameBtn');
-
-        // 이름 편집 중이고, 클릭이 이름 영역 또는 편집 버튼 외부인 경우
-        if (userNameElement.classList.contains('editing') &&
-            !userNameElement.contains(event.target) &&
-            event.target !== editNameBtn &&
-            !editNameBtn.contains(event.target)) {
-
-            console.log("외부 클릭으로 편집 취소");
-            cancelNameEdit();
-        }
+    // 취소 버튼 클릭 이벤트
+    cancelEditBtn.addEventListener('click', function() {
+        console.log("취소 버튼 클릭");
+        cancelNameEdit();
     });
+}
+
+function cancelNameEdit() {
+    const userNameElement = document.getElementById('userName');
+    const editNameBtn = document.getElementById('editNameBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+    if (!userNameElement || !editNameBtn || !cancelEditBtn) {
+        console.error("필수 요소를 찾을 수 없음");
+        return;
+    }
+
+    // 원래 이름 가져오기
+    const originalName = userNameElement.getAttribute('data-original-name') || '';
+
+    // 편집 모드 클래스 제거
+    userNameElement.classList.remove('editing');
+
+    // 원래 이름으로 복원
+    userNameElement.innerHTML = '';
+    userNameElement.textContent = originalName;
+
+    // 수정 버튼 원상복구
+    editNameBtn.innerHTML = '';
+    const penIcon = document.createElement('i');
+    penIcon.className = 'fa-solid fa-pen';
+    editNameBtn.appendChild(penIcon);
+    editNameBtn.classList.remove('save-btn');
+
+    // 취소 버튼 숨기기
+    cancelEditBtn.style.display = 'none';
+
+    console.log("이름 편집 취소됨");
 }
 
 // 편집 버튼 클릭 핸들러 (함수 분리)
@@ -339,6 +328,9 @@ async function updateUserName(newName) {
 
         // API 성공 시에만 UI 업데이트
         if (data.status && data.status.code === "OK_0000") {
+            // 편집 모드 클래스 제거
+            userNameElement.classList.remove('editing');
+
             // 이름 업데이트
             userNameElement.innerHTML = '';
             userNameElement.textContent = newName;
@@ -346,15 +338,17 @@ async function updateUserName(newName) {
             // 새 이름을 다음 편집을 위해 저장
             userNameElement.setAttribute('data-original-name', newName);
 
-            // 버튼 원상복구
+            // 수정 버튼 원상복구
             const editNameBtn = document.getElementById('editNameBtn');
             editNameBtn.innerHTML = '';
             const icon = document.createElement('i');
             icon.className = 'fa-solid fa-pen';
             editNameBtn.appendChild(icon);
+            editNameBtn.classList.remove('save-btn');
 
-            // 외부 클릭 이벤트 제거
-            document.removeEventListener('click', handleOutsideClick);
+            // 취소 버튼 숨기기
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            cancelEditBtn.style.display = 'none';
 
             // 성공 메시지
             alert('이름이 변경되었습니다.');
@@ -365,8 +359,12 @@ async function updateUserName(newName) {
         console.error('이름 변경 오류:', error);
         alert('이름 변경에 실패했습니다.');
 
-        // 오류 시 원래 이름으로 복원
-        restoreOriginalName();
+        // 오류 시 입력 필드 다시 활성화
+        const inputField = document.querySelector('#userName input');
+        if (inputField) {
+            inputField.disabled = false;
+            inputField.focus();
+        }
     }
 }
 
@@ -374,51 +372,60 @@ async function updateUserName(newName) {
 function startEditMode() {
     const userNameElement = document.getElementById('userName');
     const editNameBtn = document.getElementById('editNameBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
 
-    if (!userNameElement || !editNameBtn) return;
+    if (!userNameElement || !editNameBtn || !cancelEditBtn) {
+        console.error("필수 요소를 찾을 수 없음");
+        return;
+    }
 
     // 현재 이름 가져오기
-    const currentName = userNameElement.textContent.trim();
+    const currentName = userNameElement.getAttribute('data-original-name') || userNameElement.textContent;
 
-    // 원래 이름 저장
-    userNameElement.setAttribute('data-original-name', currentName);
+    // 편집 모드로 전환
+    userNameElement.classList.add('editing');
 
-    // 입력 필드 생성
+    // 입력 필드 생성 및 추가
     const inputField = document.createElement('input');
     inputField.type = 'text';
-    inputField.value = currentName;
+    inputField.id = 'userNameInput';
     inputField.className = 'user-name-input';
-
-    // 입력 필드 엔터 키 처리
-    inputField.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const newName = inputField.value.trim();
-            if (newName && newName !== currentName) {
-                updateUserName(newName);
-            } else {
-                restoreOriginalName();
-            }
-        }
-    });
+    inputField.value = currentName;
 
     // 기존 내용 비우고 입력 필드 추가
     userNameElement.innerHTML = '';
     userNameElement.appendChild(inputField);
 
-    // 버튼 변경
+    // 수정 버튼 변경
     editNameBtn.innerHTML = '';
-    const icon = document.createElement('i');
-    icon.className = 'fa-solid fa-check';
-    editNameBtn.appendChild(icon);
+    const checkIcon = document.createElement('i');
+    checkIcon.className = 'fa-solid fa-check';
+    editNameBtn.appendChild(checkIcon);
+    editNameBtn.classList.add('save-btn');
 
-    // 입력 필드 포커스
+    // 취소 버튼 표시
+    cancelEditBtn.style.display = 'flex';
+
+    // 입력 필드에 자동 포커스
     inputField.focus();
     inputField.select();
 
-    // 외부 클릭 이벤트 (한 번만 등록)
-    document.removeEventListener('click', handleOutsideClick);
-    document.addEventListener('click', handleOutsideClick);
+    // 입력 필드에 엔터 키 이벤트 추가
+    inputField.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const newName = inputField.value.trim();
+
+            if (newName && newName !== currentName) {
+                updateUserName(newName);
+            } else if (!newName) {
+                alert('이름을 입력해주세요.');
+                inputField.focus();
+            } else {
+                cancelNameEdit();
+            }
+        }
+    });
 }
 
 // 외부 클릭 처리

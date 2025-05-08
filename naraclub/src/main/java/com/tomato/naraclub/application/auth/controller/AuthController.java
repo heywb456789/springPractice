@@ -46,7 +46,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseDTO<MemberDTO> me(@AuthenticationPrincipal MemberUserDetails user) {
-        Member member = memberRepository.findByIdAndStatus(user.getMember().getId(), MemberStatus.ACTIVE)
+        Member member = memberRepository.findById(user.getMember().getId())
             .orElseThrow(() -> new BadRequestException("존재하지 않는 회원입니다."));
         return ResponseDTO.ok(member.convertDTO());
     }
