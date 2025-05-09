@@ -4,7 +4,6 @@ import com.tomato.naraclub.application.board.dto.*;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.dto.ListDTO;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface BoardPostService {
@@ -22,4 +21,6 @@ public interface BoardPostService {
     BoardPostResponse getPost(Long id, MemberUserDetails userDetails, HttpServletRequest request);
 
     Integer deleteLikePost(Long id, MemberUserDetails userDetails);
+
+    ShareResponse getShareInfo(Long id);
 }

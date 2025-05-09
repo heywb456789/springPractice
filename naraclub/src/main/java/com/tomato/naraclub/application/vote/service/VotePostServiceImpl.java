@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.vote.service;
 
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.security.MemberUserDetails;
@@ -148,4 +149,11 @@ public class VotePostServiceImpl implements VotePostService {
         return votePost.getVoteCount();
     }
 
+    @Override
+    public ShareResponse getShareInfo(Long id) {
+        VotePost vote = votePostRepository.findById(id)
+            .orElse(new VotePost());
+
+        return vote.convertShareDTO();
+    }
 }

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
 
   const btnPublish = document.getElementById('btnPublish');
-  const btnPreview = document.getElementById('btnPreview');
+  // const btnPreview = document.getElementById('btnPreview');
   const btnUploadThumbnail = document.getElementById('btnUploadThumbnail');
 
   const btnMobileView = document.getElementById('btnMobileView');
@@ -478,11 +478,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 전체 페이지 미리보기
-    if (btnPreview) {
-      btnPreview.addEventListener('click', function () {
-        openFullPreview();
-      });
-    }
+    // if (btnPreview) {
+    //   btnPreview.addEventListener('click', function () {
+    //     openFullPreview();
+    //   });
+    // }
 
     // 확인 모달 버튼 이벤트
     document.getElementById('btnConfirmAction')?.addEventListener('click',
@@ -899,7 +899,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // 페이지 이동 또는 새로고침
       setTimeout(() => {
         if (mode === 'create') {
-          window.location.href = `/admin/news/update/${result.response.articleId}`;
+          window.location.href = `/admin/original/news/update/${result.response.articleId}`;
         } else {
           window.location.reload();
         }
@@ -922,7 +922,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateButtonStates(isDisabled) {
     btnPublish.disabled = isDisabled;
-    btnPreview.disabled = isDisabled;
+    // btnPreview.disabled = isDisabled;
   }
 
   /**

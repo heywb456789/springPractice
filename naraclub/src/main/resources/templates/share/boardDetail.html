@@ -3,6 +3,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
+  <meta name="robots" content="index,follow"/>
   <title th:text="${metaTitle}">게시글 공유</title>
 
   <!-- Open Graph 메타 -->
@@ -10,7 +11,8 @@
   <meta property="og:title"       th:content="${metaTitle}" />
   <meta property="og:description" th:content="${metaDesc}" />
   <meta property="og:image"       th:content="${metaImg}" />
-  <meta property="og:url"         th:text="@{'https://your.domain/share/board/' + ${#httpServletRequest.getAttribute('org.springframework.web.servlet.HandlerMapping.pathWithinHandlerMapping')} }"/>
+  <meta property="og:url"
+      th:content="@{https://www.xn--w69at2fhshwrs.kr/share/board/{id}(id=${id})}" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
@@ -19,9 +21,8 @@
   <meta name="twitter:image"       th:content="${metaImg}" />
 
   <!-- JS 리다이렉트: 봇은 JS 실행 안 함 -->
-  <script>
-    // DOM 로드 직후 SPA URL로 이동
-    window.location.replace(/*[[${redirectUrl}]]*/ '/');
+  <script th:inline="javascript">
+  window.location.replace(/*[[${redirectUrl}]]*/ '/');
   </script>
 </head>
 <body>

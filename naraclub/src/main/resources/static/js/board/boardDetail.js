@@ -66,8 +66,9 @@ function initShareModal() {
   // Bootstrap Modal 인스턴스
   const modalEl = document.getElementById('shareModal');
   shareModal = new bootstrap.Modal(modalEl);
-
-  const shareUrl = window.location.href;
+  const postId = getPostIdFromUrl();
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
+  // const shareUrl = `http://localhost:8032/share/board/${postId}`;
   const title = document.querySelector('.post-title')?.textContent || '게시글 공유';
 
   // 1) 카카오톡 공유
@@ -104,26 +105,26 @@ function initShareModal() {
   }
 
   // 2) X(트위터) 공유
-  document.getElementById('shareTwitter').addEventListener('click', () => {
-    const url = encodeURIComponent(shareUrl);
-    const text = encodeURIComponent(title);
-    window.open(
-        `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
-        '_blank',
-        'width=550,height=420'
-    );
-    shareModal.hide();
-  });
+  // document.getElementById('shareTwitter').addEventListener('click', () => {
+  //   const url = encodeURIComponent(shareUrl);
+  //   const text = encodeURIComponent(title);
+  //   window.open(
+  //       `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
+  //       '_blank',
+  //       'width=550,height=420'
+  //   );
+  //   shareModal.hide();
+  // });
 
   // 3) 통통(커스텀) 공유
-  document.getElementById('shareTongtong').addEventListener('click', () => {
-    window.open(
-        `https://yourdomain.com/tongtong/share?url=${encodeURIComponent(
-            shareUrl)}`,
-        '_blank'
-    );
-    shareModal.hide();
-  });
+  // document.getElementById('shareTongtong').addEventListener('click', () => {
+  //   window.open(
+  //       `https://yourdomain.com/tongtong/share?url=${encodeURIComponent(
+  //           shareUrl)}`,
+  //       '_blank'
+  //   );
+  //   shareModal.hide();
+  // });
 
   // 4) URL 복사
   document.getElementById('copyUrl').addEventListener('click', () => {

@@ -204,4 +204,13 @@ public class BoardPostServiceImpl implements BoardPostService {
 
         return post.getLikes();
     }
+
+    @Override
+    public ShareResponse getShareInfo(Long id) {
+        BoardPost post = boardPostRepository.findById(id)
+            .orElse(new BoardPost());
+
+
+        return post.convertShareDTO();
+    }
 }

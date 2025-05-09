@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.board.entity;
 
 import com.tomato.naraclub.admin.board.dto.AdminBoardDto;
 import com.tomato.naraclub.application.board.dto.BoardPostResponse;
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.comment.entity.BoardComments;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.search.code.SearchCategory;
@@ -180,6 +181,15 @@ public class BoardPost extends Audit {
             .shareCount(shareCount)
             .isHot(isHot)
             .createdAt(createdAt)
+            .build();
+    }
+
+    public ShareResponse convertShareDTO() {
+        return ShareResponse.builder()
+            .id(id)
+            .title(title)
+            .summary(content)
+            .thumbnailUrl("")
             .build();
     }
 }

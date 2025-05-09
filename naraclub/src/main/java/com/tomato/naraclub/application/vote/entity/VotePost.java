@@ -1,6 +1,7 @@
 package com.tomato.naraclub.application.vote.entity;
 
 import com.tomato.naraclub.admin.user.entity.Admin;
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.search.code.SearchCategory;
@@ -163,6 +164,15 @@ public class VotePost extends Audit {
             .searchCategory(SearchCategory.VOTE_POST)
             .createdAt(createdAt)
             .redirectionUrl("/vote/voteDetail.html?id=" + id)
+            .build();
+    }
+
+    public ShareResponse convertShareDTO() {
+        return ShareResponse.builder()
+            .id(id)
+            .title(question)
+            .summary(question + "투표에 참여 해주세요!")
+            .thumbnailUrl("")
             .build();
     }
 }

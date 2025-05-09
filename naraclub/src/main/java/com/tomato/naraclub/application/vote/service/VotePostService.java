@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.vote.service;
 
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.application.vote.dto.VoteListRequest;
 import com.tomato.naraclub.application.vote.dto.VotePostResponse;
@@ -22,4 +23,6 @@ public interface VotePostService {
     VotePostResponse getVoteDetailById(Long id, MemberUserDetails userDetails, HttpServletRequest request);
 
     Long createVoteRecord(Long votePostId, Long voteOptionId, MemberUserDetails user);
+
+    ShareResponse getShareInfo(Long id);
 }
