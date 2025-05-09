@@ -1,9 +1,9 @@
 /**
  * 동영상 업로드/수정 페이지 JavaScript
  */
-import { adminAuthFetch } from '../../../js/commonFetch.js';
+import {adminAuthFetch} from '../../../js/commonFetch.js';
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
   // DOM 요소
@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // 유튜브 관련 요소
   const youtubeId = document.getElementById('youtubeId');
   const previewYoutube = document.getElementById('previewYoutube');
-  const youtubePreviewContainer = document.getElementById('youtubePreviewContainer');
+  const youtubePreviewContainer = document.getElementById(
+      'youtubePreviewContainer');
   const youtubePreviewFrame = document.getElementById('youtubePreviewFrame');
 
   // 업로드 타입 탭 관련 요소
@@ -55,20 +56,20 @@ document.addEventListener('DOMContentLoaded', function() {
   function initEventListeners() {
     // 동영상 파일 업로드 이벤트
     if (videoUploader) {
-      videoUploader.addEventListener('click', function() {
+      videoUploader.addEventListener('click', function () {
         videoFile.click();
       });
 
-      videoUploader.addEventListener('dragover', function(e) {
+      videoUploader.addEventListener('dragover', function (e) {
         e.preventDefault();
         videoUploader.classList.add('dragover');
       });
 
-      videoUploader.addEventListener('dragleave', function() {
+      videoUploader.addEventListener('dragleave', function () {
         videoUploader.classList.remove('dragover');
       });
 
-      videoUploader.addEventListener('drop', function(e) {
+      videoUploader.addEventListener('drop', function (e) {
         e.preventDefault();
         videoUploader.classList.remove('dragover');
 
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (videoFile) {
-        videoFile.addEventListener('change', function() {
+        videoFile.addEventListener('change', function () {
           if (this.files.length > 0) {
             handleVideoFileSelect(this.files[0]);
           }
@@ -86,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       if (removeVideo) {
-        removeVideo.addEventListener('click', function(e) {
+        removeVideo.addEventListener('click', function (e) {
           e.stopPropagation();
           resetVideoUploader();
         });
@@ -95,20 +96,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 썸네일 이미지 업로드 이벤트
     if (thumbnailUploader) {
-      thumbnailUploader.addEventListener('click', function() {
+      thumbnailUploader.addEventListener('click', function () {
         thumbnailFile.click();
       });
 
-      thumbnailUploader.addEventListener('dragover', function(e) {
+      thumbnailUploader.addEventListener('dragover', function (e) {
         e.preventDefault();
         thumbnailUploader.classList.add('dragover');
       });
 
-      thumbnailUploader.addEventListener('dragleave', function() {
+      thumbnailUploader.addEventListener('dragleave', function () {
         thumbnailUploader.classList.remove('dragover');
       });
 
-      thumbnailUploader.addEventListener('drop', function(e) {
+      thumbnailUploader.addEventListener('drop', function (e) {
         e.preventDefault();
         thumbnailUploader.classList.remove('dragover');
 
@@ -118,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (thumbnailFile) {
-        thumbnailFile.addEventListener('change', function() {
+        thumbnailFile.addEventListener('change', function () {
           if (this.files.length > 0) {
             handleThumbnailFileSelect(this.files[0]);
           }
@@ -126,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       if (removeThumbnail) {
-        removeThumbnail.addEventListener('click', function(e) {
+        removeThumbnail.addEventListener('click', function (e) {
           e.stopPropagation();
           resetThumbnailUploader();
         });
@@ -140,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 유튜브 ID 입력 시 미리보기 준비
     if (youtubeId) {
-      youtubeId.addEventListener('input', function() {
+      youtubeId.addEventListener('input', function () {
         if (this.value.trim()) {
           previewYoutube.disabled = false;
         } else {
@@ -162,9 +163,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fileTabs) {
       const tabButtons = fileTabs.querySelectorAll('.nav-link');
       tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
           // 이미 활성화된 탭이면 무시
-          if (this.classList.contains('active')) return;
+          if (this.classList.contains('active')) {
+            return;
+          }
 
           // 다른 탭 비활성화
           tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -219,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     videoPreview.src = videoURL;
 
     // 비디오 로드 이벤트 추가 (길이 계산용)
-    videoPreview.onloadedmetadata = function() {
+    videoPreview.onloadedmetadata = function () {
       const duration = Math.round(videoPreview.duration);
       durationSec.value = duration;
     };
@@ -333,7 +336,9 @@ document.addEventListener('DOMContentLoaded', function() {
    * @returns {string} - 포맷팅된 크기
    */
   function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
 
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -346,15 +351,17 @@ document.addEventListener('DOMContentLoaded', function() {
    * Flatpickr 날짜/시간 선택기 초기화
    */
   function initDateTimePicker() {
-    // 날짜/시간 선택기
-    flatpickr('.datetime-picker', {
+    const publishedAtInput = document.getElementById('publishedAt');
+
+    flatpickr(publishedAtInput, {
       locale: 'ko',
       enableTime: true,
-      dateFormat: "Y-m-d\\TH:i:S",
+      dateFormat: 'Y-m-d H:i',
       time_24hr: true,
       minuteIncrement: 5,
       allowInput: true,
-      disableMobile: true
+      disableMobile: true,
+      defaultDate: publishedAtInput.value || new Date()
     });
   }
 
@@ -410,11 +417,11 @@ document.addEventListener('DOMContentLoaded', function() {
     //     return;
     //   }
     // } else {
-      // 파일 업로드 검증 (수정이 아닌 경우에만 필수)
-      if (!isEditing && !videoFile.files.length) {
-        showAlert('동영상 파일을 업로드해주세요.', 'danger');
-        return;
-      }
+    // 파일 업로드 검증 (수정이 아닌 경우에만 필수)
+    if (!isEditing && !videoFile.files.length) {
+      showAlert('동영상 파일을 업로드해주세요.', 'danger');
+      return;
+    }
     // }
 
     // 썸네일 검증 (수정이 아닌 경우에만 필수)
@@ -440,8 +447,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 수정 모드인지 확인하여 URL 및 메서드 결정
     const endpoint = isEditing
-      ? { url: '/admin/original/video/update', method: 'PUT' }
-      : { url: '/admin/original/video/upload', method: 'POST' };
+        ? {url: '/admin/original/video/update', method: 'PUT'}
+        : {url: '/admin/original/video/upload', method: 'POST'};
 
     // 체크박스 상태 수동 추가 (선택되지 않은 경우 false로 전송)
     formData.set('isPublic', document.getElementById('isPublic').checked);
@@ -465,7 +472,8 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(result => {
       if (result.status.code === 'OK_0000') {
-        showAlert(isEditing ? '동영상이 성공적으로 수정되었습니다.' : '동영상이 성공적으로 업로드되었습니다.', 'success');
+        showAlert(isEditing ? '동영상이 성공적으로 수정되었습니다.' : '동영상이 성공적으로 업로드되었습니다.',
+            'success');
         // 1초 후 목록 페이지로 이동
         setTimeout(() => {
           window.location.href = '/admin/original/video/list';

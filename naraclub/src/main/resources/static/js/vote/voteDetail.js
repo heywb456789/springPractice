@@ -2,7 +2,7 @@
  * 투표 상세 페이지 스크립트
  */
 
-import { authFetch, optionalAuthFetch, handleTokenRefresh } from '../commonFetch.js';
+import { authFetch, optionalAuthFetch, handleFetchError, FetchError } from '../commonFetch.js'
 
 document.addEventListener('DOMContentLoaded', function () {
   // 뒤로가기 버튼 이벤트
@@ -69,6 +69,7 @@ async function loadVoteData() {
 
   } catch (err) {
     console.error('투표 데이터 로드 오류:', err);
+    handleFetchError(err);
     showError('투표 정보를 불러오는 중 오류가 발생했습니다.');
   }
 }
@@ -189,6 +190,7 @@ function initVoteButtons(voteId) {
           window.location.href = '/login/login.html';
         } else {
           alert('투표 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+          window.location.reload();
         }
       } finally {
         // 버튼 활성화

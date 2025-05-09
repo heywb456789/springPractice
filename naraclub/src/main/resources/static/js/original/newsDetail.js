@@ -1,4 +1,9 @@
-import {optionalAuthFetch, authFetch} from '../commonFetch.js';
+import {
+  optionalAuthFetch,
+  authFetch,
+  handleFetchError,
+  FetchError
+} from '../commonFetch.js';
 
 // 전역 변수
 let newsData = null;
@@ -7,16 +12,12 @@ let newsData = null;
 document.addEventListener('DOMContentLoaded', function () {
   // 뒤로가기 버튼 초기화
   initBackButton();
-
   // 뉴스 데이터 로드
   loadNewsData();
-
   // 공유 버튼 초기화
   initShareButton();
-
   // 재시도 버튼 이벤트 초기화
   initRetryButton();
-
   // 댓글 영역 초기화
   initComments();
 });
@@ -74,48 +75,26 @@ async function loadNewsData() {
   }
 
   // 로딩 상태 표시
-  if (loadingElement) {
-    loadingElement.style.display = 'flex';
-  }
-  if (errorElement) {
-    errorElement.style.display = 'none';
-  }
-  if (newsDetailContainer) {
-    newsDetailContainer.style.display = 'none';
-  }
+  loadingElement && (loadingElement.style.display = 'flex');
+  errorElement && (errorElement.style.display = 'none');
+  newsDetailContainer && (newsDetailContainer.style.display = 'none');
 
   try {
-    // API 호출
     const response = await optionalAuthFetch(`/api/news/${newsId}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     const data = await response.json();
 
-    if (!data || !data.response) {
+    if (!data?.response) {
       throw new Error('Invalid news data');
     }
 
     newsData = data.response;
-
-    // UI 업데이트
     updateNewsUI(newsData);
 
-    // 관련 뉴스 로드
-    // loadRelatedNews(newsId);
-
-    // 로딩 상태 숨김, 뉴스 컨테이너 표시
-    if (loadingElement) {
-      loadingElement.style.display = 'none';
-    }
-    if (newsDetailContainer) {
-      newsDetailContainer.style.display = 'block';
-    }
-
-  } catch (error) {
-    console.error('뉴스 데이터 로드 오류:', error);
+    loadingElement && (loadingElement.style.display = 'none');
+    newsDetailContainer && (newsDetailContainer.style.display = 'block');
+  } catch (err) {
+    console.error('뉴스 데이터 로드 오류:', err);
+    handleFetchError(err);
     showError('뉴스 정보를 불러오는 데 실패했습니다.');
   }
 }
@@ -133,35 +112,23 @@ async function loadRelatedNews(newsId) {
 
   try {
     const response = await optionalAuthFetch(
-        `/api/news/${newsId}/related?limit=5`);
-
-    if (!response.ok) {
-      if (response.status === 204) {
-        // 관련 뉴스 없음
-        relatedNewsSection.style.display = 'none';
-        return;
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (!data.response || !data.response.data || data.response.data.length
-        === 0) {
-      // 관련 뉴스 없음
+        `/api/news/${newsId}/related?limit=5`);  // 🚀 수정됨
+    if (response.status === 204) {
       relatedNewsSection.style.display = 'none';
       return;
     }
 
-    // 관련 뉴스 HTML 생성
-    const relatedNewsHTML = createRelatedNewsHTML(data.response.data);
-    relatedNewsContainer.innerHTML = relatedNewsHTML;
+    const data = await response.json();
+    if (!data.response?.data.length) {
+      relatedNewsSection.style.display = 'none';
+      return;
+    }
 
-    // 관련 뉴스 클릭 이벤트 초기화
+    relatedNewsContainer.innerHTML = createRelatedNewsHTML(data.response.data);
     initRelatedNewsClick();
-
-  } catch (error) {
-    console.error('관련 뉴스 로드 오류:', error);
+  } catch (err) {
+    console.error('관련 뉴스 로드 오류:', err);
+    handleFetchError(err);
     relatedNewsSection.style.display = 'none';
   }
 }
@@ -544,7 +511,8 @@ function initComments() {
       }
 
     } catch (error) {
-      console.error('댓글 로드 오류:', error);
+      // console.error('댓글 로드 오류:', error);
+      // handleFetchError(err);
       if (list) {
         list.innerHTML = '<p class="error-message">댓글을 불러오는 데 실패했습니다.</p>';
       }
@@ -559,58 +527,25 @@ function initComments() {
 
   // 댓글 등록 (인증 필수)
   async function submitComment(content) {
-    if (!newsId) {
-      return;
-    }
-
+    const newsId = getNewsIdFromUrl();
     try {
       const res = await authFetch(
           `/api/news/${newsId}/comments`,
           {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({content})
           }
       );
-
       const {response: comment} = await res.json();
-      if (list) {
-        list.insertAdjacentHTML('beforeend', renderComment(comment));
+      list.insertAdjacentHTML('beforeend', renderComment(comment));
+      noCommentsEl.style.display = 'none';
+    } catch (err) {
+      if (err instanceof FetchError && err.httpStatus === 401) {
+        alert('댓글 등록을 위해 로그인 후 이용해주세요.');
+        return window.location.href = '/login/login.html';
       }
-      if (noCommentsEl) {
-        noCommentsEl.style.display = 'none';
-      }
-
-    } catch (error) {
-
-      if (error instanceof Response) {
-        // Response 객체를 JSON 파싱
-        let errJson;
-        try {
-          errJson = await error.json();
-        } catch {
-          errJson = null;
-        }
-
-        const statusCode = errJson?.status?.code;
-        const statusMessage = errJson?.status?.message;
-
-        console.log('API 상태코드:', statusCode);
-        console.log('메시지:', statusMessage);
-        console.log('전체 응답:', errJson);
-
-        if (statusCode === 'UNAUTHORIZED' || error.status === 401) {
-          alert('댓글 등록을 위해 로그인 후 이용해주세요.');
-          return window.location.href = '/login/login.html';
-        }
-
-        alert(statusMessage || '댓글 등록 중 오류가 발생했습니다.');
-      } else {
-        console.error('기타 오류:', error);
-        alert('댓글 등록 중 오류가 발생했습니다.');
-      }
+      handleFetchError(err);
     }
   }
 
@@ -632,9 +567,13 @@ function initComments() {
           );
           item.remove();
 
-        } catch (error) {
-          console.error('삭제 오류:', error);
-          alert('삭제를 위해 로그인 후 이용해주세요.');
+        } catch (err) {
+          if (err instanceof FetchError && err.httpStatus === 401) {
+            alert('로그인이 필요합니다.');
+            location.href = '/login/login.html';
+          } else {
+            handleFetchError(err);
+          }
         }
       } else if (e.target.classList.contains('edit-btn')) {
         const p = item.querySelector('.content');
@@ -652,8 +591,12 @@ function initComments() {
                 }
             );
           } catch (error) {
-            console.error('수정 오류:', error);
-            alert('수정을 위해 로그인 후 이용해주세요.');
+            if (err instanceof FetchError && err.httpStatus === 401) {
+            alert('로그인이 필요합니다.');
+            location.href = '/login/login.html';
+          } else {
+            handleFetchError(err);
+          }
           }
         } else {
           p.contentEditable = true;

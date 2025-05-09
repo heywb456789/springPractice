@@ -93,6 +93,10 @@ public class VotePost extends Audit {
         this.viewCount++;
     }
 
+    public void deleteVote(){
+        this.deleted = true;
+    }
+
     public VotePostResponse convertDTO(Boolean isVoted, Long votedId) {
         List<VoteOptionDTO> optionDTOs = voteOptions.stream()
             .map(opt -> VoteOptionDTO.builder()

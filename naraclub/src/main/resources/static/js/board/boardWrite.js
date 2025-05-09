@@ -1,5 +1,10 @@
 // boardWrite.js
-import { handleTokenRefresh, authFetch } from '../commonFetch.js';
+import {
+  handleTokenRefresh,
+  authFetch,
+  handleFetchError,
+  FetchError
+} from '../commonFetch.js';
 
 const MAX_IMAGE_COUNT = 3;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -118,12 +123,11 @@ function initFormSubmit() {
       // 작성 완료 후 상세로 이동
       location.href = `boardDetail.html?id=${post.boardId}`;
     } catch (err) {
-      console.error('게시글 등록 오류:', err);
-      if (err.message.includes('Unauthorized')) {
-        // 로그인 페이지로 이동
+      if (err instanceof FetchError && err.httpStatus === 401) {
+        alert('로그인이 필요한 기능입니다.');
         location.href = '/login/login.html';
       } else {
-        alert('게시글 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+        handleFetchError(err);
       }
     }
   });

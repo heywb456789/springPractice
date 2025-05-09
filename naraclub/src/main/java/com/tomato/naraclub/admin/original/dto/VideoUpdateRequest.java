@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
@@ -50,6 +51,7 @@ public class VideoUpdateRequest {
     private String youtubeId;
 
     @NotNull(message = "공개일시를 입력해주세요.")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime publishedAt;
 
     // 파일은 수정 시 선택적

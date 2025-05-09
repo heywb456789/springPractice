@@ -1,4 +1,4 @@
-import { optionalAuthFetch } from '../commonFetch.js';
+import { optionalAuthFetch, handleFetchError  } from '../commonFetch.js';
 
 /**
  * 게시판 목록을 API에서 불러와 동적으로 구성하는 함수
@@ -26,10 +26,11 @@ async function loadBoardList(page = 0, size = 10, keyword = '') {
     </div>
     <p class="loading-text">게시글을 불러오고 있습니다</p>
     <p class="loading-subtext">잠시만 기다려주세요...</p>
-  </div>
-`;
+  </div>`;
+
   const apiUrl = `/api/board/posts?page=${page}&size=${size}` +
     (keyword ? `&searchType=BOARD_TITLE_CONTENT&searchText=${encodeURIComponent(keyword)}` : '');
+
   try {
     const res = await optionalAuthFetch(apiUrl);
     const data = await res.json();
@@ -58,14 +59,14 @@ async function loadBoardList(page = 0, size = 10, keyword = '') {
             </svg>
             새 글 작성하기
           </button>
-        </div>
-      `;
+        </div>`;
       return;
     }
 
     // 게시글 목록 HTML 생성
-    const boardListHTML = data.response.data.map(
-      item => createBoardItemHTML(item)).join('');
+    const boardListHTML = data.response.data
+    .map(item => createBoardItemHTML(item))
+    .join('');
 
     // 생성된 HTML을 컨테이너에 삽입
     boardListContainer.innerHTML = boardListHTML;
@@ -73,8 +74,8 @@ async function loadBoardList(page = 0, size = 10, keyword = '') {
     // 게시글 클릭 이벤트 연결
     initBoardItemClick();
 
-  } catch (error) {
-    console.error('게시글 목록을 불러오는 중 오류 발생:', error);
+  } catch (err) {
+    handleFetchError(err);
 
     // 오류 메시지 표시
     boardListContainer.innerHTML = `
@@ -97,11 +98,10 @@ async function loadBoardList(page = 0, size = 10, keyword = '') {
         </div>
       `;
 
-    // 다시 시도 버튼에 이벤트 연결
     const retryButton = boardListContainer.querySelector('.retry-button');
     if (retryButton) {
       retryButton.addEventListener('click',
-        () => loadBoardList(page, limit, keyword));
+        () => loadBoardList(page, size, keyword));        // 🚀 수정됨: 파라미터 이름統一(page, size, keyword)
     }
   }
 }

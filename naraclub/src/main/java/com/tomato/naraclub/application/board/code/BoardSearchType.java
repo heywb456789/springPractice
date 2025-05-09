@@ -17,11 +17,19 @@ public enum BoardSearchType implements SearchTypeEnum {
     String keyword = "%" + s.trim() + "%";
     return QBoardPost.boardPost.title.likeIgnoreCase(keyword)
            .or(QBoardPost.boardPost.content.likeIgnoreCase(keyword));
-  });
-//  WORK_ID("작품 ID", QSettlement.settlement.workId::eq),
-//  CONTRACT_ID("계약 ID", QSettlement.settlement.contractId::eq),
-//  CONTRACT_NAME("계약명", QSettlement.settlement.contractName::eq),
-//  ACCOUNT_OWNER("계좌 소유주", QSettlement.settlement.accountOwner::like),
+  }),
+  BOARD_TITLE("제목",  s -> {
+    String keyword = "%" + s.trim() + "%";
+    return QBoardPost.boardPost.title.likeIgnoreCase(keyword);
+  }),
+  BOARD_CONTENT("내용",  s -> {
+    String keyword = "%" + s.trim() + "%";
+    return QBoardPost.boardPost.content.likeIgnoreCase(keyword);
+  }),
+  BOARD_AUTHOR("작성자",  s -> {
+    String keyword = "%" + s.trim() + "%";
+    return QBoardPost.boardPost.author.name.likeIgnoreCase(keyword);
+  })
   ;
 
   private final String key;

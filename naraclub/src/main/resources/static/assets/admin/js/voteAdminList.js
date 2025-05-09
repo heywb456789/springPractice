@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnConfirmDelete')?.addEventListener('click', async () => {
     try {
       await adminAuthFetch('/admin/vote/delete', {
-        method: 'POST',
+        method: 'DELETE',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ ids: selectedIds })
       });
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 7) 검색 기능
   const searchTypeSelect = document.getElementById('searchType');
-  const searchKeywordInput = document.getElementById('searchKeyword');
+  const searchTextInput = document.getElementById('searchText');
   const searchButton = document.getElementById('btnSearch');
 
   // URL 파라미터에서 검색 조건 가져오기
@@ -122,8 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
     searchTypeSelect.value = searchType;
   }
 
-  if (keyword && searchKeywordInput) {
-    searchKeywordInput.value = keyword;
+  if (keyword && searchTextInput) {
+    searchTextInput.value = keyword;
   }
 
   // 검색 버튼 클릭 이벤트
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 검색어 입력 필드에서 엔터 키 이벤트
-  searchKeywordInput?.addEventListener('keypress', (e) => {
+  searchTextInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       performSearch();
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Helper: 검색 실행
   function performSearch() {
     const type = searchTypeSelect ? searchTypeSelect.value : 'title';
-    const keyword = searchKeywordInput ? searchKeywordInput.value.trim() : '';
+    const keyword = searchTextInput ? searchTextInput.value.trim() : '';
 
     if (keyword) {
       window.location.href = `/admin/vote/list?searchType=${type}&searchText=${encodeURIComponent(keyword)}`;

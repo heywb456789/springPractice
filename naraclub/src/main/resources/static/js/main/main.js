@@ -1,6 +1,6 @@
 // main.js
 import VideoService from '../original/video-service.js';
-import { optionalAuthFetch } from '../commonFetch.js';
+import {optionalAuthFetch, handleFetchError} from '../commonFetch.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
   // 1) 최신 동영상
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   await loadLatestPosts();
 
   // 3) 투표 공간 최신 4개
-    await loadLatestPolls();
+  await loadLatestPolls();
 
   // 4) '더보기' 클릭 이벤트
   initMoreLink();
@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', async function () {
  * 최신 동영상을 로드하여 화면에 표시
  */
 async function loadLatestVideo() {
+  const hotTopicSection = document.querySelector('.hot-topic');
   try {
-    const hotTopicSection = document.querySelector('.hot-topic');
     hotTopicSection.innerHTML = '<div class="loading">동영상을 불러오는 중...</div>';
 
     //호출
@@ -36,10 +36,9 @@ async function loadLatestVideo() {
 
     updateHotTopicSection(latestVideo);
 
-  } catch (error) {
-    console.error('동영상 로드 중 오류 발생:', error);
-    document.querySelector('.hot-topic')
-      .innerHTML = '<div class="error">동영상을 불러오는 중 오류가 발생했습니다.</div>';
+  } catch (err) {
+    // handleFetchError(err);  //주석 해제 하면 알럿 뜸
+    hotTopicSection.innerHTML = '<div class="error">동영상을 불러오는 중 오류가 발생했습니다.</div>';
   }
 }
 
@@ -47,15 +46,18 @@ async function loadLatestVideo() {
  * 최신 4개 게시글을 불러와 자유게시판 섹션을 업데이트
  */
 async function loadLatestPosts() {
-  const newsList = document.querySelectorAll('.news-section')[1]?.querySelector('.news-list');
-  if (!newsList) return;
+  const newsList = document.querySelectorAll('.news-section')[1]?.querySelector(
+      '.news-list');
+  if (!newsList) {
+    return;
+  }
 
   // 로딩 표시 (선택 사항)
   newsList.innerHTML = '<p class="loading-text">게시글을 불러오는 중...</p>';
 
   try {
     const res = await optionalAuthFetch('/api/board/posts?page=0&size=4');
-    const { response } = await res.json();
+    const {response} = await res.json();
     const items = response.data || [];
 
     if (items.length === 0) {
@@ -63,11 +65,11 @@ async function loadLatestPosts() {
       return;
     }
 
-    newsList.innerHTML = items.map(item =>{
+    newsList.innerHTML = items.map(item => {
       const badge = item.new
-        ? `<div class="poll-icon poll-active">N</div>`
-        : ``;
-      return  `
+          ? `<div class="poll-icon poll-active">N</div>`
+          : ``;
+      return `
       <div class="news-item" data-id="${item.boardId}">
         <div class="news-title">${item.title}</div>
         <div class="news-comment">
@@ -76,16 +78,18 @@ async function loadLatestPosts() {
           <span class="comment-count">${item.commentCount}</span>
         </div>
       </div>
-    `}).join('');
+    `
+    }).join('');
 
     // 각 글 클릭 시 상세로 이동
     newsList.querySelectorAll('.news-item').forEach(el => {
       el.addEventListener('click', () => {
-        window.location.href = `boardDetail.html?id=${el.dataset.id}`;
+        window.location.href = `/board/boardDetail.html?id=${el.dataset.id}`;
       });
     });
   } catch (err) {
-    console.error('게시글 로드 오류:', err);
+    // console.error('게시글 로드 오류:', err);
+    // handleFetchError(err);
     newsList.innerHTML = '<p class="error">게시글을 불러오는 중 오류가 발생했습니다.</p>';
   }
 }
@@ -109,7 +113,9 @@ function initMoreLink() {
  */
 async function loadLatestPolls() {
   const pollList = document.querySelector('.poll-section .poll-list');
-  if (!pollList) return;
+  if (!pollList) {
+    return;
+  }
 
   // 로딩 표시
   pollList.innerHTML = '<p class="loading-text">투표를 불러오는 중...</p>';
@@ -117,7 +123,7 @@ async function loadLatestPolls() {
   try {
     // 페이지 0, size 4
     const res = await optionalAuthFetch('/api/vote/posts?page=0&size=4');
-    const { response } = await res.json();
+    const {response} = await res.json();
     const items = response.data || [];
 
     if (items.length === 0) {
@@ -128,8 +134,8 @@ async function loadLatestPolls() {
     // 항목별 HTML 생성
     pollList.innerHTML = items.map(item => {
       const badge = item.new
-        ? `<div class="poll-icon poll-active">N</div>`
-        : ``;
+          ? `<div class="poll-icon poll-active">N</div>`
+          : ``;
 
       return `
         <div class="poll-item" data-id="${item.votePostId}">
@@ -151,7 +157,8 @@ async function loadLatestPolls() {
     });
 
   } catch (err) {
-    console.error('투표 불러오기 오류:', err);
+    // console.error('투표 불러오기 오류:', err);
+    // handleFetchError(err);
     pollList.innerHTML = '<p class="error">투표를 불러오는 중 오류가 발생했습니다.</p>';
   }
 }
@@ -178,7 +185,8 @@ function updateHotTopicSection(videoData) {
   const hotTopicSection = document.querySelector('.hot-topic');
 
   // 데이터가 없는 경우 처리
-  if (!videoData || !videoData.response || !videoData.response.data || videoData.response.data.length === 0) {
+  if (!videoData || !videoData.response || !videoData.response.data
+      || videoData.response.data.length === 0) {
     hotTopicSection.innerHTML = '<div class="no-content">현재 표시할 동영상이 없습니다.</div>';
     return;
   }
@@ -233,7 +241,7 @@ function updateHotTopicSection(videoData) {
     videoThumbnail.addEventListener('click', () => {
       const videoId = videoThumbnail.dataset.id;
       // 상세 페이지로 이동
-      window.location.href = `/videoDetail.html?id=${videoId}`;
+      window.location.href = `/original/videoDetail.html?id=${videoId}`;
     });
   }
 
@@ -242,7 +250,7 @@ function updateHotTopicSection(videoData) {
   if (videoInfo) {
     videoInfo.addEventListener('click', () => {
       const videoId = videoInfo.dataset.id;
-      window.location.href = `/videoDetail.html?id=${videoId}`;
+      window.location.href = `/original/videoDetail.html?id=${videoId}`;
     });
   }
 
@@ -272,7 +280,9 @@ function initVideoHoverPreview() {
   const thumbnailImg = videoContainer?.querySelector('.thumbnail-img');
   const videoElement = videoContainer?.querySelector('.hover-video');
 
-  if (!videoContainer || !thumbnailImg || !videoElement) return;
+  if (!videoContainer || !thumbnailImg || !videoElement) {
+    return;
+  }
 
   // 호버 타이머 (지연 시작용)
   let hoverTimer;
@@ -282,7 +292,7 @@ function initVideoHoverPreview() {
   let previewStarted = false;
 
   // 데스크탑: mouseenter 이벤트 - 지연 시작
-  videoContainer.addEventListener('mouseenter', function() {
+  videoContainer.addEventListener('mouseenter', function () {
     // 0.8초 지연 후 미리보기 시작
     hoverTimer = setTimeout(() => {
       startVideoPreview();
@@ -294,7 +304,7 @@ function initVideoHoverPreview() {
   let touchStartY;
   let touchStartTime;
 
-  videoContainer.addEventListener('touchstart', function(e) {
+  videoContainer.addEventListener('touchstart', function (e) {
     touchStartY = e.touches[0].clientY;
     touchStartTime = Date.now();
     previewStarted = false;
@@ -307,7 +317,7 @@ function initVideoHoverPreview() {
   });
 
   // 모바일: 위로 스와이프 감지
-  videoContainer.addEventListener('touchmove', function(e) {
+  videoContainer.addEventListener('touchmove', function (e) {
     const currentY = e.touches[0].clientY;
     const deltaY = touchStartY - currentY;
 
@@ -328,7 +338,7 @@ function initVideoHoverPreview() {
     if (videoElement.readyState === 0) {
       videoElement.load();
       // 로드 완료 후 재생 시작
-      videoElement.addEventListener('loadeddata', playVideo, { once: true });
+      videoElement.addEventListener('loadeddata', playVideo, {once: true});
     } else {
       playVideo();
     }
@@ -355,13 +365,13 @@ function initVideoHoverPreview() {
   }
 
   // 데스크탑: mouseleave 이벤트
-  videoContainer.addEventListener('mouseleave', function() {
+  videoContainer.addEventListener('mouseleave', function () {
     clearTimeout(hoverTimer); // 호버 타이머 취소
     stopVideoPreview();
   });
 
   // 모바일: touchend 이벤트
-  videoContainer.addEventListener('touchend', function(e) {
+  videoContainer.addEventListener('touchend', function (e) {
     clearTimeout(touchTimer); // 터치 타이머 취소
 
     // 터치 지속 시간이 짧으면(300ms 미만) 클릭으로 간주
@@ -403,14 +413,16 @@ function initVideoHoverPreview() {
  * @returns {string} 포맷된 시간 문자열
  */
 function formatDuration(seconds) {
-  if (!seconds) return '00:00';
+  if (!seconds) {
+    return '00:00';
+  }
 
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
 
-  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  return `${String(minutes).padStart(2, '0')}:${String(
+      remainingSeconds).padStart(2, '0')}`;
 }
-
 
 /**
  * 날짜 문자열을 포맷팅
@@ -418,7 +430,9 @@ function formatDuration(seconds) {
  * @returns {string} 포맷된 날짜 (YYYY.MM.DD)
  */
 function formatDate(dateString) {
-  if (!dateString) return '';
+  if (!dateString) {
+    return '';
+  }
 
   const date = new Date(dateString);
   const year = date.getFullYear();
@@ -434,7 +448,9 @@ function formatDate(dateString) {
  * @returns {string} 포맷된 조회수
  */
 function formatViews(count) {
-  if (!count) return '0';
+  if (!count) {
+    return '0';
+  }
 
   if (count >= 10000) {
     return `${Math.floor(count / 10000)}만`;

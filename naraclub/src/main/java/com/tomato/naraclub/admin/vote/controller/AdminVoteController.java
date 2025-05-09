@@ -72,7 +72,7 @@ public class AdminVoteController {
         VotePostResponse vote = adminVoteService.getVoteDetail(id);
 
         model.addAttribute("vote", vote);
-        model.addAttribute("dayPercentage", DateUtils.progressDaysPercentage(vote.getStartDate(), vote.getEndDate()));
+        model.addAttribute("dayPercentage", DateUtils.progressMillsPercentage(vote.getStartDate(), vote.getEndDate()));
 
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());

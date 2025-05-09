@@ -100,7 +100,9 @@
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                                         <input type="text" class="form-control datetime-picker" id="publishedAt" name="publishedAt"
-                                               th:value="${video != null && video.publishedAt != null ? #temporals.format(video.publishedAt, 'yyyy-MM-dd HH:mm') : ''}"
+                                               th:value="${video != null && video.publishedAt != null
+                                  ? #temporals.format(video.publishedAt, 'yyyy-MM-dd HH:mm')
+                                  : #temporals.format(T(java.time.LocalDateTime).now(), 'yyyy-MM-dd HH:mm')}"
                                                placeholder="YYYY-MM-DD HH:MM">
                                     </div>
                                     <div class="form-text">공개 시간을 설정하지 않으면 저장 시간이 적용됩니다.</div>

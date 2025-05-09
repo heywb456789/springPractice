@@ -16,7 +16,11 @@ public enum VoteSearchType implements SearchTypeEnum {
   VOTE_QUESTION("제목/내용", s -> {
     String keyword = "%" + s.trim() + "%";
     return QVotePost.votePost.question.likeIgnoreCase(keyword);
-  });
+  }),
+  VOTE_AUTHOR("작성자", s -> {
+    String keyword = "%" + s.trim() + "%";
+    return QVotePost.votePost.author.name.likeIgnoreCase(keyword);
+  })
   ;
 
   private final String key;

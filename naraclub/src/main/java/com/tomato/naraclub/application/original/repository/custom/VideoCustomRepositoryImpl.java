@@ -41,10 +41,11 @@ public class VideoCustomRepositoryImpl implements VideoCustomRepository {
         // 1) 검색·기간 조건을 하나의 BooleanExpression 으로 결합
         // Predicate 로 선언
         Predicate condition = ExpressionUtils.allOf(
-                request.getSearchCondition(),
-                request.isPublishedAfter(video.publishedAt),
-                request.getOriginalTypeCondition(video),
-                request.isPeriod(video.createdAt)
+            request.getSearchCondition(),
+            request.isPublishedAfter(video.publishedAt),
+            request.getOriginalTypeCondition(video),
+            request.isPeriod(video.createdAt),
+            request.isNotDeleted()
         );
 
         // 2) countQuery: 전체 건수 조회

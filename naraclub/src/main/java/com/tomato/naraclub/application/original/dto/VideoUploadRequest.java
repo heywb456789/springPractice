@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -46,6 +47,7 @@ public class VideoUploadRequest {
     private String youtubeId;
 
     @NotNull
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime publishedAt;
 
     @NotNull

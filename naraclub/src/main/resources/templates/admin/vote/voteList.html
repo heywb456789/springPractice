@@ -40,14 +40,13 @@
       <div class="row g-3 align-items-center">
         <div class="col-auto">
           <select id="searchType" class="form-select">
-            <option value="title">제목</option>
-            <option value="content">내용</option>
-            <option value="author">작성자</option>
+            <option value="VOTE_QUESTION">제목</option>
+            <option value="VOTE_AUTHOR">작성자</option>
           </select>
         </div>
         <div class="col">
           <div class="input-group">
-            <input type="text" id="searchKeyword" class="form-control" placeholder="검색어를 입력하세요">
+            <input type="text" id="searchText" class="form-control" placeholder="검색어를 입력하세요">
             <button class="btn btn-outline-secondary" type="button" id="btnSearch">
               <i class="fas fa-search"></i> 검색
             </button>
@@ -92,7 +91,7 @@
             <!--                        </td>-->
             <td th:text="${#temporals.format(vote.createdAt,'yyyy-MM-dd')}">2025-04-28</td>
             <!--                        <td th:text="${#temporals.format(vote.endDate,'yyyy-MM-dd')}">2025-05-28</td>-->
-            <td th:text="${vote.viewCount}">100</td>
+            <td th:text="${vote.voteCount}">100</td>
             <td th:text="${vote.authorName}">작성자</td>
           </tr>
           <tr th:if="${#lists.isEmpty(voteList)}">

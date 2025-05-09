@@ -2,19 +2,23 @@
  * 게시글 상세 페이지 스크립트
  */
 
-import { authFetch, optionalAuthFetch, handleTokenRefresh } from '../commonFetch.js';
+import {
+  authFetch,
+  optionalAuthFetch,
+  handleTokenRefresh,
+  handleFetchError,
+  FetchError
+} from '../commonFetch.js';
 
 let shareModal;
 
 document.addEventListener('DOMContentLoaded', function () {
   // 뒤로가기 버튼 이벤트
   initBackButton();
-
   // 액션 버튼 이벤트 (좋아요, 공유 등)
   initActionButtons();
 
   initShareModal();
-
   // 게시글 데이터 로드
   loadPostData();
 });
@@ -50,11 +54,11 @@ function initActionButtons() {
   }
 
   const shareButton = document.getElementById('openShareModal');
-    if (shareButton) {
-      shareButton.addEventListener('click', () => {
-        shareModal.show();
-      });
-    }
+  if (shareButton) {
+    shareButton.addEventListener('click', () => {
+      shareModal.show();
+    });
+  }
 }
 
 /** 공유 모달 인스턴스 생성 및 내부 버튼 이벤트 **/
@@ -63,14 +67,14 @@ function initShareModal() {
   const modalEl = document.getElementById('shareModal');
   shareModal = new bootstrap.Modal(modalEl);
 
-  const shareUrl  = window.location.href;
-  const title     = document.querySelector('.post-title')?.textContent || '게시글 공유';
+  const shareUrl = window.location.href;
+  const title = document.querySelector('.post-title')?.textContent || '게시글 공유';
 
   // 1) 카카오톡 공유
   if (window.Kakao) {
     Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
-      document.getElementById('shareKakao').addEventListener('click', () => {
-        try {
+    document.getElementById('shareKakao').addEventListener('click', () => {
+      try {
 //          Kakao.Link.sendDefault({
 //            objectType: 'feed',
 //            content: {
@@ -80,33 +84,33 @@ function initShareModal() {
 //              link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
 //            },
 //          });
-            Kakao.Link.sendScrap({
-              requestUrl: window.location.href
-            });
-        } catch (e) {
-          // 카카오링크 실패 시 Web Share API 또는 클립보드 복사로 폴백
-          if (navigator.share) {
-            navigator.share({ title, url: shareUrl })
-              .catch(err => console.error('Web Share 오류:', err));
-          } else {
-            navigator.clipboard.writeText(shareUrl)
-              .then(() => alert('URL이 클립보드에 복사되었습니다.'))
-              .catch(err => console.error('클립보드 복사 오류:', err));
-          }
-        } finally {
-          shareModal.hide();
+        Kakao.Link.sendScrap({
+          requestUrl: window.location.href
+        });
+      } catch (e) {
+        // 카카오링크 실패 시 Web Share API 또는 클립보드 복사로 폴백
+        if (navigator.share) {
+          navigator.share({title, url: shareUrl})
+          .catch(err => console.error('Web Share 오류:', err));
+        } else {
+          navigator.clipboard.writeText(shareUrl)
+          .then(() => alert('URL이 클립보드에 복사되었습니다.'))
+          .catch(err => console.error('클립보드 복사 오류:', err));
         }
-      });
+      } finally {
+        shareModal.hide();
+      }
+    });
   }
 
   // 2) X(트위터) 공유
   document.getElementById('shareTwitter').addEventListener('click', () => {
-    const url  = encodeURIComponent(shareUrl);
+    const url = encodeURIComponent(shareUrl);
     const text = encodeURIComponent(title);
     window.open(
-      `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
-      '_blank',
-      'width=550,height=420'
+        `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
+        '_blank',
+        'width=550,height=420'
     );
     shareModal.hide();
   });
@@ -114,8 +118,9 @@ function initShareModal() {
   // 3) 통통(커스텀) 공유
   document.getElementById('shareTongtong').addEventListener('click', () => {
     window.open(
-      `https://yourdomain.com/tongtong/share?url=${encodeURIComponent(shareUrl)}`,
-      '_blank'
+        `https://yourdomain.com/tongtong/share?url=${encodeURIComponent(
+            shareUrl)}`,
+        '_blank'
     );
     shareModal.hide();
   });
@@ -123,8 +128,8 @@ function initShareModal() {
   // 4) URL 복사
   document.getElementById('copyUrl').addEventListener('click', () => {
     navigator.clipboard.writeText(shareUrl)
-      .then(() => alert('URL이 복사되었습니다.'))
-      .catch(() => alert('복사에 실패했습니다.'));
+    .then(() => alert('URL이 복사되었습니다.'))
+    .catch(() => alert('복사에 실패했습니다.'));
     shareModal.hide();
   });
 }
@@ -143,25 +148,25 @@ function sharePost() {
       title: title,
       url: shareUrl
     })
-      .then(() => console.log('공유 성공'))
-      .catch((error) => console.log('공유 실패:', error));
+    .then(() => console.log('공유 성공'))
+    .catch((error) => console.log('공유 실패:', error));
   } else {
     // 지원되지 않는 경우 URL 복사
     navigator.clipboard.writeText(shareUrl)
-      .then(() => {
-        alert('게시글 주소가 복사되었습니다.');
-      })
-      .catch(err => {
-        console.error('URL 복사 실패:', err);
-        // 대체 방법: 임시 요소 생성하여 복사
-        const tempInput = document.createElement('input');
-        document.body.appendChild(tempInput);
-        tempInput.value = shareUrl;
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-        alert('게시글 주소가 복사되었습니다.');
-      });
+    .then(() => {
+      alert('게시글 주소가 복사되었습니다.');
+    })
+    .catch(err => {
+      console.error('URL 복사 실패:', err);
+      // 대체 방법: 임시 요소 생성하여 복사
+      const tempInput = document.createElement('input');
+      document.body.appendChild(tempInput);
+      tempInput.value = shareUrl;
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      alert('게시글 주소가 복사되었습니다.');
+    });
   }
 }
 
@@ -181,23 +186,20 @@ async function loadPostData() {
   const postId = getPostIdFromUrl();
   try {
     const res = await optionalAuthFetch(`/api/board/posts/${postId}`);
-    const { response: post } = await res.json();
+    const {response: post} = await res.json();
     updatePostUI(post);
-    // 좋아요 초기화
 
-    const likeBtn = document.querySelector('.like-button');
-    likeBtn.classList.toggle('active', post.like);
+    // 좋아요 초기화
+    document
+    .querySelector('.like-button')
+    .classList.toggle('active', post.like);
 
   } catch (err) {
-    console.error('게시글 로드 오류:', err);
-    alert('게시글을 불러오는 중 오류가 발생했습니다.');
+    handleFetchError(err);
+    window.location.href="/board/boardList.html"
   }
 }
 
-/**
- * 게시글 UI 업데이트
- * @param {Object} postData - 게시글 데이터
- */
 /**
  * 게시글 UI 업데이트
  * @param {Object} postData - 게시글 데이터
@@ -247,13 +249,13 @@ function updatePostUI(postData) {
         image.alt = '게시글 이미지';
 
         // 이미지 로딩 이벤트 추가
-        image.onload = function() {
+        image.onload = function () {
           // 이미지 로드 완료 시 페이드인 효과 적용
           image.classList.add('loaded');
         };
 
         // 이미지 에러 처리
-        image.onerror = function() {
+        image.onerror = function () {
           // 이미지 로드 실패 시 대체 이미지 또는 메시지 표시
           imageContainer.innerHTML = '<div class="image-error">이미지를 불러올 수 없습니다</div>';
         };
@@ -268,14 +270,14 @@ function updatePostUI(postData) {
 
   // 좋아요 수 업데이트
   const likeCountElement = document.querySelector(
-    '.action-button:nth-child(3) span');
+      '.action-button:nth-child(3) span');
   if (likeCountElement) {
     likeCountElement.textContent = postData.likes || 0;
   }
 
   // 조회수 업데이트
   const viewCountElement = document.querySelector(
-    '.action-button:nth-child(2) span');
+      '.action-button:nth-child(2) span');
   if (viewCountElement) {
     viewCountElement.textContent = postData.views || 0;
   }
@@ -285,18 +287,20 @@ function updatePostUI(postData) {
 async function toggleLike(button) {
   const id = getPostIdFromUrl();
   const method = button.classList.contains('active') ? 'DELETE' : 'POST';
+
   try {
-    const res = await authFetch(`/api/board/posts/${id}/like`, { method });
-    const { likes } = await res.json();
-    button.querySelector('span').textContent = likes;
+    const res = await authFetch(`/api/board/posts/${id}/like`, {method});
+    const {response} = await res.json();
+
+    button.querySelector('span').textContent = response;
     button.classList.toggle('active');
+
   } catch (err) {
-    if (err.message.includes('Unauthorized')) {
-      // 로그인 페이지로 이동
-      alert('로그인이 필요한 기능입니다.')
-      location.href = '/login/login.html';
+    if (err instanceof FetchError && err.httpStatus === 401) {
+      alert('로그인이 필요한 기능입니다.');
+      window.location.href = '/login/login.html';
     } else {
-      alert('좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      handleFetchError(err);
     }
 
   }

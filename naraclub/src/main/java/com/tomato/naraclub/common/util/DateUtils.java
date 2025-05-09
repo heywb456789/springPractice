@@ -1,13 +1,13 @@
 package com.tomato.naraclub.common.util;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class DateUtils {
 
     /**
-     * startDate ~ endDate 기간 중, 
-     * endDate까지 남은 일수의 퍼센테이지를 구합니다.
+     * startDate ~ endDate 기간 중, endDate까지 남은 일수의 퍼센테이지를 구합니다.
      *
      * @param startDate 기간 시작
      * @param endDate   기간 종료
@@ -53,11 +53,30 @@ public class DateUtils {
             return 100.0;
         }
 
-        long totalDays   = ChronoUnit.DAYS.between(start, end);
+        long totalDays = ChronoUnit.DAYS.between(start, end);
         long elapsedDays = ChronoUnit.DAYS.between(start, today);
 
         double pct = elapsedDays * 100.0 / totalDays;
 
+        return Math.round(pct * 100.0) / 100.0;
+    }
+
+    public static double progressMillsPercentage(LocalDateTime start, LocalDateTime end) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(start)) {
+            return 0.0;
+        }
+        if (!now.isBefore(end)) {
+            return 100.0;
+        }
+
+        // 전체 구간과 경과 구간을 밀리초 단위로 계산
+        long totalMillis = Duration.between(start, end).toMillis();
+        long elapsedMillis = Duration.between(start, now).toMillis();
+
+        double pct = elapsedMillis * 100.0 / totalMillis;
+        // 소수점 둘째 자리에서 반올림
         return Math.round(pct * 100.0) / 100.0;
     }
 }

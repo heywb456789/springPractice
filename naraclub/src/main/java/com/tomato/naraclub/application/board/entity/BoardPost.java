@@ -85,6 +85,19 @@ public class BoardPost extends Audit {
         this.views++;
     }
 
+    public void addImage(BoardPostImage img) {
+        images.add(img);
+        img.setBoardPost(this);
+    }
+
+    public void clearImages() {
+        // 연관관계 끊어주고 컬렉션 비우기
+        for (BoardPostImage img : new ArrayList<>(images)) {
+            img.setBoardPost(null);
+            images.remove(img);
+        }
+    }
+
     public BoardPostResponse convertDTO() {
         return BoardPostResponse.builder()
             .boardId(id)

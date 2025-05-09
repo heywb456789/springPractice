@@ -51,7 +51,7 @@ public class VotePostServiceImpl implements VotePostService {
     public ListDTO<VotePostResponse> getList(MemberUserDetails userDetails, VoteListRequest request, Pageable pageable) {
         Long memberId = Optional.ofNullable(userDetails)
                 .map(ud -> ud.getMember().getId())
-                .orElse(null);
+                .orElse(0L);
         return votePostRepository.getList(memberId, request, pageable);
     }
 
@@ -112,7 +112,7 @@ public class VotePostServiceImpl implements VotePostService {
         Long memberId = user.getMember().getId();
         Member member = memberRepository
             .findByIdAndStatus(memberId, MemberStatus.ACTIVE)
-            .orElseThrow(() -> new APIException(ResponseStatus.UNAUTHORIZED));
+            .orElseThrow(() -> new APIException(ResponseStatus.FORBIDDEN));
 
         // 2) 투표글 조회
         VotePost votePost = votePostRepository

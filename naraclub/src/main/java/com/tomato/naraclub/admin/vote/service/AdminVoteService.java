@@ -1,6 +1,7 @@
 package com.tomato.naraclub.admin.vote.service;
 
 import com.tomato.naraclub.admin.security.AdminUserDetails;
+import com.tomato.naraclub.admin.vote.dto.VoteDeleteRequest;
 import com.tomato.naraclub.admin.vote.dto.VoteRegisterRequest;
 import com.tomato.naraclub.application.vote.dto.VoteListRequest;
 import com.tomato.naraclub.application.vote.dto.VotePostResponse;
@@ -25,4 +26,6 @@ public interface AdminVoteService {
     VotePostResponse getVoteDetail(Long id);
 
     VotePostResponse updateVote(VoteRegisterRequest request, AdminUserDetails user);
+
+    Boolean deleteVotes(VoteDeleteRequest request, AdminUserDetails user);
 }

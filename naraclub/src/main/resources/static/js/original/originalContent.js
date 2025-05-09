@@ -1,4 +1,3 @@
-import {optionalAuthFetch} from '../commonFetch.js';
 import VideoService from "./video-service.js";
 import NewsArticleService from "./news-service.js";
 
@@ -132,8 +131,8 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
     initInfiniteScroll();
 
   } catch (error) {
-    console.error(`${tab} 콘텐츠 로드 오류:`, error);
-
+    // console.error(`${tab} 콘텐츠 로드 오류:`, error);
+    // handleFetchError(error);
     // 초기 로드에서만 오류 메시지 표시
     if (!append) {
       showError(tab, contentListElement);
@@ -373,7 +372,6 @@ function createShortsListHTML(items) {
  */
 function createArticleListHTML(items) {
   return items.map(item => {
-    const isNew = isItemNew(item.publishedAt || item.createdAt);
     const articleId = item.articleId || item.id;
     const isHot = item.hot === true; // hot 속성 확인
     const category = getCategoryDisplayName(item.category); // 카테고리 표시명 가져오기
@@ -384,7 +382,7 @@ function createArticleListHTML(items) {
         <div class="article-info">
           <div class="article-badges">
             ${category ? `<span class="article-badge badge-category">${category}</span>` : ''}
-            ${isNew ? '<span class="article-badge badge-new">N</span>' : ''}
+            ${item.new ? '<span class="article-badge badge-new">N</span>' : ''}
             ${isHot ? '<span class="article-badge badge-hot">HOT</span>' : ''}
           </div>
           <h3 class="article-title">${item.title}</h3>

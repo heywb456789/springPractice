@@ -43,7 +43,8 @@ public class AdminVoteCustomRepositoryImpl implements AdminVoteCustomRepository 
 
         Predicate condition = ExpressionUtils.allOf(
                 request.getSearchCondition(),
-                request.isPeriod(vote.createdAt)
+                request.isPeriod(vote.createdAt),
+                request.isNotDeleted()
         );
 
         JPAQuery<Long> countQuery = query
@@ -92,6 +93,7 @@ public class AdminVoteCustomRepositoryImpl implements AdminVoteCustomRepository 
                                         ).as("voteOptions"),
                                         vote.commentCount,
                                         vote.viewCount,
+                                        vote.voteCount,
                                         vote.createdAt,
                                         vote.updatedAt,
                                         vote.startDate,

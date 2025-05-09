@@ -5,7 +5,10 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.tomato.naraclub.application.board.code.BoardSearchType;
 import com.tomato.naraclub.application.board.code.BoardSortType;
+import com.tomato.naraclub.application.original.entity.QVideo;
+import com.tomato.naraclub.application.vote.code.VoteSearchType;
 import com.tomato.naraclub.application.vote.code.VoteSortType;
+import com.tomato.naraclub.application.vote.entity.QVotePost;
 import com.tomato.naraclub.common.interfaces.SearchTypeRequest;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -30,11 +33,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Getter
 @Setter
 @ToString
-public class VoteListRequest implements SearchTypeRequest{
+public class VoteListRequest implements SearchTypeRequest {
 
     //프론트에서 넘길 검색 필드 타입 (예: BOARD_ID 등)
     @Schema(description = "검색 항목")
-    private BoardSearchType searchType;
+    private VoteSearchType searchType;
 
     //실제 검색어 입력값
     @Schema(description = "검색")
@@ -73,9 +76,24 @@ public class VoteListRequest implements SearchTypeRequest{
 
     @Hidden
     public OrderSpecifier<?> getSortOrder() {
-        if(this.sortType != null && this.sortType.getOrder() != null){
+        if (this.sortType != null && this.sortType.getOrder() != null) {
             return this.sortType.getOrder();
         }
         return VoteSortType.LATEST.getOrder();
+    }
+
+    @Hidden
+    public BooleanExpression isActivePeriod(
+        DateTimePath<LocalDateTime> startDatePath,
+        DateTimePath<LocalDateTime> endDatePath
+    ) {
+        LocalDateTime now = LocalDateTime.now();
+        return startDatePath.loe(now)
+            .and(endDatePath.goe(now));
+    }
+
+    @Hidden
+    public BooleanExpression isNotDeleted() {
+        return QVotePost.votePost.deleted.eq(false);
     }
 }

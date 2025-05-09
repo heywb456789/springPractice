@@ -62,6 +62,7 @@ public class AdminBoardPostCustomRepositoryImpl implements AdminBoardPostCustomR
                 BoardPostResponse.class,
                 board.id           .as("boardId"),
                 board.author.id    .as("authorId"),
+                board.author.name  .as("authorName"),
                 board.title,
                 board.content,
                 board.commentCount,

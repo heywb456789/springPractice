@@ -5,6 +5,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tomato.naraclub.admin.original.dto.NewsArticleResponse;
@@ -33,7 +34,7 @@ public class NewsArticleCustomRepositoryImpl implements NewsArticleCustomReposit
 
         Long memberId = Optional.ofNullable(userDetails)
                 .map(ud -> ud.getMember().getId())
-                .orElse(null);
+                .orElse(0L);
 
 
         Predicate condition = ExpressionUtils.allOf(
@@ -51,19 +52,9 @@ public class NewsArticleCustomRepositoryImpl implements NewsArticleCustomReposit
                 .from(qArticle)
                 .where(condition);
 
-        JPAQuery<NewsArticleResponse> select = query
+        List<NewsArticleResponse> articles = query
                 .select(getNewsFields(memberId, qArticle, viewHistory))
-                .from(qArticle);
-
-        if(memberId != null) {
-            select.leftJoin(viewHistory)
-                .on(
-                    viewHistory.reader.id.eq(memberId),
-                    viewHistory.article.id.eq(qArticle.id)
-                );
-        }
-
-        List<NewsArticleResponse> articles = select
+                .from(qArticle)
                 .where(condition)
                 .orderBy(request.getSortOrder())
                 .offset(pageable.getOffset())
@@ -83,10 +74,16 @@ public class NewsArticleCustomRepositoryImpl implements NewsArticleCustomReposit
             .publishedAt.goe(startOfToday)
             .and(qArticle.publishedAt.lt(endOfToday));
 
-        BooleanExpression noHistory = viewHistory.id.isNull();
+        BooleanExpression hasHistory = JPAExpressions.selectOne()
+            .from(viewHistory)
+            .where(
+                viewHistory.reader.id.eq(memberId),
+                viewHistory.article.id.eq(qArticle.id)
+            )
+            .exists();
 
         BooleanExpression isNewExpr = (memberId == null ? createdToday
-                                                        : createdToday.and(noHistory));
+                                                        : createdToday.and(hasHistory.not()));
 
         return Projections.fields(
                 NewsArticleResponse.class,

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -80,6 +81,7 @@ public class SecurityConfig {
 
 
                 .requestMatchers("/api/auth/validate").authenticated()
+                .requestMatchers(HttpMethod.POST,"/api/board/posts" ,"/api/vote/posts/*/options/*").authenticated()
                 // 2) 로그인·리프레시는 누구나 (토큰 없어도) 허용
                 .requestMatchers(
                     "/api/auth/login", "/api/auth/refresh", "/api/board/**",

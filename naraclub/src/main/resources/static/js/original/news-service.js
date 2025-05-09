@@ -1,4 +1,4 @@
-import { optionalAuthFetch } from '../commonFetch.js';
+import { optionalAuthFetch, handleFetchError, FetchError } from '../commonFetch.js';
 
 /**
  * 뉴스 관련 API 호출을 처리하는 서비스
@@ -15,28 +15,17 @@ export default class NewsService {
   static async getNewsList(page = 0, size = 10, category = '', keyword = '') {
     try {
       let url = `/api/news?page=${page}&size=${size}`;
-
-      if (category) {
-        url += `&category=${category}`;
-      }
-
-      if (keyword) {
-        url += `&searchType=NEWS_TITLE_CONTENT&searchText=${encodeURIComponent(keyword)}`;
-      }
+      if (category) url += `&category=${category}`;
+      if (keyword) url += `&searchType=NEWS_TITLE_CONTENT&searchText=${encodeURIComponent(keyword)}`;
 
       const response = await optionalAuthFetch(url);
-
-      if (!response.ok) {
-        if (response.status === 204) {
-          return { response: { data: [] } }; // 콘텐츠 없음
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // 콘텐츠 없음
+      if (response.status === 204) return { response: { data: [] } };
 
       return await response.json();
-    } catch (error) {
-      console.error('뉴스 목록을 가져오는 중 오류 발생:', error);
-      throw error;
+    } catch (err) {
+      handleFetchError(err);
+      throw err;
     }
   }
 
@@ -48,15 +37,10 @@ export default class NewsService {
   static async getNewsDetail(newsId) {
     try {
       const response = await optionalAuthFetch(`/api/news/${newsId}`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       return await response.json();
-    } catch (error) {
-      console.error('뉴스 상세 정보를 가져오는 중 오류 발생:', error);
-      throw error;
+    } catch (err) {
+      handleFetchError(err);
+      throw err;
     }
   }
 
@@ -69,17 +53,10 @@ export default class NewsService {
   static async getRelatedNews(newsId, limit = 5) {
     try {
       const response = await optionalAuthFetch(`/api/news/${newsId}/related?limit=${limit}`);
-
-      if (!response.ok) {
-        if (response.status === 204) {
-          return { response: { data: [] } }; // 콘텐츠 없음
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (response.status === 204) return { response: { data: [] } };
       return await response.json();
-    } catch (error) {
-      console.error('관련 뉴스를 가져오는 중 오류 발생:', error);
+    } catch (err) {
+      handleFetchError(err);
       return { response: { data: [] } };
     }
   }
@@ -92,17 +69,10 @@ export default class NewsService {
   static async getPopularNews(limit = 5) {
     try {
       const response = await optionalAuthFetch(`/api/news/popular?limit=${limit}`);
-
-      if (!response.ok) {
-        if (response.status === 204) {
-          return { response: { data: [] } }; // 콘텐츠 없음
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (response.status === 204) return { response: { data: [] } };
       return await response.json();
-    } catch (error) {
-      console.error('인기 뉴스를 가져오는 중 오류 발생:', error);
+    } catch (err) {
+      handleFetchError(err);
       return { response: { data: [] } };
     }
   }
@@ -116,17 +86,10 @@ export default class NewsService {
   static async getNewsByCategory(category, limit = 10) {
     try {
       const response = await optionalAuthFetch(`/api/news/category/${category}?limit=${limit}`);
-
-      if (!response.ok) {
-        if (response.status === 204) {
-          return { response: { data: [] } }; // 콘텐츠 없음
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (response.status === 204) return { response: { data: [] } };
       return await response.json();
-    } catch (error) {
-      console.error(`${category} 카테고리 뉴스를 가져오는 중 오류 발생:`, error);
+    } catch (err) {
+      handleFetchError(err);
       return { response: { data: [] } };
     }
   }

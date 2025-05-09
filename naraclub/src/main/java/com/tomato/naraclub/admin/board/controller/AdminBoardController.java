@@ -26,7 +26,7 @@ public class AdminBoardController {
     /**
      * 게시글 목록 페이지
      */
-    @GetMapping
+    @GetMapping("/list")
     public String list(
             BoardListRequest request,
             @AuthenticationPrincipal AdminUserDetails user,

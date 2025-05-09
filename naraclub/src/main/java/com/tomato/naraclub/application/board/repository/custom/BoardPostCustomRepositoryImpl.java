@@ -27,76 +27,76 @@ public class BoardPostCustomRepositoryImpl implements BoardPostCustomRepository 
     @Override
     @Transactional(readOnly = true)
     public ListDTO<BoardPostResponse> getBoardPostList(Long memberId, BoardListRequest request,
-                                                       Pageable pageable) {
+        Pageable pageable) {
         QBoardPost board = QBoardPost.boardPost;
         QBoardPostViewHistory viewHistory = QBoardPostViewHistory.boardPostViewHistory;
 
         // 1) 검색·기간 조건을 하나의 BooleanExpression 으로 결합
         // Predicate 로 선언
         Predicate condition = ExpressionUtils.allOf(
-                request.getSearchCondition(),
-                request.isPeriod(board.createdAt)
+            request.getSearchCondition(),
+            request.isPeriod(board.createdAt),
+            request.getIsNotDeleted()
         );
 
         // 2) countQuery: 전체 건수 조회
         JPAQuery<Long> countQuery = query
-                .select(board.count())
-                .from(board)
-                .where(condition);
+            .select(board.count())
+            .from(board)
+            .where(condition);
 
-        // 3) contentQuery: 실제 페이지 데이터 조회
-        JPAQuery<BoardPostResponse> contentQuery = query
-                .select(getBoardPostFields(board, viewHistory, memberId))
-                .from(board);
-
-        // 회원일 때만 VIEW_HISTORY 조인
-        if (memberId != null) {
-            contentQuery.leftJoin(viewHistory)
-                    .on(viewHistory.reader.id.eq(memberId),
-                            viewHistory.boardPost.id.eq(board.id));
-        }
-
-        List<BoardPostResponse> content = contentQuery
-                .where(condition)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(request.getSortOrder())
-                .fetch();
+        List<BoardPostResponse> content = query
+            .select(getBoardPostFields(board, viewHistory, memberId))
+            .from(board)
+            .where(condition)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .orderBy(request.getSortOrder())
+            .fetch();
 
         // 4) DTO 변환
         return ListDTO.of(countQuery, content, pageable);
     }
 
     private QBean<BoardPostResponse> getBoardPostFields(
-            QBoardPost board,
-            QBoardPostViewHistory vh,
-            Long memberId) {
+        QBoardPost board,
+        QBoardPostViewHistory vh,
+        Long memberId) {
 
-        LocalDateTime startOfToday    = LocalDate.now().atStartOfDay();
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
         LocalDateTime startOfTomorrow = startOfToday.plusDays(1);
 
         BooleanExpression createdToday = board.createdAt.goe(startOfToday)
-                .and(board.createdAt.lt(startOfTomorrow));
-        BooleanExpression noHistory    = vh.id.isNull();
+            .and(board.createdAt.lt(startOfTomorrow));
 
-        // isNew 식만 분기
+        // EXISTS 서브쿼리: 해당 회원의 조회 기록이 있는지
+        BooleanExpression hasHistory = JPAExpressions
+            .selectOne()
+            .from(vh)
+            .where(
+                vh.reader.id.eq(memberId),
+                vh.boardPost.id.eq(board.id)
+            )
+            .exists();
+
+        // 새 글 여부 = 오늘 작성된 글이면서, 기록이 없는 경우
         BooleanExpression isNewExpr = (memberId == null
-                ? createdToday
-                : createdToday.and(noHistory)
+            ? createdToday
+            : createdToday.and(hasHistory.not())
         );
 
         return Projections.fields(
-                BoardPostResponse.class,
-                board.id           .as("boardId"),
-                board.author.id    .as("authorId"),
-                board.title,
-                board.content,
-                board.commentCount,
-                board.views,
-                board.shareCount   .as("sharesCount"),
-                isNewExpr.as("isNew"),
-                board.isHot,
-                board.createdAt
+            BoardPostResponse.class,
+            board.id.as("boardId"),
+            board.author.id.as("authorId"),
+            board.title,
+            board.content,
+            board.commentCount,
+            board.views,
+            board.shareCount.as("sharesCount"),
+            isNewExpr.as("isNew"),
+            board.isHot,
+            board.createdAt
         );
     }
 

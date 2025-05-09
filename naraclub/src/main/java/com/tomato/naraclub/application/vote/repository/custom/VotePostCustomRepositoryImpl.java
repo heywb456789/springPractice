@@ -73,8 +73,9 @@ public class VotePostCustomRepositoryImpl implements VotePostCustomRepository {
 
         // 1) 검색·기간 조건
         Predicate condition = ExpressionUtils.allOf(
-                request.getSearchCondition(),
-                request.isPeriod(vote.createdAt)
+            request.getSearchCondition(),
+            request.isActivePeriod(vote.startDate, vote.endDate),
+            request.isNotDeleted()
         );
 
         // 2) 전체 개수(countQuery)

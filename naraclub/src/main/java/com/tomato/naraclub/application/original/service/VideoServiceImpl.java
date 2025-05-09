@@ -71,7 +71,7 @@ public class VideoServiceImpl implements VideoService {
     public ListDTO<VideoResponse> getListVideo(VideoListRequest request, MemberUserDetails userDetails, Pageable pageable) {
         Long memberId = Optional.ofNullable(userDetails)
                 .map(ud -> ud.getMember().getId())
-                .orElse(null);
+                .orElse(0L);
         return videoRepository.getListVideo(request, memberId, pageable);
     }
 

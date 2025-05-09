@@ -38,7 +38,7 @@ public class AdminBoardServiceImpl implements AdminBoardService {
 
     @Override
     public AdminBoardDto getBoardDetail(Long id) {
-        BoardPost post = boardPostRepository.findWithImagesById(id)
+        BoardPost post = boardPostRepository.findWithImagesByIdAndDeletedFalse(id)
             .orElseThrow(() -> new APIException(ResponseStatus.BOARD_POST_NOT_EXIST));
         return post.convertAdminDTO();
     }

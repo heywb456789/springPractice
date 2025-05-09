@@ -26,4 +26,7 @@ public interface BoardPostRepository extends QuerydslSearchableRepository<BoardP
     void markHotFlags(@Param("ids") List<Long> top10);
 
     List<BoardPost> findTop10ByOrderByViewsDescCreatedAtDesc();
+
+    @EntityGraph(attributePaths = "images")
+    Optional<BoardPost> findWithImagesByIdAndDeletedFalse(Long postId);
 }

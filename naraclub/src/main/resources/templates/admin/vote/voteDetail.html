@@ -23,7 +23,7 @@
     <div class="page-header d-flex justify-content-between align-items-center mb-4">
         <h4 class="page-title">투표 상세</h4>
         <div class="page-actions">
-            <a th:href="@{/admin/vote/update(id=${vote.votePostId})}" class="btn btn-outline-primary me-2">
+            <a th:href="@{/admin/vote/update/{id}(id=${vote.votePostId})}" class="btn btn-outline-primary me-2">
                 <i class="fas fa-edit"></i> 수정
             </a>
             <a href="/admin/vote/list" class="btn btn-outline-secondary">

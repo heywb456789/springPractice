@@ -19,4 +19,7 @@ public interface AdminBoardPostRepository extends JpaRepository<BoardPost , Long
     @Modifying
     @Query("UPDATE BoardPost b SET b.deleted = true WHERE b.id = :id")
     int softDeleteById(@Param("id") Long id);
+
+    @EntityGraph(attributePaths = "images")
+    Optional<BoardPost> findWithImagesByIdAndDeletedFalse(Long id);
 }

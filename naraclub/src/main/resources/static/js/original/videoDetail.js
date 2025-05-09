@@ -1,4 +1,9 @@
-import { optionalAuthFetch, authFetch } from '../commonFetch.js';
+import {
+  optionalAuthFetch,
+  authFetch,
+  handleFetchError,
+  FetchError
+} from '../commonFetch.js';
 
 // 전역 변수
 let videoData = null;
@@ -12,22 +17,16 @@ let isFullscreen = false;
 document.addEventListener('DOMContentLoaded', function () {
   // 비디오 플레이어 요소 참조
   videoPlayer = document.getElementById('videoPlayer');
-
   // 뒤로가기 버튼 초기화
   initBackButton();
-
   // 비디오 데이터 로드
   loadVideoData();
-
   // 비디오 플레이어 초기화
   initVideoPlayer();
-
   // 비디오 컨트롤 초기화
   initVideoControls();
-
   // 공유 버튼 초기화
   initShareButton();
-
   // 댓글 영역은 별도로 처리
   initComments();
 });
@@ -48,7 +47,8 @@ function initBackButton() {
 
         // videoData가 로드된 경우에만 콘텐츠 타입 확인
         if (videoData && videoData.originalType) {
-          tabType = videoData.originalType === 'YOUTUBE_SHORTS' ? 'shorts' : 'video';
+          tabType = videoData.originalType === 'YOUTUBE_SHORTS' ? 'shorts'
+              : 'video';
         }
 
         // 현재 탭 정보 저장
@@ -74,29 +74,23 @@ function getVideoIdFromUrl() {
  */
 async function loadVideoData() {
   const videoId = getVideoIdFromUrl();
-
   if (!videoId) {
     console.error('비디오 ID가 없습니다.');
     alert('잘못된 접근입니다.');
-    window.location.href = '/original/originalContent.html';
-    return;
+    return window.location.href = '/original/originalContent.html';
   }
 
   try {
-    // API 호출
     const response = await optionalAuthFetch(`/api/videos/${videoId}`);
     const data = await response.json();
-
-    if (!data || !data.response) {
+    if (!data?.response) {
       throw new Error('Invalid video data');
     }
-
     videoData = data.response;
     updateVideoUI(videoData);
-
   } catch (error) {
     console.error('비디오 데이터 로드 오류:', error);
-    alert('비디오 정보를 불러오는 데 실패했습니다.');
+    handleFetchError(error);
   }
 }
 
@@ -173,26 +167,26 @@ function initVideoPlayer() {
   // 비디오 이벤트 리스너 등록
   if (videoPlayer) {
     // 메타데이터 로드 완료 시
-    videoPlayer.addEventListener('loadedmetadata', function() {
+    videoPlayer.addEventListener('loadedmetadata', function () {
       updateTotalTime();
     });
 
     // 재생 시작 시
-    videoPlayer.addEventListener('play', function() {
+    videoPlayer.addEventListener('play', function () {
       isPlaying = true;
       updatePlayPauseButton();
       startProgressInterval();
     });
 
     // 일시 정지 시
-    videoPlayer.addEventListener('pause', function() {
+    videoPlayer.addEventListener('pause', function () {
       isPlaying = false;
       updatePlayPauseButton();
       stopProgressInterval();
     });
 
     // 재생 완료 시
-    videoPlayer.addEventListener('ended', function() {
+    videoPlayer.addEventListener('ended', function () {
       isPlaying = false;
       updatePlayPauseButton();
       stopProgressInterval();
@@ -200,7 +194,7 @@ function initVideoPlayer() {
     });
 
     // 볼륨 변경 시
-    videoPlayer.addEventListener('volumechange', function() {
+    videoPlayer.addEventListener('volumechange', function () {
       updateVolumeUI();
     });
   }
@@ -224,26 +218,26 @@ function startPlayback(event) {
   if (videoPlayer) {
     videoPlayer.style.display = 'block';
     videoPlayer.play()
-      .then(() => {
-        // 재생 성공
-        isPlaying = true;
+    .then(() => {
+      // 재생 성공
+      isPlaying = true;
 
-        // 컨트롤 표시
-        if (videoControls) {
-          videoControls.style.display = 'block';
-        }
+      // 컨트롤 표시
+      if (videoControls) {
+        videoControls.style.display = 'block';
+      }
 
-        // 재생/일시정지 버튼 업데이트
-        updatePlayPauseButton();
+      // 재생/일시정지 버튼 업데이트
+      updatePlayPauseButton();
 
-        // 프로그레스 바 업데이트 시작
-        startProgressInterval();
-      })
-      .catch(error => {
-        console.error('비디오 재생 실패:', error);
-        alert('비디오 재생을 시작할 수 없습니다.');
-        showThumbnail();
-      });
+      // 프로그레스 바 업데이트 시작
+      startProgressInterval();
+    })
+    .catch(error => {
+      console.error('비디오 재생 실패:', error);
+      alert('비디오 재생을 시작할 수 없습니다.');
+      showThumbnail();
+    });
   }
 }
 
@@ -292,7 +286,7 @@ function initVideoControls() {
 
   // 볼륨 슬라이더
   if (volumeSlider) {
-    volumeSlider.addEventListener('input', function() {
+    volumeSlider.addEventListener('input', function () {
       videoPlayer.volume = this.value;
 
       // 볼륨이 0이면 음소거 상태로 변경
@@ -310,7 +304,7 @@ function initVideoControls() {
 
   // 프로그레스 바
   if (progressBar) {
-    progressBar.addEventListener('click', function(e) {
+    progressBar.addEventListener('click', function (e) {
       const rect = this.getBoundingClientRect();
       const pos = (e.clientX - rect.left) / rect.width;
 
@@ -332,7 +326,9 @@ function initVideoControls() {
  * 재생/일시정지 토글
  */
 function togglePlayPause() {
-  if (!videoPlayer) return;
+  if (!videoPlayer) {
+    return;
+  }
 
   if (isPlaying) {
     videoPlayer.pause();
@@ -364,7 +360,9 @@ function updatePlayPauseButton() {
  * 음소거 토글
  */
 function toggleMute() {
-  if (!videoPlayer) return;
+  if (!videoPlayer) {
+    return;
+  }
 
   videoPlayer.muted = !videoPlayer.muted;
   isMuted = videoPlayer.muted;
@@ -423,7 +421,9 @@ function stopProgressInterval() {
  * 프로그레스 바 업데이트
  */
 function updateProgress() {
-  if (!videoPlayer) return;
+  if (!videoPlayer) {
+    return;
+  }
 
   const progressFill = document.getElementById('progressFill');
   const currentTimeElement = document.getElementById('currentTime');
@@ -442,7 +442,9 @@ function updateProgress() {
  * 총 시간 업데이트
  */
 function updateTotalTime() {
-  if (!videoPlayer) return;
+  if (!videoPlayer) {
+    return;
+  }
 
   const totalTimeElement = document.getElementById('totalTime');
 
@@ -457,7 +459,9 @@ function updateTotalTime() {
 function toggleFullscreen() {
   const videoWrapper = document.getElementById('videoWrapper');
 
-  if (!videoWrapper) return;
+  if (!videoWrapper) {
+    return;
+  }
 
   if (!isFullscreen) {
     // 전체화면 진입
@@ -515,17 +519,19 @@ function initMoreButton() {
 
   if (moreButton && descriptionElement) {
     // 내용이 줄임 표시가 필요한지 확인
-    const isOverflowing = descriptionElement.scrollHeight > descriptionElement.clientHeight;
+    const isOverflowing = descriptionElement.scrollHeight
+        > descriptionElement.clientHeight;
 
     // 내용이 넘치는 경우에만 더보기 버튼 표시
     moreButton.style.display = isOverflowing ? 'block' : 'none';
 
-    moreButton.addEventListener('click', function() {
+    moreButton.addEventListener('click', function () {
       // 설명 영역 확장 토글
       descriptionElement.classList.toggle('expanded');
 
       // 버튼 텍스트 변경
-      this.textContent = descriptionElement.classList.contains('expanded') ? '접기' : '더보기';
+      this.textContent = descriptionElement.classList.contains('expanded')
+          ? '접기' : '더보기';
     });
   }
 }
@@ -556,27 +562,27 @@ function shareVideo() {
       title: title,
       url: shareUrl
     })
-      .then(() => console.log('공유 성공'))
-      .catch((error) => console.log('공유 실패:', error));
+    .then(() => console.log('공유 성공'))
+    .catch((error) => console.log('공유 실패:', error));
   } else {
     // 지원되지 않는 경우 URL 복사
     navigator.clipboard.writeText(shareUrl)
-      .then(() => {
-        alert('비디오 주소가 복사되었습니다.');
-      })
-      .catch(err => {
-        console.error('URL 복사 실패:', err);
+    .then(() => {
+      alert('비디오 주소가 복사되었습니다.');
+    })
+    .catch(err => {
+      console.error('URL 복사 실패:', err);
 
-        // 대체 방법
-        const tempInput = document.createElement('input');
-        document.body.appendChild(tempInput);
-        tempInput.value = shareUrl;
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
+      // 대체 방법
+      const tempInput = document.createElement('input');
+      document.body.appendChild(tempInput);
+      tempInput.value = shareUrl;
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
 
-        alert('비디오 주소가 복사되었습니다.');
-      });
+      alert('비디오 주소가 복사되었습니다.');
+    });
   }
 }
 
@@ -616,17 +622,21 @@ function initComments() {
   if (submitBtn && input) {
     submitBtn.addEventListener('click', () => {
       const content = input.value.trim();
-      if (!content) return;
+      if (!content) {
+        return;
+      }
       submitComment(content);
       input.value = '';
     });
 
     // 엔터 키 제출
-    input.addEventListener('keypress', function(e) {
+    input.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         const content = this.value.trim();
-        if (!content) return;
+        if (!content) {
+          return;
+        }
         submitComment(content);
         this.value = '';
       }
@@ -635,12 +645,14 @@ function initComments() {
 
   // 댓글 목록 로드 (인증 선택)
   async function loadComments() {
-    if (!videoId || !list) return;
+    if (!videoId || !list) {
+      return;
+    }
 
     loading = true;
     try {
       const res = await optionalAuthFetch(
-        `/api/videos/${videoId}/comments?page=${page}&size=${pageSize}`
+          `/api/videos/${videoId}/comments?page=${page}&size=${pageSize}`
       );
       const data = await res.json();
       const items = data.response.data || [];
@@ -657,7 +669,8 @@ function initComments() {
         if (noCommentsEl) {
           noCommentsEl.style.display = 'none';
         }
-        items.forEach(c => list.insertAdjacentHTML('afterbegin', renderComment(c)));
+        items.forEach(
+            c => list.insertAdjacentHTML('afterbegin', renderComment(c)));
         page++;
       }
 
@@ -680,21 +693,23 @@ function initComments() {
 
   // 댓글 등록 (인증 필수)
   async function submitComment(content) {
-    if (!videoId) return;
+    if (!videoId) {
+      return;
+    }
 
     try {
       const res = await authFetch(
-        `/api/videos/${videoId}/comments`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ content })
-        }
+          `/api/videos/${videoId}/comments`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({content})
+          }
       );
 
-      const { response: comment } = await res.json();
+      const {response: comment} = await res.json();
       if (list) {
         list.insertAdjacentHTML('beforeend', renderComment(comment));
       }
@@ -711,12 +726,11 @@ function initComments() {
 
     } catch (error) {
       console.error('댓글 등록 오류:', error);
-      if (error.message && error.message.includes('Unauthorized')) {
+      if (error instanceof FetchError && error.httpStatus === 401) {
         alert('댓글 등록을 위해 로그인 후 이용해주세요.');
-        window.location.href = '/login/login.html';
-      } else {
-        alert('댓글 등록 중 오류가 발생했습니다.');
+        return window.location.href = '/login/login.html';
       }
+      handleFetchError(error);
     }
   }
 
@@ -724,15 +738,17 @@ function initComments() {
   if (list) {
     list.addEventListener('click', async e => {
       const item = e.target.closest('.comment-item');
-      if (!item) return;
+      if (!item) {
+        return;
+      }
 
       const id = item.dataset.id;
 
       if (e.target.classList.contains('delete-btn')) {
         try {
           await authFetch(
-            `/api/videos/${videoId}/comments/${id}`,
-            { method: 'DELETE' }
+              `/api/videos/${videoId}/comments/${id}`,
+              {method: 'DELETE'}
           );
           item.remove();
 
@@ -746,8 +762,12 @@ function initComments() {
           }
 
         } catch (error) {
+          if (error instanceof FetchError && error.httpStatus === 401) {
+            alert('삭제를 위해 로그인 후 이용해주세요.');
+            return window.location.href = '/login/login.html';
+          }
+          handleFetchError(error);
           console.error('삭제 오류:', error);
-          alert('삭제를 위해 로그인 후 이용해주세요.');
         }
       } else if (e.target.classList.contains('edit-btn')) {
         const p = item.querySelector('.content');
@@ -755,18 +775,22 @@ function initComments() {
           p.contentEditable = false;
           try {
             await authFetch(
-              `/api/videos/${videoId}/comments/${id}`,
-              {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ content: p.textContent.trim() })
-              }
+                `/api/videos/${videoId}/comments/${id}`,
+                {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({content: p.textContent.trim()})
+                }
             );
           } catch (error) {
+            if (error instanceof FetchError && error.httpStatus === 401) {
+              alert('수정을 위해 로그인 후 이용해주세요.');
+              return window.location.href = '/login/login.html';
+            }
+            handleFetchError(error);
             console.error('수정 오류:', error);
-            alert('수정을 위해 로그인 후 이용해주세요.');
           }
         } else {
           p.contentEditable = true;
@@ -818,7 +842,9 @@ function formatNumber(num) {
  * 날짜 포맷
  */
 function formatDate(dateString) {
-  if (!dateString) return '';
+  if (!dateString) {
+    return '';
+  }
 
   const date = new Date(dateString);
   const year = date.getFullYear();
@@ -834,8 +860,10 @@ function formatDate(dateString) {
  * 시간 포맷 (00:00 형식)
  */
 function formatTime(seconds) {
-  if (isNaN(seconds) || seconds === Infinity) return '00:00';
-  
+  if (isNaN(seconds) || seconds === Infinity) {
+    return '00:00';
+  }
+
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
 

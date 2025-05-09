@@ -1,6 +1,7 @@
 package com.tomato.naraclub.admin.vote.service;
 
 import com.tomato.naraclub.admin.security.AdminUserDetails;
+import com.tomato.naraclub.admin.vote.dto.VoteDeleteRequest;
 import com.tomato.naraclub.admin.vote.dto.VoteOptionRequest;
 import com.tomato.naraclub.admin.vote.dto.VoteRegisterRequest;
 import com.tomato.naraclub.admin.vote.repository.AdminVoteOptionRepository;
@@ -129,5 +130,21 @@ public class AdminVoteServiceImpl implements AdminVoteService {
         VotePost saved = adminVoteRepository.save(votePost);
 
         return saved.convertDTOWithoutVoted();
+    }
+
+
+    @Override
+    @Transactional
+    public Boolean deleteVotes(VoteDeleteRequest request, AdminUserDetails user) {
+        List<VotePost> votePost = adminVoteRepository.findByIdIn(request.getIds());
+
+        if(votePost.isEmpty()) {
+            throw new APIException(ResponseStatus.VOTE_POST_NOT_EXIST);
+        }
+
+        votePost.forEach(VotePost::deleteVote);
+
+
+        return true;
     }
 }

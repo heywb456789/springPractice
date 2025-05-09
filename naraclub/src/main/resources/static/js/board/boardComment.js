@@ -1,7 +1,12 @@
 // boardDetailComments.js
 // 댓글 섹션 로직 (스크롤 페이징, 조회/등록/수정/삭제, 인증 토큰 처리)
 
-import { authFetch, optionalAuthFetch } from '../commonFetch.js';
+import {
+  authFetch,
+  optionalAuthFetch,
+  handleFetchError,
+  FetchError
+} from '../commonFetch.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const postId = new URLSearchParams(window.location.search).get('id');
@@ -59,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         page++;
       }
     } catch (err) {
-      console.error('댓글 로드 오류:', err);
+      handleFetchError(err);
       list.innerHTML = '';
       noCommentsEl.style.display = 'block';
       done = true;
@@ -79,8 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
       list.insertAdjacentHTML('beforeend', renderComment(comment));
       noCommentsEl.style.display = 'none';
     } catch (err) {
-      console.error('댓글 등록 오류:', err);
-      alert('댓글 등록을 위해 로그인 후 이용해주세요.');
+      if (err instanceof FetchError && err.httpStatus === 401) {
+        alert('댓글 등록을 위해 로그인 후 이용해주세요.');
+        window.location.href = '/login/login.html';
+      } else {
+        handleFetchError(err);
+      }
     }
   }
 
@@ -97,8 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         item.remove();
       } catch (err) {
-        console.error('삭제 오류:', err);
-        alert('삭제를 위해 로그인 후 이용해주세요.');
+        if (err instanceof FetchError && err.httpStatus === 401) {
+          alert('삭제를 위해 로그인 후 이용해주세요.');
+          window.location.href = '/login/login.html';
+        } else {
+          handleFetchError(err);
+        }
       }
     } else if (e.target.classList.contains('edit-btn')) {
       const p = item.querySelector('.content');
@@ -110,8 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
             { method: 'PUT', body: JSON.stringify({ content: p.textContent.trim() }) }
           );
         } catch (err) {
-          console.error('수정 오류:', err);
-          alert('수정을 위해 로그인 후 이용해주세요.');
+          if (err instanceof FetchError && err.httpStatus === 401) {
+            alert('수정을 위해 로그인 후 이용해주세요.');
+            window.location.href = '/login/login.html';
+          } else {
+            handleFetchError(err);
+          }
         }
       } else {
         p.contentEditable = true;

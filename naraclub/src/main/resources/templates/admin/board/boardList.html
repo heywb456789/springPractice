@@ -22,12 +22,6 @@
     <div class="page-header d-flex justify-content-between align-items-center mb-4">
         <h4 class="page-title">게시글 관리</h4>
         <div class="page-actions">
-            <!--                <button type="button" id="btnCreate" class="btn btn-primary">-->
-            <!--                    <i class="fas fa-plus"></i> 등록-->
-            <!--                </button>-->
-            <!--                <button type="button" id="btnEdit" class="btn btn-secondary" disabled>-->
-            <!--                    <i class="fas fa-edit"></i> 수정-->
-            <!--                </button>-->
             <button type="button" id="btnDelete" class="btn btn-danger" disabled>
                 <i class="fas fa-trash"></i> 삭제
             </button>
@@ -40,14 +34,14 @@
             <div class="row g-3 align-items-center">
                 <div class="col-auto">
                     <select id="searchType" class="form-select">
-                        <option value="title">제목</option>
-                        <option value="content">내용</option>
-                        <option value="author">작성자</option>
+                        <option value="BOARD_TITLE">제목</option>
+                        <option value="BOARD_CONTENT">내용</option>
+                        <option value="BOARD_AUTHOR">작성자</option>
                     </select>
                 </div>
                 <div class="col">
                     <div class="input-group">
-                        <input type="text" id="searchKeyword" class="form-control" placeholder="검색어를 입력하세요">
+                        <input type="text" id="searchText" class="form-control" placeholder="검색어를 입력하세요">
                         <button class="btn btn-outline-secondary" type="button" id="btnSearch">
                             <i class="fas fa-search"></i> 검색
                         </button>

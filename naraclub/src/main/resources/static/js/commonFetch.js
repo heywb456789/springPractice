@@ -46,8 +46,36 @@ export async function handleTokenRefresh() {
   const data = await res.json();
   localStorage.setItem('accessToken', data.response.token);
 }
+//################################
+// 1) Response → 에러 검사 및 래핑
+async function processResponse(res) {
+  if (res.ok) {
+    return res;
+  }
 
+  let body = null;
+  try {
+    body = await res.json();
+  } catch {
+    // JSON 파싱 실패해도 그냥 넘어감
+  }
 
+  const code = body?.status?.code;
+  const msg  = body?.status?.message || res.statusText;
+  throw new FetchError(res.status, code, msg, body);
+}
+
+// 2) 최종 캐치용 핸들러
+export function handleFetchError(error) {
+  if (error instanceof FetchError) {
+    console.error('[API Error]', error);
+    alert(error.statusMessage);
+  } else {
+    console.error('[Network/Error]', error);
+    alert('네트워크 오류가 발생했습니다.');
+  }
+}
+//##############################
 /**
  * 1) 인증이 필수인 API 호출용
  *   - 토큰 없으면 바로 에러
@@ -55,23 +83,16 @@ export async function handleTokenRefresh() {
  */
 export async function authFetch(url, options = {}) {
   const token = localStorage.getItem('accessToken');
-  if (!token) {
-    throw new Error('Unauthorized');
-  }
+  if (!token) throw new FetchError(401, null, 'Unauthorized', null);
 
-  // 1) 기본 헤더 세팅
+  // 공통 헤더
   let headers = {
-    // JSON 바디일 때만 Content-Type
-    ...(options.body instanceof FormData
-      ? {}
-      : { 'Content-Type': options.contentType || 'application/json' }
-    ),
+    ...(options.body instanceof FormData ? {} : { 'Content-Type': options.contentType || 'application/json' }),
     'Authorization': `Bearer ${token}`,
-    // 사용자가 직접 넘긴 추가 헤더
     ...(options.headers || {})
   };
 
-  // 2) 첫 호출
+  // 1차 호출
   let res = await fetch(url, {
     method: options.method || 'GET',
     headers,
@@ -79,24 +100,15 @@ export async function authFetch(url, options = {}) {
     body: options.body
   });
 
-  // 토큰 만료
+  // 만료 → 리프레시 → 재시도
   if (res.status === 401) {
-    await handleTokenRefresh();            // refresh 시도
+    await handleTokenRefresh();  // 기존 구현 유지
     const newToken = localStorage.getItem('accessToken');
     headers.Authorization = `Bearer ${newToken}`;
-
-    res = await fetch(url, {
-      method: options.method || 'GET',
-      headers,
-      credentials: 'include',
-      body: options.body
-    });
+    res = await fetch(url, { method: options.method||'GET', headers, credentials:'include', body:options.body });
   }
 
-  if (!res.ok) {
-    throw res;
-  }
-  return res;
+  return processResponse(res);
 }
 
 /**
@@ -110,22 +122,23 @@ export async function optionalAuthFetch(url, options = {}) {
     try {
       return await authFetch(url, options);
     } catch (err) {
-      console.warn('AuthFetch 실패, 토큰 없는 상태로 재시도:', err);
-      // fallback to no-token fetch
+      // 401/리프레시 실패면 토큰 없이 재시도
+      if (err instanceof FetchError && err.httpStatus === 401) {
+        console.warn('토큰 없이 재시도:', err);
+      } else {
+        throw err;
+      }
     }
   }
-  // 토큰 없거나 authFetch 실패 시
+
+  // 토큰 없거나 authFetch 실패
   const res = await fetch(url, {
     method: options.method || 'GET',
     headers: options.headers || {},
     credentials: 'include',
     body: options.body
   });
-  if (!res.ok && res.status !== 401) {
-    // 401도 로그인 필요하다고 판단하면 그냥 리턴해도 무방
-    throw new Error(`HTTP ${res.status}`);
-  }
-  return res;
+  return processResponse(res);
 }
 
 
