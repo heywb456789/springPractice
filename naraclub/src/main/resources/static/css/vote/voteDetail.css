@@ -48,6 +48,25 @@
   gap: 5px;
 }
 
+/* 공유 버튼 스타일 */
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  color: #868e96;
+  cursor: pointer;
+}
+.action-button i {
+  font-size: 16px;
+}
+.action-button.active {
+  color: #e03131;
+}
+.share-button {
+  margin-left: auto;
+}
+
 /* 투표 옵션 섹션 */
 .vote-options-section {
   margin-bottom: 30px;
@@ -237,6 +256,40 @@
   outline: none;
   border-color: #4263eb;
   background-color: #fff;
+}
+
+/* 공유 모달 버튼 크기·정렬 */
+.share-modal-btn {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.share-modal-btn:hover {
+  background-color: #e9ecef;
+}
+
+.share-modal-btn img {
+  pointer-events: none; /* 클릭 버블링을 방해하지 않도록 */
+}
+
+.share-label {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #495057;
+}
+
+/* 모달 전체 모양 약간 둥글게 */
+#shareModal .modal-content {
+  border-radius: 12px;
 }
 
 /* 모바일 최적화 */

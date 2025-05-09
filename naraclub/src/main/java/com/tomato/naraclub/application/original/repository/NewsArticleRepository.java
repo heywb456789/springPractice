@@ -14,4 +14,6 @@ public interface NewsArticleRepository extends JpaRepository<Article, Long>, New
 
     @Query("SELECT a FROM Article a where a.id = :id and a.deleted = false and (a.isPublic = true or a.publishedAt <= :now)")
     Optional<Article> findPublishedArticle(@Param("id") Long id, @Param("now") LocalDateTime now);
+
+    Optional<Article> findByIdAndDeletedFalse(Long id);
 }

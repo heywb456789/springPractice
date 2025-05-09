@@ -29,4 +29,6 @@ public interface BoardPostRepository extends QuerydslSearchableRepository<BoardP
 
     @EntityGraph(attributePaths = "images")
     Optional<BoardPost> findWithImagesByIdAndDeletedFalse(Long postId);
+
+    Optional<BoardPost> findByIdAndDeletedFalse(Long id);
 }

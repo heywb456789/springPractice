@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.original.entity;
 
 import com.tomato.naraclub.admin.original.dto.NewsArticleResponse;
 import com.tomato.naraclub.admin.user.entity.Admin;
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.comment.entity.ArticleComments;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
@@ -125,5 +126,14 @@ public class Article extends Audit {
 
     public void increaseViewCount() {
         this.viewCount++;
+    }
+
+    public ShareResponse convertShareDTO() {
+        return ShareResponse.builder()
+                .id(id)
+                .title(title)
+                .summary(subTitle)
+                .thumbnailUrl(thumbnailUrl)
+                .build();
     }
 }

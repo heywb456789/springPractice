@@ -6,7 +6,6 @@ import com.querydsl.core.types.dsl.DateTimePath;
 import com.tomato.naraclub.application.board.code.BoardSearchType;
 import com.tomato.naraclub.application.board.code.BoardSortType;
 import com.tomato.naraclub.application.board.entity.QBoardPost;
-import com.tomato.naraclub.application.original.code.VideoSortType;
 import com.tomato.naraclub.common.interfaces.SearchTypeRequest;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;

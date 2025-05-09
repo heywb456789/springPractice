@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
           // 페이드아웃 효과 후 이동
           document.body.classList.add('fade-out');
           setTimeout(() => {
-            window.location.href = '/admin/news/list';
+            window.location.href = '/admin/original/news/list';
           }, 300);
         }, 1000);
       } else {

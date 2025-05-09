@@ -1,6 +1,7 @@
 package com.tomato.naraclub.application.original.entity;
 
 import com.tomato.naraclub.admin.user.entity.Admin;
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.comment.entity.VideoComments;
 import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
@@ -138,5 +139,14 @@ public class Video extends Audit {
             .createdAt(e.getCreatedAt())
             .redirectionUrl("/original/videoDetail.html?id=" + e.getId())
             .build();
+    }
+
+    public ShareResponse convertShareDTO() {
+        return ShareResponse.builder()
+                .id(id)
+                .title(title)
+                .summary(description)
+                .thumbnailUrl(thumbnailUrl)
+                .build();
     }
 }

@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.original.service;
 
 import com.tomato.naraclub.admin.original.dto.NewsArticleResponse;
 import com.tomato.naraclub.admin.original.dto.NewsListRequest;
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.original.entity.Article;
@@ -67,5 +68,13 @@ public class NewsArticleServiceImpl implements NewsArticleService{
         ));
 
         return article.convertDTO();
+    }
+
+    @Override
+    public ShareResponse getShareInfo(Long id) {
+        Article article = newsArticleRepository.findByIdAndDeletedFalse(id)
+                .orElse(new Article());
+
+        return article.convertShareDTO();
     }
 }

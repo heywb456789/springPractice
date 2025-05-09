@@ -13,6 +13,16 @@
   <script src="/js/common.js" type="module"></script>
   <script src="/js/vote/voteDetail.js" type="module"></script>
   <script src="/js/vote/voteComment.js" type="module"></script>
+  <script
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js"
+          integrity="sha384-dok87au0gKqJdxs7msEdBPNnKSRT+/mhTVzq+qOhcL464zXwvcrpjeWvyj1kCdq6"
+          crossorigin="anonymous">
+  </script>
+
+  <script>
+    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
+    console.log('Kakao SDK initialized:', Kakao.isInitialized());
+  </script>
 </head>
 <body>
   <!-- 공통 컴포넌트 컨테이너 -->
@@ -55,6 +65,10 @@
           <h2 class="vote-question" id="voteQuestion">운동할 때 파면, 사우 중분하다고 보십니까?</h2>
           <div class="vote-meta">
             <span class="vote-count"><i class="fas fa-vote-yea"></i> <span id="totalVoteCount">0</span></span>
+            <button id="openShareModal" class="btn action-button share-button ms-auto" type="button">
+              <i class="fas fa-share-alt"></i>
+              <span>공유</span>
+            </button>
           </div>
         </div>
 
@@ -95,5 +109,31 @@
       </div>
     </div>
   </div>
+
+  <div id="shareModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center">
+
+          <div class="d-flex justify-content-around mb-3">
+            <!-- 카카오톡 공유 버튼 컨테이너 -->
+            <div id="kakaotalk-sharing-btn" class="share-modal-btn">
+              <img src="/images/kakao.svg" alt="카카오톡" width="32"/>
+              <span class="share-label">카카오톡</span>
+            </div>
+
+            <!-- URL 복사 버튼 -->
+            <div id="copyUrl" class="share-modal-btn">
+              <img src="/images/copy.svg" alt="URL 복사" width="32"/>
+              <span class="share-label">URL 복사</span>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary w-100" data-bs-dismiss="modal">취소</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

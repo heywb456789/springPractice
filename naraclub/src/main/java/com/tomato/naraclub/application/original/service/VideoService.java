@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.original.service;
 
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.original.dto.VideoDetailResponse;
 import com.tomato.naraclub.application.original.dto.VideoListRequest;
 import com.tomato.naraclub.application.original.dto.VideoResponse;
@@ -30,4 +31,5 @@ public interface VideoService {
 
     VideoDetailResponse getShortsDetail(Long id);
 
+    ShareResponse getShareInfo(Long id);
 }

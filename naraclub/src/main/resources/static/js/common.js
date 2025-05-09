@@ -163,8 +163,8 @@ function injectDefaultComponents() {
         <div class="side-menu-content">
           <div class="side-menu-item" data-page="home">클럽 홈</div>
           <div class="side-menu-item" data-page="write">리워드 정책</div>
-          <div class="side-menu-item" data-page="news">계정인증(엑스)</div>
-          <div class="side-menu-item" data-page="community">계정인증(디시인사이드)</div>
+//          <div class="side-menu-item" data-page="news">계정인증(엑스)</div>
+//          <div class="side-menu-item" data-page="community">계정인증(디시인사이드)</div>
           <div class="side-menu-item" data-page="exchange">활동내역 업로드</div>
         </div>
       </div>

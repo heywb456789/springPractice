@@ -25,4 +25,6 @@ public interface VotePostRepository extends QuerydslSearchableRepository<VotePos
 
     @EntityGraph(attributePaths = "voteOptions")
     Optional<VotePost> findWithOptionsById(Long id);
+
+    Optional<VotePost> findByIdAndDeletedFalse(Long id);
 }

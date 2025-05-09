@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 삭제 성공 시 목록 페이지로 이동 (1초 후)
         setTimeout(() => {
-          window.location.href = '/admin/video/list';
+          window.location.href = '/admin/original/video/list';
         }, 1000);
       } else {
         throw new Error(result.message || '삭제 중 오류가 발생했습니다.');

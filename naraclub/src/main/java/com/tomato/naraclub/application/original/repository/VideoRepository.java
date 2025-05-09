@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VideoRepository extends QuerydslSearchableRepository<Video, Long>, VideoCustomRepository {
     Page<Video> findByType(OriginalType type, Pageable pageable);
@@ -24,4 +25,6 @@ public interface VideoRepository extends QuerydslSearchableRepository<Video, Lon
     @Modifying
     @Query("update Video v set v.isHot = true where v.id in :ids")
     void markHotFlags(@Param("ids") List<Long> ids);
+
+    Optional<Video> findByIdAndDeletedFalse(Long id);
 }

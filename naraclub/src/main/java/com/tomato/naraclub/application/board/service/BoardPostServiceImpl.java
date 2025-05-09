@@ -207,7 +207,7 @@ public class BoardPostServiceImpl implements BoardPostService {
 
     @Override
     public ShareResponse getShareInfo(Long id) {
-        BoardPost post = boardPostRepository.findById(id)
+        BoardPost post = boardPostRepository.findByIdAndDeletedFalse(id)
             .orElse(new BoardPost());
 
 

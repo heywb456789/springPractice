@@ -29,7 +29,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0">
           <li class="breadcrumb-item"><a href="/admin/dashboard">대시보드</a></li>
-          <li class="breadcrumb-item"><a href="/admin/news/list">뉴스 관리</a></li>
+          <li class="breadcrumb-item"><a href="/admin/original/news/list">뉴스 관리</a></li>
           <li class="breadcrumb-item active" aria-current="page" th:text="${mode == 'create' ? '뉴스 작성' : '뉴스 수정'}">뉴스 작성/수정</li>
         </ol>
       </nav>
@@ -38,7 +38,7 @@
 <!--      <button id="btnPreview" class="btn btn-info me-2">-->
 <!--        <i class="uil uil-eye"></i> 미리보기-->
 <!--      </button>-->
-      <a href="/admin/news/list" class="btn btn-secondary me-2">
+      <a href="/admin/original/news/list" class="btn btn-secondary me-2">
         <i class="uil uil-times"></i> 취소
       </a>
 <!--      <button id="btnSaveDraft" class="btn btn-outline-primary me-2">-->

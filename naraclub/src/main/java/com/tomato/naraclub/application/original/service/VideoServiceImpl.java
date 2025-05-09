@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.original.service;
 
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.original.dto.VideoDetailResponse;
@@ -116,5 +117,13 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public VideoDetailResponse getShortsDetail(Long id) {
         return null;
+    }
+
+    @Override
+    public ShareResponse getShareInfo(Long id) {
+        Video video = videoRepository.findByIdAndDeletedFalse(id)
+                .orElse(new Video());
+
+        return video.convertShareDTO();
     }
 }

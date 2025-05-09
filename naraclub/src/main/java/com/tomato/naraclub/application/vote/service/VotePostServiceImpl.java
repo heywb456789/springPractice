@@ -151,7 +151,7 @@ public class VotePostServiceImpl implements VotePostService {
 
     @Override
     public ShareResponse getShareInfo(Long id) {
-        VotePost vote = votePostRepository.findById(id)
+        VotePost vote = votePostRepository.findByIdAndDeletedFalse(id)
             .orElse(new VotePost());
 
         return vote.convertShareDTO();
