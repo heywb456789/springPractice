@@ -7,6 +7,7 @@ import {
 
 // 전역 변수
 let newsData = null;
+let shareModal = null;
 
 // 문서 로드 완료 시 실행
 document.addEventListener('DOMContentLoaded', function () {
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // 뉴스 데이터 로드
   loadNewsData();
   // 공유 버튼 초기화
-  initShareButton();
+  initShareFeatures();   // ← 공유 기능 초기화
   // 재시도 버튼 이벤트 초기화
   initRetryButton();
   // 댓글 영역 초기화
@@ -295,51 +296,75 @@ function showError(message) {
 }
 
 /**
- * 공유 버튼 초기화
+ * 공유 기능 초기화: 모달 열기 & 버튼 연결
  */
-function initShareButton() {
-  const shareButton = document.getElementById('shareButton');
-  if (shareButton) {
-    shareButton.addEventListener('click', shareNews);
+function initShareFeatures() {
+  shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+
+  document.getElementById('shareButton')?.addEventListener('click', () => {
+    shareModal.show();
+    setupKakaoShare();
+  });
+  document.getElementById('copyUrl')?.addEventListener('click', () => {
+    copyCurrentUrl();
+  });
+}
+
+
+/**
+ * 카카오톡 기본공유 버튼 생성
+ */
+function setupKakaoShare() {
+  const shareUrl = window.location.href;
+  const title = document.getElementById('newsTitle')?.textContent || '뉴스 공유';
+  const thumbnail = document.querySelector('.news-thumbnail img')?.src || '';
+
+  const container = document.getElementById('kakaotalk-sharing-btn');
+  container.innerHTML = `
+    <img src="/images/kakao.svg" alt="카카오톡" width="32"/>
+    <span class="share-label">카카오톡</span>
+  `;
+
+  if (window.Kakao && Kakao.isInitialized()) {
+    Kakao.Share.createDefaultButton({
+      container: '#kakaotalk-sharing-btn',
+      objectType: 'feed',
+      content: {
+        title,
+        description: '',
+        imageUrl: thumbnail,
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      }
+    });
+  } else {
+    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
+    Kakao.Share.createDefaultButton({
+      container: '#kakaotalk-sharing-btn',
+      objectType: 'feed',
+      content: {
+        title,
+        description: '',
+        imageUrl: thumbnail,
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      }
+    });
   }
 }
 
 /**
- * 뉴스 공유 기능
+ * URL 복사 후 모달 닫기
  */
-function shareNews() {
-  // 현재 페이지 URL
+function copyCurrentUrl() {
   const shareUrl = window.location.href;
-  const title = document.getElementById('newsTitle')?.textContent || '뉴스 공유';
-
-  // 웹 공유 API가 지원되는 경우
-  if (navigator.share) {
-    navigator.share({
-      title: title,
-      url: shareUrl
-    })
-    .then(() => console.log('공유 성공'))
-    .catch((error) => console.log('공유 실패:', error));
-  } else {
-    // 지원되지 않는 경우 URL 복사
-    navigator.clipboard.writeText(shareUrl)
+  navigator.clipboard.writeText(shareUrl)
     .then(() => {
-      alert('뉴스 주소가 복사되었습니다.');
+      alert('URL이 클립보드에 복사되었습니다.');
+      shareModal.hide();
     })
     .catch(err => {
-      console.error('URL 복사 실패:', err);
-
-      // 대체 방법
-      const tempInput = document.createElement('input');
-      document.body.appendChild(tempInput);
-      tempInput.value = shareUrl;
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-
-      alert('뉴스 주소가 복사되었습니다.');
+      console.error('클립보드 복사 오류:', err);
+      alert('복사에 실패했습니다.');
     });
-  }
 }
 
 /**

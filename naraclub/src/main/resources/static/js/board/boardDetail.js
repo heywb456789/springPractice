@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // 액션 버튼 이벤트 (좋아요, 공유 등)
   initActionButtons();
 
-  initShareModal();
+  initShareFeatures();
   // 게시글 데이터 로드
   loadPostData();
 });
@@ -52,59 +52,10 @@ function initActionButtons() {
   if (likeButton) {
     likeButton.addEventListener('click', () => toggleLike(likeButton));
   }
-
-  const shareButton = document.getElementById('openShareModal');
-  if (shareButton) {
-    shareButton.addEventListener('click', () => {
-      shareModal.show();
-    });
-  }
 }
 
-/** 공유 모달 인스턴스 생성 및 내부 버튼 이벤트 **/
-function initShareModal() {
-  // Bootstrap Modal 인스턴스
-  const modalEl = document.getElementById('shareModal');
-  shareModal = new bootstrap.Modal(modalEl);
-  const postId = getPostIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
-  // const shareUrl = `http://localhost:8032/share/board/${postId}`;
-  const title = document.querySelector('.post-title')?.textContent || '게시글 공유';
 
-  // 1) 카카오톡 공유
-  if (window.Kakao) {
-    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
-    document.getElementById('shareKakao').addEventListener('click', () => {
-      try {
-//          Kakao.Link.sendDefault({
-//            objectType: 'feed',
-//            content: {
-//              title,
-//              description: '',
-//              imageUrl: 'https://yourdomain.com/default-thumb.png',
-//              link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
-//            },
-//          });
-        Kakao.Link.sendScrap({
-          requestUrl: window.location.href
-        });
-      } catch (e) {
-        // 카카오링크 실패 시 Web Share API 또는 클립보드 복사로 폴백
-        if (navigator.share) {
-          navigator.share({title, url: shareUrl})
-          .catch(err => console.error('Web Share 오류:', err));
-        } else {
-          navigator.clipboard.writeText(shareUrl)
-          .then(() => alert('URL이 클립보드에 복사되었습니다.'))
-          .catch(err => console.error('클립보드 복사 오류:', err));
-        }
-      } finally {
-        shareModal.hide();
-      }
-    });
-  }
-
-  // 2) X(트위터) 공유
+// 2) X(트위터) 공유
   // document.getElementById('shareTwitter').addEventListener('click', () => {
   //   const url = encodeURIComponent(shareUrl);
   //   const text = encodeURIComponent(title);
@@ -126,50 +77,75 @@ function initShareModal() {
   //   shareModal.hide();
   // });
 
-  // 4) URL 복사
-  document.getElementById('copyUrl').addEventListener('click', () => {
-    navigator.clipboard.writeText(shareUrl)
-    .then(() => alert('URL이 복사되었습니다.'))
-    .catch(() => alert('복사에 실패했습니다.'));
-    shareModal.hide();
+
+function initShareFeatures() {
+  // Bootstrap Modal 인스턴스
+  shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+
+  document.getElementById('openShareModal')?.addEventListener('click', () => {
+    shareModal.show();
+    setupKakaoShare();
+  });
+  document.getElementById('copyUrl')?.addEventListener('click', () => {
+    copyCurrentUrl();
   });
 }
 
-/**
- * 게시글 공유 함수
- */
-function sharePost() {
-  // 현재 페이지 URL
-  const shareUrl = window.location.href;
+// Kakao.Share.createDefaultButton 방식으로 공유 버튼 생성
+function setupKakaoShare() {
+  const postId = getPostIdFromUrl();
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
   const title = document.querySelector('.post-title')?.textContent || '게시글 공유';
+  const description = document.querySelector('.post-content p')?.textContent || '';
+  const imageUrl = 'https://image.newstomato.com/newstomato/club/share/freeboard.png';
 
-  // 웹 공유 API가 지원되는 경우
-  if (navigator.share) {
-    navigator.share({
-      title: title,
-      url: shareUrl
-    })
-    .then(() => console.log('공유 성공'))
-    .catch((error) => console.log('공유 실패:', error));
+  const container = document.getElementById('kakaotalk-sharing-btn');
+  container.innerHTML = `
+    <img src="/images/kakao.svg" alt="카카오톡" width="32"/>
+    <span class="share-label">카카오톡</span>
+  `;
+
+  if (window.Kakao && Kakao.isInitialized()) {
+    Kakao.Share.createDefaultButton({
+      container: '#kakaotalk-sharing-btn',
+      objectType: 'feed',
+      content: {
+        title,
+        description,
+        imageUrl,
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      }
+    });
   } else {
-    // 지원되지 않는 경우 URL 복사
-    navigator.clipboard.writeText(shareUrl)
-    .then(() => {
-      alert('게시글 주소가 복사되었습니다.');
-    })
-    .catch(err => {
-      console.error('URL 복사 실패:', err);
-      // 대체 방법: 임시 요소 생성하여 복사
-      const tempInput = document.createElement('input');
-      document.body.appendChild(tempInput);
-      tempInput.value = shareUrl;
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      alert('게시글 주소가 복사되었습니다.');
+    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a'); // voteDetail과 동일한 앱 키
+    Kakao.Share.createDefaultButton({
+      container: '#kakaotalk-sharing-btn',
+      objectType: 'feed',
+      content: {
+        title,
+        description,
+        imageUrl,
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      }
     });
   }
 }
+
+// URL 복사 및 모달 닫기
+function copyCurrentUrl() {
+  const postId = getPostIdFromUrl();
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
+  navigator.clipboard.writeText(shareUrl)
+    .then(() => {
+      alert('URL이 클립보드에 복사되었습니다.');
+      shareModal.hide();
+    })
+    .catch(err => {
+      console.error('클립보드 복사 오류:', err);
+      alert('복사에 실패했습니다.');
+    });
+}
+
 
 /**
  * URL에서 게시글 ID 추출

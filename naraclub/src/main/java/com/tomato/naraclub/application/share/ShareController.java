@@ -4,12 +4,15 @@ import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.board.service.BoardPostService;
 import com.tomato.naraclub.application.original.service.NewsArticleService;
 import com.tomato.naraclub.application.original.service.VideoService;
+import com.tomato.naraclub.application.share.dto.KakaoShareResponse;
 import com.tomato.naraclub.application.vote.service.VotePostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -29,54 +32,44 @@ public class ShareController {
         ShareResponse post = boardPostService.getShareInfo(id);
         String redirectUrl = post.getTitle().isEmpty() ? "/" : "/board/boardDetail.html?id=" + id;
         // Thymeleaf 템플릿에 바인딩할 OG 메타 정보
-        model.addAttribute("metaTitle", post.getTitle());
-        model.addAttribute("metaDesc", post.getSummary());
-        model.addAttribute("metaImg", FREE_BOARD_IMAGE);
-        model.addAttribute("redirectUrl", redirectUrl);
-        model.addAttribute("id", id);
-        return "share/boardDetail";
+        return setModelAndReturn(id, model, post, FREE_BOARD_IMAGE, redirectUrl);
     }
 
     @GetMapping("/vote/{id}")
     public String shareVote(@PathVariable Long id, Model model) {
         ShareResponse post = votePostService.getShareInfo(id);
         String redirectUrl = post.getTitle().isEmpty() ? "/" : "/vote/voteDetail.html?id=" + id;
-        // Thymeleaf 템플릿에 바인딩할 OG 메타 정보
-        model.addAttribute("metaTitle", post.getTitle());
-        model.addAttribute("metaDesc", post.getSummary());
-        model.addAttribute("metaImg", VOTING_IMAGE);
-        model.addAttribute("redirectUrl", redirectUrl);
-        model.addAttribute("id", id);
-        return "share/boardDetail";
+        return setModelAndReturn(id, model, post, VOTING_IMAGE, redirectUrl);
     }
 
     @GetMapping("/news/{id}")
     public String shareNews(@PathVariable Long id, Model model) {
         ShareResponse post = newsArticleService.getShareInfo(id);
-        String redirectUrl = post.getTitle().isEmpty() ? "/" : "/vote/voteDetail.html?id=" + id;
-        // Thymeleaf 템플릿에 바인딩할 OG 메타 정보
-        model.addAttribute("metaTitle", post.getTitle());
-        model.addAttribute("metaDesc", post.getSummary());
-        model.addAttribute("metaImg", post.getThumbnailUrl());
-        model.addAttribute("redirectUrl", redirectUrl);
-        model.addAttribute("id", id);
-        return "share/boardDetail";
+        String redirectUrl = post.getTitle().isEmpty() ? "/" : "/original/newsDetail.html?id=" + id;
+        return setModelAndReturn(id, model, post, post.getThumbnailUrl(), redirectUrl);
     }
 
     @GetMapping("/original/{id}")
     public String shareOriginal(@PathVariable Long id, Model model) {
         ShareResponse post = videoService.getShareInfo(id);
-        String redirectUrl = post.getTitle().isEmpty() ? "/" : "/vote/voteDetail.html?id=" + id;
-        // Thymeleaf 템플릿에 바인딩할 OG 메타 정보
-        model.addAttribute("metaTitle", post.getTitle());
-        model.addAttribute("metaDesc", post.getSummary());
-        model.addAttribute("metaImg", post.getThumbnailUrl());
-        model.addAttribute("redirectUrl", redirectUrl);
-        model.addAttribute("id", id);
-        return "share/boardDetail";
+        String redirectUrl = post.getTitle().isEmpty() ? "/" : "/original/videoDetail.html?id=" + id;
+        return setModelAndReturn(id, model, post, post.getThumbnailUrl(), redirectUrl);
     }
 
+    @PostMapping("/kakao_webhook")
+    public String kakaoWebHookRegister(@RequestBody KakaoShareResponse kakaoShareResponse){
+        return null;
+    }
 
+    private static String setModelAndReturn(Long id, Model model, ShareResponse post,
+        String imageUrl, String redirectUrl) {
+        model.addAttribute("metaTitle", post.getTitle());
+        model.addAttribute("metaDesc", post.getSummary());
+        model.addAttribute("metaImg", imageUrl);
+        model.addAttribute("redirectUrl", redirectUrl);
+        model.addAttribute("id", id);
+        return "share/shareDetail";
+    }
 
 
 }

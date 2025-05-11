@@ -233,11 +233,24 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8f9fa;
+  background-color: #f8f9fa;
   border-radius: 8px;
   padding: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
-
+.share-modal-btn:hover {
+  background-color: #e9ecef;
+}
+.share-modal-btn img {
+  pointer-events: none; /* 클릭 버블링 방지 */
+}
+/* 텍스트 라벨(style from voteDetail.css) */
+.share-label {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #495057;
+}
 /* 모달 전체 모양 약간 둥글게 */
 #shareModal .modal-content {
   border-radius: 12px;

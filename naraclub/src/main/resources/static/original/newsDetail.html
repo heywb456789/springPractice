@@ -5,12 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>뉴스 상세 - 뉴스토마토</title>
   <link href="/bootstrap/css/bootstrap.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="/css/common.css" rel="stylesheet"/>
   <link href="/css/original/newsDetail.css" rel="stylesheet"/>
   <script src="/bootstrap/js/bootstrap.bundle.js"></script>
   <script src="/js/common.js" type="module"></script>
   <script src="/js/original/newsDetail.js" type="module"></script>
+  <script
+      src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js"
+      integrity="sha384-dok87au0gKqJdxs7msEdBPNnKSRT+/mhTVzq+qOhcL464zXwvcrpjeWvyj1kCdq6"
+      crossorigin="anonymous">
+
+    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
+    console.log('Kakao SDK initialized:', Kakao.isInitialized());
+  </script>
 </head>
 <body>
 <!-- 공통 컴포넌트 컨테이너 -->
@@ -36,8 +45,10 @@
     <div class="loading-animation">
       <svg width="50" height="50" viewBox="0 0 50 50">
         <circle cx="25" cy="25" r="20" fill="none" stroke="#e0e0e0" stroke-width="4"></circle>
-        <circle cx="25" cy="25" r="20" fill="none" stroke="#4263eb" stroke-width="4" stroke-dasharray="125" stroke-dashoffset="125" stroke-linecap="round">
-          <animate attributeName="stroke-dashoffset" values="125;0" dur="1.5s" repeatCount="indefinite" />
+        <circle cx="25" cy="25" r="20" fill="none" stroke="#4263eb" stroke-width="4"
+                stroke-dasharray="125" stroke-dashoffset="125" stroke-linecap="round">
+          <animate attributeName="stroke-dashoffset" values="125;0" dur="1.5s"
+                   repeatCount="indefinite"/>
         </circle>
       </svg>
     </div>
@@ -47,8 +58,11 @@
   <!-- 오류 상태 -->
   <div class="error-state" id="errorState" style="display: none;">
     <div class="error-icon">
-      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" stroke="#ff6b6b" stroke-width="2"/>
+      <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
+           xmlns="http://www.w3.org/2000/svg">
+        <path
+            d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z"
+            stroke="#ff6b6b" stroke-width="2"/>
         <path d="M12 8V13" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/>
         <circle cx="12" cy="16" r="1" fill="#ff6b6b"/>
       </svg>
@@ -56,8 +70,11 @@
     <p class="error-title">뉴스를 불러오는 데 실패했습니다</p>
     <p class="error-message">네트워크 연결을 확인하시거나 잠시 후 다시 시도해 주세요</p>
     <button class="retry-button" id="retryButton">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4.01 7.58 4.01 12C4.01 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="#4263eb"/>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           xmlns="http://www.w3.org/2000/svg">
+        <path
+            d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4.01 7.58 4.01 12C4.01 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z"
+            fill="#4263eb"/>
       </svg>
       다시 시도하기
     </button>
@@ -73,18 +90,22 @@
 
     <!-- 뉴스 메타데이터 -->
     <div class="news-meta">
-      <span class="news-author" id="newsAuthor"></span>
-      <span class="news-date" id="newsDate"></span>
-      <span class="news-views" id="newsViews"></span>
+      <!-- 좌측 그룹 -->
+      <div class="meta-info">
+        <span class="news-author" id="newsAuthor">뉴스토마토</span>
+        <span class="news-date" id="newsDate">2025.05.09 12:00</span>
+        <span class="news-views" id="newsViews"><i class="fas fa-eye"></i> 조회 3</span>
+      </div>
+      <!-- 우측 공유 버튼 -->
+      <button class="share-button" id="shareButton" aria-label="공유">
+        <i class="fas fa-share-alt"></i>
+      </button>
     </div>
 
     <!-- 뉴스 공유 버튼 -->
-    <div class="news-actions">
-      <button class="action-button share-button" id="shareButton">
-        <i class="fas fa-share-alt"></i>
-        <span>공유</span>
-      </button>
-    </div>
+    <!--    <div class="news-actions">-->
+    <!--      -->
+    <!--    </div>-->
 
     <!-- 뉴스 내용 -->
     <div class="news-content" id="newsContent"></div>
@@ -117,6 +138,27 @@
           <p>첫 댓글을 작성해보세요!</p>
         </div>
         <!-- 댓글 목록이 JavaScript로 추가됩니다 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--공유 모달 -->
+<div id="shareModal" class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-body text-center">
+        <div class="d-flex justify-content-around mb-3">
+          <div id="kakaotalk-sharing-btn" class="share-modal-btn">
+            <img src="/images/kakao.svg" alt="카카오톡" width="32"/>
+            <span class="share-label">카카오톡</span>
+          </div>
+          <div id="copyUrl" class="share-modal-btn">
+            <img src="/images/copy.svg" alt="URL 복사" width="32"/>
+            <span class="share-label">URL 복사</span>
+          </div>
+        </div>
+        <button class="btn btn-secondary w-100" data-bs-dismiss="modal">취소</button>
       </div>
     </div>
   </div>

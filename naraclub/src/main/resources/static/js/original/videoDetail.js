@@ -12,6 +12,8 @@ let progressUpdateInterval = null;
 let isPlaying = false;
 let isMuted = false;
 let isFullscreen = false;
+let shareModal = null;
+
 
 // 문서 로드 완료 시 실행
 document.addEventListener('DOMContentLoaded', function () {
@@ -26,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // 비디오 컨트롤 초기화
   initVideoControls();
   // 공유 버튼 초기화
-  initShareButton();
+  initShareFeatures();
   // 댓글 영역은 별도로 처리
   initComments();
 });
@@ -539,51 +541,71 @@ function initMoreButton() {
 /**
  * 공유 버튼 초기화
  */
-function initShareButton() {
-  const shareButton = document.getElementById('shareButton');
+// 공유 기능 초기화: 모달 열기 & 버튼 연결
+function initShareFeatures() {
+  shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
 
-  // 공유 버튼
-  if (shareButton) {
-    shareButton.addEventListener('click', shareVideo);
+  document.getElementById('shareButton')?.addEventListener('click', () => {
+    shareModal.show();
+    setupKakaoShare();
+  });
+
+  document.getElementById('copyUrl')?.addEventListener('click', () => {
+    copyCurrentUrl();
+  });
+}
+
+// 카카오톡 기본공유 버튼 생성
+function setupKakaoShare() {
+  const shareUrl = window.location.href;
+  const title = document.getElementById('videoTitle')?.textContent || '동영상 공유';
+  const imageUrl = document.getElementById('videoThumbnail')?.src || '';
+
+  const container = document.getElementById('kakaotalk-sharing-btn');
+  container.innerHTML = `
+    <img src="/images/kakao.svg" alt="카카오톡" width="32"/>
+    <span class="share-label">카카오톡</span>
+  `;
+
+  if (window.Kakao && Kakao.isInitialized()) {
+    Kakao.Share.createDefaultButton({
+      container: '#kakaotalk-sharing-btn',
+      objectType: 'feed',
+      content: {
+        title,
+        description: '',
+        imageUrl,
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      }
+    });
+  } else {
+    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
+    Kakao.Share.createDefaultButton({
+      container: '#kakaotalk-sharing-btn',
+      objectType: 'feed',
+      content: {
+        title,
+        description: '',
+        imageUrl,
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      }
+    });
   }
 }
 
-/**
- * 비디오 공유
- */
-function shareVideo() {
-  // 현재 페이지 URL
-  const shareUrl = window.location.href;
-  const title = document.getElementById('videoTitle')?.textContent || '비디오 공유';
-
-  // 웹 공유 API가 지원되는 경우
-  if (navigator.share) {
-    navigator.share({
-      title: title,
-      url: shareUrl
-    })
-    .then(() => console.log('공유 성공'))
-    .catch((error) => console.log('공유 실패:', error));
-  } else {
-    // 지원되지 않는 경우 URL 복사
-    navigator.clipboard.writeText(shareUrl)
+// URL 복사 후 모달 닫기
+function copyCurrentUrl() {
+  const videoId = getVideoIdFromUrl();
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/original/${videoId}`;
+  navigator.clipboard.writeText(shareUrl)
     .then(() => {
-      alert('비디오 주소가 복사되었습니다.');
+      alert('URL이 클립보드에 복사되었습니다.');
+      shareModal.hide();
     })
     .catch(err => {
-      console.error('URL 복사 실패:', err);
-
-      // 대체 방법
-      const tempInput = document.createElement('input');
-      document.body.appendChild(tempInput);
-      tempInput.value = shareUrl;
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-
-      alert('비디오 주소가 복사되었습니다.');
+      console.error('클립보드 복사 오류:', err);
+      alert('복사에 실패했습니다.');
     });
-  }
 }
 
 /**
