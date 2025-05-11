@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: local
+    active: prod
   application:
     name: narasarang
   output:
@@ -64,6 +64,9 @@ one-id:
   register: /v1/api/external/{apptype}/join
   nation : KR
   appType : newstong
+
+kakao:
+  admin-key: c96a3dcf1bd646ad68f5d46d5318a748
 
 logging:
   level:

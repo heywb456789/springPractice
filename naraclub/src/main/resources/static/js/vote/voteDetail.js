@@ -1,4 +1,9 @@
-import { authFetch, optionalAuthFetch, handleFetchError } from '../commonFetch.js'
+import {
+  authFetch,
+  optionalAuthFetch,
+  handleFetchError,
+  getUserId
+} from '../commonFetch.js'
 
 document.addEventListener('DOMContentLoaded', () => {
   initBackButton();
@@ -9,9 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // 뒤로가기 버튼
 function initBackButton() {
   const backBtn = document.getElementById('backButton');
-  if (!backBtn) return;
+  if (!backBtn) {
+    return;
+  }
   backBtn.addEventListener('click', () => {
-    window.history.length > 1 ? window.history.back() : window.location.href = 'voteList.html';
+    window.history.length > 1 ? window.history.back()
+        : window.location.href = 'voteList.html';
   });
 }
 
@@ -23,12 +31,14 @@ function getVoteIdFromUrl() {
 // 투표 데이터 로드
 async function loadVoteData() {
   const voteId = getVoteIdFromUrl();
-  if (!voteId) return showError('투표 ID가 올바르지 않습니다.');
+  if (!voteId) {
+    return showError('투표 ID가 올바르지 않습니다.');
+  }
 
   try {
     showLoading(true);
     const res = await optionalAuthFetch(`/api/vote/posts/${voteId}`);
-    const { response: voteData } = await res.json();
+    const {response: voteData} = await res.json();
     updateVoteUI(voteData);
   } catch (err) {
     console.error('투표 데이터 로드 오류:', err);
@@ -40,14 +50,17 @@ async function loadVoteData() {
 }
 
 function showLoading(active) {
-  document.getElementById('loadingState').style.display = active ? 'flex' : 'none';
-  document.getElementById('voteContentContainer').style.display = active ? 'none' : 'block';
+  document.getElementById('loadingState').style.display = active ? 'flex'
+      : 'none';
+  document.getElementById('voteContentContainer').style.display = active
+      ? 'none' : 'block';
 }
 
 // UI 업데이트
-function updateVoteUI({ question, voteOptions, voted, votedId, votePostId }) {
+function updateVoteUI({question, voteOptions, voted, votedId, votePostId}) {
   document.getElementById('voteQuestion').textContent = question;
-  document.getElementById('totalVoteCount').textContent = getTotalVotes(voteOptions);
+  document.getElementById('totalVoteCount').textContent = getTotalVotes(
+      voteOptions);
 
   renderVoteOptions(voteOptions, voted, votedId, votePostId);
   document.getElementById('voteMessage').textContent = voted
@@ -70,19 +83,24 @@ function renderVoteOptions(options, voted, votedId, voteId) {
     const [l, r] = options;
     section.innerHTML = `
       <div class="vote-option-row">
-        <button class="vote-option-button option-left ${isSelected(l.optionId) ? 'selected' : ''}" data-option-id="${l.optionId}">${l.optionName}</button>
+        <button class="vote-option-button option-left ${isSelected(l.optionId)
+        ? 'selected' : ''}" data-option-id="${l.optionId}">${l.optionName}</button>
         <span class="vs-text">VS</span>
-        <button class="vote-option-button option-right ${isSelected(r.optionId) ? 'selected' : ''}" data-option-id="${r.optionId}">${r.optionName}</button>
+        <button class="vote-option-button option-right ${isSelected(r.optionId)
+        ? 'selected' : ''}" data-option-id="${r.optionId}">${r.optionName}</button>
       </div>`;
   } else {
     options.forEach(opt => {
       section.insertAdjacentHTML('beforeend', `
-        <button class="vote-option-button ${isSelected(opt.optionId) ? 'selected' : ''}" data-option-id="${opt.optionId}">${opt.optionName}</button>
+        <button class="vote-option-button ${isSelected(opt.optionId)
+          ? 'selected' : ''}" data-option-id="${opt.optionId}">${opt.optionName}</button>
       `);
     });
   }
 
-  if (!voted) initVoteButtons(voteId);
+  if (!voted) {
+    initVoteButtons(voteId);
+  }
 }
 
 function initVoteButtons(voteId) {
@@ -91,8 +109,10 @@ function initVoteButtons(voteId) {
       const optionId = btn.dataset.optionId;
       disableButtons(true);
       try {
-        await authFetch(`/api/vote/posts/${voteId}/options/${optionId}`, { method: 'POST' });
-        document.getElementById('voteMessage').textContent = '투표에 참여해 주셔서 감사합니다.';
+        await authFetch(`/api/vote/posts/${voteId}/options/${optionId}`,
+            {method: 'POST'});
+        document.getElementById(
+            'voteMessage').textContent = '투표에 참여해 주셔서 감사합니다.';
         await loadVoteData();
       } catch (err) {
         console.error('투표 오류:', err);
@@ -111,7 +131,8 @@ function initVoteButtons(voteId) {
 }
 
 function disableButtons(state) {
-  document.querySelectorAll('.vote-option-button').forEach(b => b.disabled = state);
+  document.querySelectorAll('.vote-option-button').forEach(
+      b => b.disabled = state);
 }
 
 function hideResults() {
@@ -132,7 +153,8 @@ function showVoteResults(options) {
           <span class="result-percentage">${pct}% (${o.voteCount}명)</span>
         </div>
         <div class="result-bar-container">
-          <div class="result-bar ${i === 0 ? 'result-bar-left' : 'result-bar-right'}" style="width:${pct}%"></div>
+          <div class="result-bar ${i === 0 ? 'result-bar-left'
+        : 'result-bar-right'}" style="width:${pct}%"></div>
         </div>
       </div>`);
   });
@@ -159,7 +181,9 @@ function initShareFeatures() {
   document.getElementById('copyUrl')?.addEventListener('click', copyCurrentUrl);
 }
 
-function setupKakaoShare() {
+async function setupKakaoShare() {
+  const id = getVoteIdFromUrl();
+  const userId = await getUserId();
   const title = document.getElementById('voteQuestion').textContent;
   const url = window.location.href;
   const img = 'https://image.newstomato.com/newstomato/club/share/voting.png';
@@ -171,8 +195,18 @@ function setupKakaoShare() {
     Kakao.Share.createDefaultButton({
       container: '#kakaotalk-sharing-btn',
       objectType: 'feed',
-      content: { title, description: '토마토 뉴스 투표광장에서 참여해 보세요!', imageUrl: img, link: { mobileWebUrl: url, webUrl: url } },
-      buttons: [{ title: '투표 참여하기', link: { mobileWebUrl: url, webUrl: url } }]
+      content: {
+        title,
+        description: '토마토 뉴스 투표광장에서 참여해 보세요!',
+        imageUrl: img,
+        link: {mobileWebUrl: url, webUrl: url}
+      },
+      buttons: [{title: '투표 참여하기', link: {mobileWebUrl: url, webUrl: url}}],
+      serverCallbackArgs: {
+        type: 'vote',      // 'board' | 'vote' | 'news' | 'video'
+        id: id,        // 게시물 PK
+        userId: userId // 로그인한 회원 ID
+      }
     });
   } else {
     console.error('Kakao SDK 미초기화');
@@ -183,12 +217,12 @@ function copyCurrentUrl() {
   const voteId = getVoteIdFromUrl();
   const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/vote/${voteId}`;
   navigator.clipboard.writeText(shareUrl)
-      .then(() => {
-        alert('URL이 복사되었습니다.');
-        new bootstrap.Modal(document.getElementById('shareModal')).hide();
-      })
-      .catch(err => {
-        console.error('복사 실패', err);
-        alert('URL 복사에 실패했습니다.');
-      });
+  .then(() => {
+    alert('URL이 복사되었습니다.');
+    new bootstrap.Modal(document.getElementById('shareModal')).hide();
+  })
+  .catch(err => {
+    console.error('복사 실패', err);
+    alert('URL 복사에 실패했습니다.');
+  });
 }

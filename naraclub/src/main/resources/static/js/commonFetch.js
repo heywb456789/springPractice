@@ -142,6 +142,37 @@ export async function optionalAuthFetch(url, options = {}) {
 }
 
 
+export async function getUserId() {
+  // 1) 로컬스토리지에서 토큰 꺼내기
+  const accessToken  = localStorage.getItem('accessToken');
+  const refreshToken = localStorage.getItem('refreshToken');
+
+  // 2) 토큰 없으면 비로그인(0) 리턴
+  if (!accessToken || !refreshToken) {
+    return 0;
+  }
+
+  try {
+    // 3) authFetch가 자동으로 accessToken 헤더를 붙여줄 경우
+    //    (commonFetch.js 내부에 토큰 처리 로직이 없다면,
+    //     fetch 직접 쓰시면서 Authorization 헤더 추가하세요)
+    const response = await authFetch('/api/auth/me');
+    const data     = await response.json();
+
+    // 4) 정상 응답이면 data.response.id 리턴
+    if (data.status?.code === 'OK_0000' && data.response?.id) {
+      return data.response.id;
+    } else {
+      console.error('getUserId: 잘못된 응답 포맷', data);
+      return 0;
+    }
+  } catch (err) {
+    console.error('getUserId 오류:', err);
+    return 0;
+  }
+}
+
+
 //############# admin ###################
 
 export async function adminAuthFetch(url, options = {}) {

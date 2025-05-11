@@ -7,7 +7,8 @@ import {
   optionalAuthFetch,
   handleTokenRefresh,
   handleFetchError,
-  FetchError
+  FetchError,
+  getUserId
 } from '../commonFetch.js';
 
 let shareModal;
@@ -92,8 +93,9 @@ function initShareFeatures() {
 }
 
 // Kakao.Share.createDefaultButton 방식으로 공유 버튼 생성
-function setupKakaoShare() {
+async function setupKakaoShare() {
   const postId = getPostIdFromUrl();
+  const userId = await getUserId();
   const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
   const title = document.querySelector('.post-title')?.textContent || '게시글 공유';
   const description = document.querySelector('.post-content p')?.textContent || '';
@@ -114,6 +116,11 @@ function setupKakaoShare() {
         description,
         imageUrl,
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      },
+      serverCallbackArgs: {
+        type: 'board',      // 'board' | 'vote' | 'news' | 'video'
+        id: postId,        // 게시물 PK
+        userId: userId // 로그인한 회원 ID
       }
     });
   } else {
@@ -126,6 +133,11 @@ function setupKakaoShare() {
         description,
         imageUrl,
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      },
+      serverCallbackArgs: {
+        type: 'board',      // 'board' | 'vote' | 'news' | 'video'
+        id: postId,        // 게시물 PK
+        userId: userId // 로그인한 회원 ID
       }
     });
   }

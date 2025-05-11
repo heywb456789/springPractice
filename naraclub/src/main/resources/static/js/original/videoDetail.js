@@ -2,7 +2,7 @@ import {
   optionalAuthFetch,
   authFetch,
   handleFetchError,
-  FetchError
+  FetchError, getUserId
 } from '../commonFetch.js';
 
 // 전역 변수
@@ -556,7 +556,9 @@ function initShareFeatures() {
 }
 
 // 카카오톡 기본공유 버튼 생성
-function setupKakaoShare() {
+async function setupKakaoShare() {
+  const id = getVideoIdFromUrl();
+  const userId = await getUserId();
   const shareUrl = window.location.href;
   const title = document.getElementById('videoTitle')?.textContent || '동영상 공유';
   const imageUrl = document.getElementById('videoThumbnail')?.src || '';
@@ -576,6 +578,11 @@ function setupKakaoShare() {
         description: '',
         imageUrl,
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      },
+      serverCallbackArgs: {
+        type: 'video',      // 'board' | 'vote' | 'news' | 'video'
+        id: id,        // 게시물 PK
+        userId: userId // 로그인한 회원 ID
       }
     });
   } else {
@@ -588,6 +595,11 @@ function setupKakaoShare() {
         description: '',
         imageUrl,
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+      },
+      serverCallbackArgs: {
+        type: 'video',      // 'board' | 'vote' | 'news' | 'video'
+        id: id,        // 게시물 PK
+        userId: userId // 로그인한 회원 ID
       }
     });
   }

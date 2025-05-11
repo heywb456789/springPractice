@@ -2,7 +2,8 @@ import {
   optionalAuthFetch,
   authFetch,
   handleFetchError,
-  FetchError
+  FetchError,
+  getUserId
 } from '../commonFetch.js';
 
 // 전역 변수
@@ -49,6 +50,7 @@ function getNewsIdFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('id');
 }
+
 
 /**
  * 재시도 버튼 초기화
@@ -310,11 +312,12 @@ function initShareFeatures() {
   });
 }
 
-
 /**
  * 카카오톡 기본공유 버튼 생성
  */
-function setupKakaoShare() {
+async function setupKakaoShare() {
+  const id = getNewsIdFromUrl();
+  const userId = await getUserId();
   const shareUrl = window.location.href;
   const title = document.getElementById('newsTitle')?.textContent || '뉴스 공유';
   const thumbnail = document.querySelector('.news-thumbnail img')?.src || '';
@@ -333,7 +336,12 @@ function setupKakaoShare() {
         title,
         description: '',
         imageUrl: thumbnail,
-        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+        link: {mobileWebUrl: shareUrl, webUrl: shareUrl}
+      },
+      serverCallbackArgs: {
+        type: 'news',      // 'board' | 'vote' | 'news' | 'video'
+        id: id,        // 게시물 PK
+        userId: userId // 로그인한 회원 ID
       }
     });
   } else {
@@ -345,7 +353,12 @@ function setupKakaoShare() {
         title,
         description: '',
         imageUrl: thumbnail,
-        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+        link: {mobileWebUrl: shareUrl, webUrl: shareUrl}
+      },
+      serverCallbackArgs: {
+        type: 'news',      // 'board' | 'vote' | 'news' | 'video'
+        id: id,        // 게시물 PK
+        userId: userId // 로그인한 회원 ID
       }
     });
   }
@@ -357,14 +370,14 @@ function setupKakaoShare() {
 function copyCurrentUrl() {
   const shareUrl = window.location.href;
   navigator.clipboard.writeText(shareUrl)
-    .then(() => {
-      alert('URL이 클립보드에 복사되었습니다.');
-      shareModal.hide();
-    })
-    .catch(err => {
-      console.error('클립보드 복사 오류:', err);
-      alert('복사에 실패했습니다.');
-    });
+  .then(() => {
+    alert('URL이 클립보드에 복사되었습니다.');
+    shareModal.hide();
+  })
+  .catch(err => {
+    console.error('클립보드 복사 오류:', err);
+    alert('복사에 실패했습니다.');
+  });
 }
 
 /**
@@ -617,11 +630,11 @@ function initComments() {
             );
           } catch (error) {
             if (err instanceof FetchError && err.httpStatus === 401) {
-            alert('로그인이 필요합니다.');
-            location.href = '/login/login.html';
-          } else {
-            handleFetchError(err);
-          }
+              alert('로그인이 필요합니다.');
+              location.href = '/login/login.html';
+            } else {
+              handleFetchError(err);
+            }
           }
         } else {
           p.contentEditable = true;
