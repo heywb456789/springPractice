@@ -5,16 +5,17 @@ import org.springframework.security.core.GrantedAuthority;
 
 
 public enum AdminRole implements GrantedAuthority {
-    ADMIN
-    ;
+    SUPER_ADMIN,
+    OPERATOR,
+    UPLOADER,
+    COMMON;
 
-    public static AdminRole getAdminRole(String role) {
+    public static AdminRole of(String role) {
         return Arrays.stream(values())
-            .filter(adminRole -> adminRole.name().equals(role))
-            .findAny()
-            .orElse(null);
+            .filter(r -> r.name().equals(role))
+            .findAny().orElseThrow(() ->
+                new IllegalArgumentException("Unknown role: " + role));
     }
-
 
     @Override
     public String getAuthority() {

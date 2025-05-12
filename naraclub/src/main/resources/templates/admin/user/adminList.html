@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{admin/layout/default :: html(
+        ~{::title},
+        ~{::section},
+        ~{::customCSS},
+        ~{::customJS},
+        'users',
+        'admin'
+      )}">
+<head>
+  <title>관리자 관리 - 슈퍼 관리자</title>
+
+  <!-- Custom CSS -->
+  <customCSS>
+    <link th:href="@{/assets/admin/css/adminList.css}" rel="stylesheet">
+  </customCSS>
+</head>
+<body>
+<section sec:authorize="hasRole('SUPER_ADMIN')">
+  <!-- Page Title & Actions -->
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+      <a href="/admin/users/list" class="btn btn-sm btn-light me-3">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <h4 class="page-title mb-0">관리자 관리</h4>
+    </div>
+    <div class="page-actions">
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+        <i class="fas fa-plus"></i> 관리자 추가
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin List Card -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">관리자 목록</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 60px;">#</th>
+              <th style="width: 80px;">프로필</th>
+              <th>이름 / 이메일</th>
+              <th style="width: 150px;">권한</th>
+              <th style="width: 150px;">마지막 접속</th>
+              <th style="width: 150px;">관리자 추가일</th>
+              <th style="width: 120px;">작업</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${#lists.isEmpty(adminList)}">
+              <td colspan="7" class="text-center py-5">
+                <i class="fas fa-user-shield fa-3x text-muted mb-3"></i>
+                <p class="mb-0">등록된 관리자가 없습니다.</p>
+              </td>
+            </tr>
+            <tr th:unless="${#lists.isEmpty(adminList)}" th:each="admin : ${adminList}">
+              <td th:text="${admin.userId}">1</td>
+              <td>
+                <div class="admin-avatar">
+                  <img th:src="${admin.profileImage} ?: @{/assets/admin/images/user_default.png}" alt="프로필 이미지" class="avatar-img">
+                </div>
+              </td>
+              <td>
+                <a th:href="@{/admin/users/{id}(id=${admin.userId})}" class="admin-name-link">
+                  <span th:text="${admin.name}">관리자 이름</span>
+                </a>
+                <div class="admin-email text-muted">
+                  <small th:text="${admin.email}">admin@example.com</small>
+                </div>
+              </td>
+              <td>
+                <div class="roles-container">
+                  <span th:each="role : ${admin.roles}" class="badge"
+                      th:classappend="${role == 'SUPER_ADMIN' ? 'bg-danger' :
+                                       (role == 'ADMIN' ? 'bg-primary' : 'bg-secondary')}"
+                      th:text="${role}">ADMIN</span>
+                </div>
+              </td>
+              <td th:text="${admin.lastLogin != null ? #temporals.format(admin.lastLogin, 'yyyy-MM-dd HH:mm') : '-'}">2023-01-01 12:00</td>
+              <td th:text="${#temporals.format(admin.adminCreatedAt, 'yyyy-MM-dd')}">2023-01-01</td>
+              <td>
+                <div class="btn-group">
+                  <a th:href="@{/admin/users/{id}(id=${admin.userId})}"
+                     class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <button th:data-admin-id="${admin.userId}"
+                          th:data-admin-name="${admin.name}"
+                          th:data-admin-roles="${#strings.listJoin(admin.roles, ',')}"
+                          class="btn btn-sm btn-outline-secondary btn-edit-admin"
+                          th:if="${admin.userId != #authentication.principal.id}">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button th:data-admin-id="${admin.userId}"
+                          th:data-admin-name="${admin.name}"
+                          class="btn btn-sm btn-outline-danger btn-remove-admin"
+                          th:if="${admin.userId != #authentication.principal.id}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 등록 요청 목록 카드 -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">관리자 등록 요청</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 60px;">#</th>
+              <th style="width: 80px;">프로필</th>
+              <th>이름 / 이메일</th>
+              <th style="width: 150px;">요청일</th>
+              <th style="width: 150px;">요청 사유</th>
+              <th style="width: 120px;">작업</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${#lists.isEmpty(adminRequests)}">
+              <td colspan="6" class="text-center py-5">
+                <i class="fas fa-user-clock fa-3x text-muted mb-3"></i>
+                <p class="mb-0">대기 중인 관리자 등록 요청이 없습니다.</p>
+              </td>
+            </tr>
+            <tr th:unless="${#lists.isEmpty(adminRequests)}" th:each="request : ${adminRequests}">
+              <td th:text="${request.userId}">1</td>
+              <td>
+                <div class="admin-avatar">
+                  <img th:src="${request.profileImage} ?: @{/assets/admin/images/user_default.png}" alt="프로필 이미지" class="avatar-img">
+                </div>
+              </td>
+              <td>
+                <a th:href="@{/admin/users/{id}(id=${request.userId})}" class="admin-name-link">
+                  <span th:text="${request.name}">사용자 이름</span>
+                </a>
+                <div class="admin-email text-muted">
+                  <small th:text="${request.email}">user@example.com</small>
+                </div>
+              </td>
+              <td th:text="${#temporals.format(request.requestDate, 'yyyy-MM-dd')}">2023-01-01</td>
+              <td>
+                <button class="btn btn-sm btn-link view-reason-btn"
+                        data-bs-toggle="tooltip"
+                        th:title="${request.reason}">
+                  보기
+                </button>
+              </td>
+              <td>
+                <div class="btn-group">
+                  <button th:data-request-id="${request.requestId}"
+                          th:data-user-id="${request.userId}"
+                          th:data-user-name="${request.name}"
+                          class="btn btn-sm btn-outline-success btn-approve-request">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button th:data-request-id="${request.requestId}"
+                          th:data-user-id="${request.userId}"
+                          th:data-user-name="${request.name}"
+                          class="btn btn-sm btn-outline-danger btn-reject-request">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 추가 모달 -->
+  <div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addAdminModalLabel">관리자 추가</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="userSearch" class="form-label">사용자 검색</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="userSearch" placeholder="이름 또는 이메일로 검색">
+              <button class="btn btn-outline-secondary" type="button" id="btnSearchUser">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="userSearchResults" class="d-none mb-3">
+            <h6>검색 결과</h6>
+            <div class="list-group" id="userList">
+              <!-- 사용자 검색 결과가 여기에 동적으로 추가됩니다 -->
+            </div>
+          </div>
+
+          <div id="selectedUserInfo" class="d-none mb-3">
+            <h6>선택된 사용자</h6>
+            <div class="selected-user-card">
+              <div class="avatar">
+                <img src="/assets/admin/images/user_default.png" id="selectedUserAvatar" alt="프로필 이미지">
+              </div>
+              <div class="info">
+                <div id="selectedUserName">사용자 이름</div>
+                <div id="selectedUserEmail" class="text-muted">user@example.com</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="roleSelection" class="d-none mb-3">
+            <label class="form-label">권한 선택</label>
+            <div class="form-check" th:each="role : ${availableRoles}">
+              <input class="form-check-input" type="checkbox" th:id="${'add-role-' + role.value}"
+                     th:value="${role.value}" name="addRoles">
+              <label class="form-check-label" th:for="${'add-role-' + role.value}" th:text="${role.label}">권한</label>
+            </div>
+          </div>
+
+          <input type="hidden" id="selectedUserId" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" id="btnAddAdmin" class="btn btn-primary" disabled>저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 편집 모달 -->
+  <div class="modal fade" id="editAdminModal" tabindex="-1" aria-labelledby="editAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editAdminModalLabel">관리자 권한 편집</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>다음 관리자의 권한을 편집하시겠습니까?</p>
+          <p><strong id="editAdminName">관리자 이름</strong></p>
+
+          <div class="form-group mb-3">
+            <label class="form-label">권한 설정</label>
+            <div class="form-check" th:each="role : ${availableRoles}">
+              <input class="form-check-input" type="checkbox" th:id="${'edit-role-' + role.value}"
+                     th:value="${role.value}" name="editRoles">
+              <label class="form-check-label" th:for="${'edit-role-' + role.value}" th:text="${role.label}">권한</label>
+            </div>
+          </div>
+
+          <input type="hidden" id="editAdminId" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" id="btnSaveAdminEdit" class="btn btn-primary">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 제거 확인 모달 -->
+  <div class="modal fade" id="removeAdminModal" tabindex="-1" aria-labelledby="removeAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="removeAdminModalLabel">관리자 제거</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>다음 사용자의 관리자 권한을 제거하시겠습니까?</p>
+          <p><strong id="removeAdminName">관리자 이름</strong></p>
+          <p class="text-danger">이 작업은 사용자의 모든 관리자 권한을 제거하며, 일반 사용자로 변경됩니다.</p>
+
+          <input type="hidden" id="removeAdminId" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" id="btnConfirmRemoveAdmin" class="btn btn-danger">제거</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 등록 요청 승인 모달 -->
+  <div class="modal fade" id="approveRequestModal" tabindex="-1" aria-labelledby="approveRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="approveRequestModalLabel">관리자 승인</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>다음 사용자의 관리자 등록 요청을 승인하시겠습니까?</p>
+          <p><strong id="approveRequestName">사용자 이름</strong></p>
+
+          <div class="form-group mb-3">
+            <label class="form-label">권한 설정</label>
+            <div class="form-check" th:each="role : ${availableRoles}">
+              <input class="form-check-input" type="checkbox" th:id="${'approve-role-' + role.value}"
+                     th:value="${role.value}" name="approveRoles">
+              <label class="form-check-label" th:for="${'approve-role-' + role.value}" th:text="${role.label}">권한</label>
+            </div>
+          </div>
+
+          <input type="hidden" id="approveRequestId" value="">
+          <input type="hidden" id="approveUserId" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" id="btnConfirmApprove" class="btn btn-success">승인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 등록 요청 거부 확인 모달 -->
+  <div class="modal fade" id="rejectRequestModal" tabindex="-1" aria-labelledby="rejectRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectRequestModalLabel">요청 거부</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>다음 사용자의 관리자 등록 요청을 거부하시겠습니까?</p>
+          <p><strong id="rejectRequestName">사용자 이름</strong></p>
+
+          <div class="form-group">
+            <label for="rejectReason" class="form-label">거부 사유 (선택사항)</label>
+            <textarea id="rejectReason" class="form-control" rows="3" placeholder="거부 사유를 입력하세요."></textarea>
+          </div>
+
+          <input type="hidden" id="rejectRequestId" value="">
+          <input type="hidden" id="rejectUserId" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" id="btnConfirmReject" class="btn btn-danger">거부</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사유 보기 모달 -->
+  <div class="modal fade" id="reasonViewModal" tabindex="-1" aria-labelledby="reasonViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="reasonViewModalLabel">요청 사유</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="reasonContent">사유 내용이 여기에 표시됩니다.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Custom JS -->
+<customJS>
+  <script th:src="@{/assets/admin/js/adminList.js}" type="module"></script>
+</customJS>
+</body>
+</html>

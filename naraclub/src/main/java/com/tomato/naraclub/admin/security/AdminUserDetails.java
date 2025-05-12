@@ -1,5 +1,7 @@
 package com.tomato.naraclub.admin.security;
 
+import com.tomato.naraclub.admin.user.code.AdminRole;
+import com.tomato.naraclub.admin.user.code.AdminStatus;
 import com.tomato.naraclub.admin.user.entity.Admin;
 import java.util.Collection;
 import java.util.List;
@@ -46,9 +48,10 @@ public class AdminUserDetails implements UserDetails {
         return true;
     }
 
-    @Override
+     @Override
     public boolean isEnabled() {
-        return true;
+        return admin.getStatus() == AdminStatus.ACTIVE
+            && admin.getRole() != AdminRole.COMMON;
     }
 
     public Admin getAdmin() {

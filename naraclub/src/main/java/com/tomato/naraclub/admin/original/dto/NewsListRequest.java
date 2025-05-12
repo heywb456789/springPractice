@@ -36,6 +36,7 @@ import java.util.Objects;
 // &sortDirection=DESC
 // &dateRange=
 public class NewsListRequest implements SearchTypeRequest {
+
     @Schema(description = "검색 항목")
     private NewsSearchType searchType;
 
@@ -77,7 +78,8 @@ public class NewsListRequest implements SearchTypeRequest {
     private LocalDateTime publishedAfter;
 
     @Hidden
-    private static final DateTimeFormatter DATE_RANGE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_RANGE_FORMATTER = DateTimeFormatter.ofPattern(
+        "yyyy-MM-dd HH:mm:ss");
 
     //날짜가 Null일 경우 필터 제외
     @Hidden
@@ -86,33 +88,33 @@ public class NewsListRequest implements SearchTypeRequest {
     }
 
     @Hidden
-public void parseDateRange() {
-    if (dateRange != null && !dateRange.isBlank()) {
-        String[] parts = dateRange.split(" ~ ");
-        if (parts.length == 2) {
-            try {
-                // 날짜 형식이 yyyy-MM-dd인 경우 시간 부분 추가
-                String fromDateStr = parts[0].trim();
-                String toDateStr = parts[1].trim();
+    public void parseDateRange() {
+        if (dateRange != null && !dateRange.isBlank()) {
+            String[] parts = dateRange.split(" ~ ");
+            if (parts.length == 2) {
+                try {
+                    // 날짜 형식이 yyyy-MM-dd인 경우 시간 부분 추가
+                    String fromDateStr = parts[0].trim();
+                    String toDateStr = parts[1].trim();
 
-                if (fromDateStr.length() == 10) { // yyyy-MM-dd 형식인 경우
-                    fromDateStr = fromDateStr + " 00:00:00";
+                    if (fromDateStr.length() == 10) { // yyyy-MM-dd 형식인 경우
+                        fromDateStr = fromDateStr + " 00:00:00";
+                    }
+
+                    if (toDateStr.length() == 10) { // yyyy-MM-dd 형식인 경우
+                        toDateStr = toDateStr + " 23:59:59";
+                    }
+
+                    fromTime = LocalDateTime.parse(fromDateStr, DATE_RANGE_FORMATTER);
+                    toTime = LocalDateTime.parse(toDateStr, DATE_RANGE_FORMATTER);
+                } catch (Exception e) {
+                    // 파싱 오류 처리
+                    fromTime = null;
+                    toTime = null;
                 }
-
-                if (toDateStr.length() == 10) { // yyyy-MM-dd 형식인 경우
-                    toDateStr = toDateStr + " 23:59:59";
-                }
-
-                fromTime = LocalDateTime.parse(fromDateStr, DATE_RANGE_FORMATTER);
-                toTime = LocalDateTime.parse(toDateStr, DATE_RANGE_FORMATTER);
-            } catch (Exception e) {
-                // 파싱 오류 처리
-                fromTime = null;
-                toTime = null;
             }
         }
     }
-}
 
     /**
      * 검색어가 없으면 조건 제외 GET /api/videos?searchType=BOARD_TITLE_CONTENT&searchText=토마토
@@ -166,9 +168,9 @@ public void parseDateRange() {
     @Hidden
     public OrderSpecifier<?> getSortOrder() {
         NewsSortType st = (this.sortType != null ? this.sortType
-                : NewsSortType.LATEST);
+            : NewsSortType.LATEST);
         Order dir = (this.sortDirection != null ? this.sortDirection
-                : Order.DESC);
+            : Order.DESC);
         return st.order(dir);
     }
 

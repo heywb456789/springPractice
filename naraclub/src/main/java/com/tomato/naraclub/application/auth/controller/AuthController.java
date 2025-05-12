@@ -17,11 +17,14 @@ import com.tomato.naraclub.common.exception.BadRequestException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -64,7 +67,18 @@ public class AuthController {
                 AuthResponseDTO responseDTO = authService.createToken(resp, req, servletRequest);
                 return Mono.just(ResponseDTO.ok(responseDTO));
             })
-            .onErrorResume(e -> Mono.just(ResponseDTO.internalServerError()));
+            .onErrorResume(ResponseStatusException.class, ex -> {
+                HttpStatusCode status = ex.getStatusCode();
+                if (status == HttpStatus.UNAUTHORIZED) {
+                    // 401 전용 처리
+                    return Mono.just(ResponseDTO.error(ResponseStatus.UNAUTHORIZED_ONE_ID));
+                } else if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
+                    // 403 전용 처리
+                    return Mono.just(ResponseDTO.error(ResponseStatus.INTERNAL_SERVER_ERROR));
+                }
+                // 그 외는 그대로 다시 던지기
+                return Mono.error(ex);
+            });
     }
 
     @PostMapping("/smsCert/send")

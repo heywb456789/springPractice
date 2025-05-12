@@ -121,9 +121,11 @@ async function jwtLogin({ phoneNumber, password, autoLogin }) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phoneNumber, password, autoLogin })
   });
-  if (res.status === 401) throw new Error('로그인 정보가 올바르지 않습니다.');
+
+  let result = await res.json();
+  if (result.status.code !== 'OK_0000') throw new Error(result.status.message || '로그인 정보가 올바르지 않습니다.');
   if (!res.ok) throw new Error('로그인 실패: ' + res.statusText);
-  return res.json(); // 서버 응답 구조 전체 반환
+  return result; // 서버 응답 구조 전체 반환
 }
 
 // 초대 코드 제출 요청 (Refresh Token 활용하여 401 대응)

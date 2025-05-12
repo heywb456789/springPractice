@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.member.entity;
 
+import com.tomato.naraclub.admin.user.dto.AppUserResponse;
 import com.tomato.naraclub.application.member.dto.MemberDTO;
 import com.tomato.naraclub.application.vote.entity.VoteOption;
 import com.tomato.naraclub.common.audit.Audit;
@@ -86,6 +87,10 @@ public class Member extends Audit {
         this.status = status;
     }
 
+    public void setRole(MemberRole memberRole) {
+        this.role = memberRole;
+    }
+
     public void setInviter(Member inviter) {
         this.inviter = inviter;
     }
@@ -105,5 +110,20 @@ public class Member extends Audit {
                 .verified(verified)
                 .profileImg(profileImg)
                 .build();
+    }
+
+    public AppUserResponse convertAppUserResponse() {
+        return AppUserResponse.builder()
+            .userId(id)
+            .userName(name)
+            .userKey(userKey)
+            .phoneNumber(phoneNumber)
+            .inviteCode(inviteCode)
+            .profileImageUrl(profileImg)
+            .status(status)
+            .role(role)
+            .email(email)
+            .verified(verified)
+            .build();
     }
 }

@@ -17,13 +17,13 @@ public class AuditDTO {
   private Long id;
 
   @Schema(description = "등록자")
-  private String createdBy;
+  private Long createdBy;
 
   @Schema(description = "등록일시")
   private LocalDateTime createdAt;
 
   @Schema(description = "수정자")
-  private String updatedBy;
+  private Long updatedBy;
 
   @Schema(description = "수정일시")
   private LocalDateTime updatedAt;

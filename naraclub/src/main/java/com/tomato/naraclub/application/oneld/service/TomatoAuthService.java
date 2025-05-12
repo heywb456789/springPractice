@@ -66,7 +66,7 @@ public class TomatoAuthService {
             // 4xx 응답 오면 BadRequestException 던지기
             .onStatus(
                 status -> status.is4xxClientError(),
-                clientResp -> Mono.error(new BadRequestException("One-ID 인증 실패")))
+                clientResp -> Mono.error(new APIException(ResponseStatus.UNAUTHORIZED_ONE_ID)))
             // 5xx 응답 오면 APIException (서버 에러) 던지기
             .onStatus(
                 status -> status.is5xxServerError(),

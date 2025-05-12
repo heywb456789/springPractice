@@ -3,6 +3,7 @@ package com.tomato.naraclub.admin.user.entity;
 import com.tomato.naraclub.admin.auth.dto.AdminAuthResponseDTO;
 import com.tomato.naraclub.admin.auth.dto.AdminDTO;
 import com.tomato.naraclub.admin.user.code.AdminRole;
+import com.tomato.naraclub.admin.user.code.AdminStatus;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,6 +54,10 @@ public class Admin extends Audit {
     @Comment("롤")
     @Enumerated(EnumType.STRING)
     private AdminRole role;       // ADMIN 등
+
+    @Comment("상태")
+    @Enumerated(EnumType.STRING)
+    private AdminStatus status;
 
     @Comment("마지막 접속 시간")
     @Column

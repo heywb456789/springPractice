@@ -35,7 +35,7 @@ public abstract class Audit {
   @Comment("등록자")
   @CreatedBy
   @Column(updatable = false, length = 100)
-  protected String createdBy;
+  protected Long createdBy;
 
   @Comment("등록일시")
   @CreatedDate
@@ -46,7 +46,7 @@ public abstract class Audit {
   @Comment("수정자")
   @LastModifiedBy
   @Column(length = 100)
-  protected String updatedBy;
+  protected Long updatedBy;
 
   @Comment("수정일시")
   @LastModifiedDate

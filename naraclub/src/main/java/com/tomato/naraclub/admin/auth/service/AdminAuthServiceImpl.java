@@ -7,6 +7,7 @@ import com.tomato.naraclub.admin.auth.repository.AdminRefreshTokenRepository;
 import com.tomato.naraclub.admin.security.AdminUserDetails;
 import com.tomato.naraclub.admin.security.AdminUserDetailsService;
 import com.tomato.naraclub.admin.user.code.AdminRole;
+import com.tomato.naraclub.admin.user.code.AdminStatus;
 import com.tomato.naraclub.admin.user.entity.Admin;
 import com.tomato.naraclub.admin.user.repository.AdminRepository;
 import com.tomato.naraclub.common.security.JwtTokenProvider;
@@ -39,12 +40,17 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     @Transactional
     public AdminAuthResponseDTO createToken(AdminAuthRequest req, HttpServletRequest request) {
-         AdminUserDetails user = (AdminUserDetails)
+        AdminUserDetails user = (AdminUserDetails)
             userDetailsService.loadUserByUsername(req.getUsername());
 
-         // 2) 비밀번호 검증
+        // 2) 비밀번호 검증
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("아이디 또는 비밀번호가 올바르지 않습니다.");
+            throw new APIException(ResponseStatus.UNAUTHORIZED_ID_PW);
+        }
+
+        // ◆ isEnabled() 체크 ◆
+        if (!user.isEnabled()) {
+            throw new APIException(ResponseStatus.UNAUTHORIZED_ROLE);
         }
 
         user.getAdmin().updateLastAccess();
@@ -54,7 +60,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             req.getAutoLogin());
 
         LocalDateTime expiryDate = jwtProvider.getExpirationDate(refreshToken);
-        String userAgent  = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
+        String userAgent = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
 
         adminRefreshTokenRepository.save(AdminRefreshToken.builder()
             .admin(user.getAdmin())
@@ -78,7 +84,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     public AdminAuthResponseDTO createUserAndToken(AdminAuthRequest req,
         HttpServletRequest request) {
         //1) 체크
-        if(adminRepository.findByUsername(req.getUsername()).isPresent()) {
+        if (adminRepository.findByUsername(req.getUsername()).isPresent()) {
             throw new APIException(ResponseStatus.EXIST_USER);
         }
 
@@ -86,18 +92,19 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         Admin saved = adminRepository.save(Admin.builder()
             .username(req.getUsername())
             .password(passwordEncoder.encode(req.getPassword()))
-                .name(req.getUsername())
-                .email(req.getEmail())
-                .phoneNumber(req.getPhoneNumber())
-                .role(AdminRole.ADMIN)
-                .lastAccessAt(LocalDateTime.now())
+            .name(req.getUsername())
+            .email(req.getEmail())
+            .phoneNumber(req.getPhoneNumber())
+            .role(AdminRole.COMMON)
+            .status(AdminStatus.INACTIVE)
+            .lastAccessAt(LocalDateTime.now())
             .build());
 
         String accessToken = jwtProvider.createAccessTokenForAdmin(saved);
         String refreshToken = jwtProvider.createRefreshTokenForAdmin(saved, false);
 
         LocalDateTime expiryDate = jwtProvider.getExpirationDate(refreshToken);
-        String userAgent  = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
+        String userAgent = UserDeviceInfoUtil.getUserAgent(request.getHeader("User-Agent"));
 
         adminRefreshTokenRepository.save(AdminRefreshToken.builder()
             .admin(saved)
@@ -132,7 +139,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         }
 
         AdminRefreshToken token = adminRefreshTokenRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new UnAuthorizationException("Refresh Token not found"));
+            .orElseThrow(() -> new UnAuthorizationException("Refresh Token not found"));
 
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new UnAuthorizationException("Expired Refresh Token");
@@ -146,9 +153,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         token.setLastUsedAt(LocalDateTime.now());
 
         return AdminAuthResponseDTO.builder()
-                .token(newAccessToken)
-                .refreshToken(refreshToken)
-                .admin(admin.convertDTO()) // Member 정보도 함께 전달 가능
-                .build();
+            .token(newAccessToken)
+            .refreshToken(refreshToken)
+            .admin(admin.convertDTO()) // Member 정보도 함께 전달 가능
+            .build();
     }
 }

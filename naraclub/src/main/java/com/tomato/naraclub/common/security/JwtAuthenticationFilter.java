@@ -2,6 +2,7 @@ package com.tomato.naraclub.common.security;
 
 import com.tomato.naraclub.admin.security.AdminUserDetails;
 import com.tomato.naraclub.admin.security.AdminUserDetailsService;
+import com.tomato.naraclub.admin.user.code.AdminRole;
 import com.tomato.naraclub.admin.user.entity.Admin;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.security.MemberUserDetails;
@@ -173,17 +174,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 역할에 따라 UserDetailsService 선택
      */
     private UserDetails loadUserByRole(String role, String token) {
-        if ("ADMIN".equals(role)) {
+        try {
+            AdminRole adminRole = AdminRole.of(role);
             String username = tokenProvider.getSubject(token);
             return adminDetailsService.loadUserByUsername(username);
-        } else {
-            Long id = Long.valueOf(tokenProvider.getSubject(token));
-            return memberDetailsService.loadUserByUsername(id.toString());
+        } catch (IllegalArgumentException e) {
+            // enum 에 없으면 일반회원
+            Long memberId = Long.valueOf(tokenProvider.getSubject(token));
+            return memberDetailsService.loadUserByUsername(memberId.toString());
         }
     }
 
     private String issueNewAccessToken(UserDetails user, String role) {
-        if ("ADMIN".equals(role)) {
+        if (user instanceof AdminUserDetails) {
             Admin admin = ((AdminUserDetails) user).getAdmin();
             return tokenProvider.createAccessTokenForAdmin(admin);
         } else {
@@ -193,7 +196,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String issueNewRefreshToken(UserDetails user, String role) {
-        if ("ADMIN".equals(role)) {
+        if (user instanceof AdminUserDetails) {
             Admin admin = ((AdminUserDetails) user).getAdmin();
             return tokenProvider.createRefreshTokenForAdmin(admin, false);
         } else {
@@ -201,6 +204,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return tokenProvider.createRefreshToken(member, false);
         }
     }
+
 
     private void addCookie(HttpServletResponse res, String name, String value, int maxAgeSec) {
         ResponseCookie cookie = ResponseCookie.from(name, value)

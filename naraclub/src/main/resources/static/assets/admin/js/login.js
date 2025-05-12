@@ -60,14 +60,16 @@ async function onLoginSubmit(e) {
       body: JSON.stringify({username, password, autoLogin})
     });
 
+    const json = await res.json();
+
     if (res.status === 401) {
-      throw new Error('로그인 정보가 올바르지 않습니다.');
+      throw new Error(json.status.message || '로그인 정보가 올바르지 않습니다.');
     }
     if (!res.ok) {
       throw new Error('로그인에 실패했습니다.');
     }
 
-    const json = await res.json();
+
     const token = json.response?.token;
     const refresh = json.response?.refreshToken;
 
