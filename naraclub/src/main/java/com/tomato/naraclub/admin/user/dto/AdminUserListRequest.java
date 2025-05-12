@@ -177,6 +177,14 @@ public class AdminUserListRequest implements SearchTypeRequest {
     }
 
     @Hidden
+    public BooleanExpression getAdminStatusCondition(QAdmin admin) {
+        if (adminStatus == null) {
+            return null;
+        }
+        return admin.status.eq(adminStatus);
+    }
+
+    @Hidden
     public BooleanExpression getIsNotDeleted() {
         return QAdmin.admin.status.ne(AdminStatus.BLOCKED);
     }
