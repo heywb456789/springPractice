@@ -1,8 +1,11 @@
 package com.tomato.naraclub.application.auth.service;
 
+import com.tomato.naraclub.application.auth.code.LoginType;
 import com.tomato.naraclub.application.auth.dto.AuthRequestDTO;
 import com.tomato.naraclub.application.auth.dto.AuthResponseDTO;
+import com.tomato.naraclub.application.auth.entity.MemberLoginHistory;
 import com.tomato.naraclub.application.auth.entity.RefreshToken;
+import com.tomato.naraclub.application.auth.repository.MemberLoginHistoryRepository;
 import com.tomato.naraclub.application.auth.repository.RefreshTokenRepository;
 import com.tomato.naraclub.application.oneld.dto.OneIdResponse;
 import com.tomato.naraclub.application.member.entity.Member;
@@ -21,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author : MinjaeKim
@@ -40,9 +44,12 @@ public class AuthServiceImpl implements AuthService {
 
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final MemberLoginHistoryRepository loginHistoryRepository;
 
     @Override
-    public AuthResponseDTO createToken(OneIdResponse resp, AuthRequestDTO authRequest, HttpServletRequest servletRequest) {
+    @Transactional
+    public AuthResponseDTO createToken(OneIdResponse resp, AuthRequestDTO authRequest,
+        HttpServletRequest servletRequest) {
         String userKey = resp.getValue().getUserKey();
 
         //userKey 있으면 일단은 생성 + 초대코드 + 신원 인증 관련 처리 미상태로 저장
@@ -63,37 +70,50 @@ public class AuthServiceImpl implements AuthService {
                 return memberRepository.save(m);
             });
 
+        //마지막 접속시간 증가
+        member.setLastAccessAt();
+
         String accessToken = tokenProvider.createAccessToken(member);
         String refreshToken = tokenProvider.createRefreshToken(member, authRequest.isAutoLogin());
 
         LocalDateTime expiryDate = tokenProvider.getExpirationDate(refreshToken);
-        String userAgent  = UserDeviceInfoUtil.getUserAgent(servletRequest.getHeader("User-Agent"));
+        String userAgent = UserDeviceInfoUtil.getUserAgent(servletRequest.getHeader("User-Agent"));
 
         refreshTokenRepository.save(RefreshToken.builder()
-                .member(member)
-                .refreshToken(refreshToken)
-                .expiryDate(expiryDate)
-                .ipAddress(UserDeviceInfoUtil.getClientIp(servletRequest))  // IP 주소 가져오기
-                .deviceType(UserDeviceInfoUtil.getDeviceType(userAgent))  // Custom 헤더 또는 파싱
-                .userAgent(userAgent)
-                .lastUsedAt(LocalDateTime.now())
-                .build());
+            .member(member)
+            .refreshToken(refreshToken)
+            .expiryDate(expiryDate)
+            .ipAddress(UserDeviceInfoUtil.getClientIp(servletRequest))  // IP 주소 가져오기
+            .deviceType(UserDeviceInfoUtil.getDeviceType(userAgent))  // Custom 헤더 또는 파싱
+            .userAgent(userAgent)
+            .lastUsedAt(LocalDateTime.now())
+            .build());
+
+        // 유저 로그인 기록 저장
+        loginHistoryRepository.save(MemberLoginHistory.builder()
+            .memberId(member.getId())
+            .type(LoginType.LOGIN)
+            .userAgent(userAgent)
+            .ipAddress(UserDeviceInfoUtil.getClientIp(servletRequest))
+            .deviceType(UserDeviceInfoUtil.getDeviceType(userAgent))
+            .build());
 
         return AuthResponseDTO.builder()
-                .token(accessToken)
-                .refreshToken(refreshToken)
-                .member(member.convertDTO())
-                .build();
+            .token(accessToken)
+            .refreshToken(refreshToken)
+            .member(member.convertDTO())
+            .build();
     }
 
     @Override
-    public AuthResponseDTO refreshToken(String refreshToken) {
+    @Transactional
+    public AuthResponseDTO refreshToken(String refreshToken, HttpServletRequest servletRequest) {
         if (!tokenProvider.validateToken(refreshToken)) {
             throw new UnAuthorizationException("Invalid Token");
         }
 
         RefreshToken token = refreshTokenRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new UnAuthorizationException("Refresh Token not found"));
+            .orElseThrow(() -> new UnAuthorizationException("Refresh Token not found"));
 
         if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new UnAuthorizationException("Expired Refresh Token");
@@ -108,30 +128,38 @@ public class AuthServiceImpl implements AuthService {
 
         refreshTokenRepository.save(token);
 
+        String userAgent = UserDeviceInfoUtil.getUserAgent(servletRequest.getHeader("User-Agent"));
+
+        // 유저 로그인 기록 저장
+        loginHistoryRepository.save(MemberLoginHistory.builder()
+            .memberId(member.getId())
+            .type(LoginType.REFRESH)
+            .userAgent(userAgent)
+            .ipAddress(UserDeviceInfoUtil.getClientIp(servletRequest))
+            .deviceType(UserDeviceInfoUtil.getDeviceType(userAgent))
+            .build());
+
         return AuthResponseDTO.builder()
-                .token(newAccessToken)
-                .refreshToken(refreshToken)
-                .member(member.convertDTO()) // Member 정보도 함께 전달 가능
-                .build();
+            .token(newAccessToken)
+            .refreshToken(refreshToken)
+            .member(member.convertDTO()) // Member 정보도 함께 전달 가능
+            .build();
     }
 
     @Override
-    public void logout(MemberUserDetails userDetails, HttpServletRequest request) {
+    public void logout(MemberUserDetails userDetails, HttpServletRequest servletRequest) {
         Member member = userDetails.getMember();
 
-        String userAgent = request.getHeader("User-Agent");
-        String deviceType = request.getHeader("Device-Type");
-        String ipAddress = request.getRemoteAddr();
+        String userAgent = UserDeviceInfoUtil.getUserAgent(servletRequest.getHeader("User-Agent"));
+        String deviceType = UserDeviceInfoUtil.getDeviceType(userAgent);
+        String ipAddress = UserDeviceInfoUtil.getClientIp(servletRequest);
 
         refreshTokenRepository.findAllByMember(member)
-                .stream()
-                .filter(rt ->
-                        deviceType.equals(rt.getDeviceType()) &&
-                                userAgent.equals(rt.getUserAgent()) &&
-                                ipAddress.equals(rt.getIpAddress()))
-                .findFirst()
-                .ifPresent(refreshTokenRepository::delete);
+            .stream()
+            .filter(rt ->
+                deviceType.equals(rt.getDeviceType()) &&
+                    userAgent.equals(rt.getUserAgent()) &&
+                    ipAddress.equals(rt.getIpAddress()))
+            .forEach(refreshTokenRepository::delete);
     }
-
-
 }

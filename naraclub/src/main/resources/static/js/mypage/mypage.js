@@ -418,18 +418,25 @@ function restoreOriginalName() {
 // 로그아웃 초기화
 function initLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
+  logoutBtn.addEventListener('click', async function () {
+    if (!confirm('로그아웃 하시겠습니까?')) return;
 
-  logoutBtn.addEventListener('click', function () {
-    // 로그아웃 확인
-    if (confirm('로그아웃 하시겠습니까?')) {
-      // 로컬스토리지에서 토큰 제거
+    try {
+      // 1) API 호출을 기다립니다
+      await logoutAPI();
+
+      // 2) 성공 메시지
+      alert('로그아웃 되었습니다.');
+
+    } catch (err) {
+      // 3) 실패 시에도 토큰은 지워주고 메시지
+      console.error(err);
+      alert('로그아웃 중 오류가 발생했습니다.');
+    } finally {
+      // 4) 로컬스토리지에서 토큰 제거
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-
-      // 로그아웃 API 호출 (선택적)
-      logoutAPI();
-
-      // 로그인 페이지로 리다이렉트
+      // 5) 로그인 페이지로
       window.location.href = '/main/main.html';
     }
   });
@@ -437,11 +444,9 @@ function initLogout() {
 
 // 로그아웃 API 호출
 async function logoutAPI() {
-  try {
-    await authFetch('/api/auth/logout', { method: 'POST' });
-  } catch (err) {
-    handleFetchError(err);
-  }
+  // DELETE /api/auth/logout 이 204나 200을 반환한다고 가정
+  const res = await authFetch('/api/auth/logout', { method: 'DELETE' });
+  return res;
 }
 
 // 계정 연동 초기화

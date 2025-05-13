@@ -1,6 +1,7 @@
 package com.tomato.naraclub.admin.dashboard;
 
 import com.tomato.naraclub.admin.security.AdminUserDetails;
+import com.tomato.naraclub.admin.user.code.AdminRole;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +25,9 @@ public class AdminController {
         // 사용자 정보 설정
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
+
 
         // 알림 정보 설정
         model.addAttribute("newMsgCount", 24);
@@ -31,7 +35,7 @@ public class AdminController {
 
         // 활성 메뉴 설정
         model.addAttribute("activeMenu", "dashboards");
-        model.addAttribute("activeSubmenu", "ecommerce");
+//        model.addAttribute("activeSubmenu", "ecommerce");
 
         return "admin/dashboard";
     }

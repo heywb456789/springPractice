@@ -27,21 +27,24 @@
   <nav id="sidebar" class="sidebar">
     <div class="sidebar-header">
       <div class="app-brand">
-        <a href="/admin/dashboard">
-          <div class="brand-logo">
-            <img src="/images/logo.svg" class="img-fluid" style="max-height: 40px;" alt="로고"/>
+        <a href="/admin/dashboard" class="d-flex align-items-center">
+          <div class="brand-logo me-2">
+            <img src="/images/logo.svg" class="img-fluid" style="max-height: 30px;" alt="로고"/>
           </div>
-          <span class="brand-name">나라사랑 클럽 </span>
+          <span class="brand-name">나라사랑 클럽</span>
         </a>
       </div>
-      <div class="user-info d-flex align-items-center mt-4">
-        <div class="user-avatar">
+
+      <div class="user-profile mt-3 p-3 d-flex align-items-center">
+        <div class="user-avatar me-3">
           <img th:src="${userAvatar} ?: @{/assets/admin/images/user_default.png}" alt="User Avatar"
-               class="rounded-circle">
+               class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
         </div>
-        <div class="user-details mt-2">
-          <h6 class="user-name" th:text="${userName} ?: 'User'"></h6>
-          <p class="user-role text-muted" th:text="${userRole} ?: 'Admin'"></p>
+        <div class="user-details">
+          <h6 class="user-name mb-1" th:text="${userName} ?: 'User'"></h6>
+          <span class="user-role-badge"
+                th:classappend="${userRole != null} ? 'role-badge-' + ${userRole} : ''"
+                th:text="${userRoleDisplay} ?: 'Admin'"></span>
         </div>
       </div>
     </div>
@@ -58,7 +61,8 @@
             <span>Dashboards</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
           </a>
-          <ul class="submenu collapse" id="dashboardSubmenu" th:classappend="${activeMenu == 'dashboards'} ? 'show'">
+          <ul class="submenu collapse" id="dashboardSubmenu"
+              th:classappend="${activeMenu == 'dashboards'} ? 'show'">
             <li><a th:classappend="${activeSubmenu == 'default'} ? 'active'"
                    href="/admin/dashboard">대시보드</a></li>
             <!--<li><a th:classappend="${activeSubmenu == 'analytics'} ? 'active'" href="/admin/dashboard/analytics">Analytics</a></li>-->
@@ -67,7 +71,7 @@
         </li>
 
         <!-- 사용자 관리 -->
-        <li class="nav-item">
+        <li class="nav-item" sec:authorize="hasAnyRole('SUPER_ADMIN', 'OPERATOR')">
           <a class="nav-link" th:classappend="${activeMenu == 'users'} ? 'active'"
              href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#usersSubmenu"
              aria-expanded="${activeMenu == 'users'} ? 'true' : 'false'">
@@ -75,20 +79,21 @@
             <span>사용자 관리</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
           </a>
-          <ul class="submenu collapse" id="usersSubmenu" th:classappend="${activeMenu == 'users'} ? 'show'">
+          <ul class="submenu collapse" id="usersSubmenu"
+              th:classappend="${activeMenu == 'users'} ? 'show'">
             <li>
               <a th:classappend="${activeSubmenu == 'app'} ? 'active'"
                  href="/admin/users/app/user-list">유저 관리</a>
             </li>
-            <li sec:authorize="hasRole('SUPER_ADMIN')">
+            <li>
               <a th:classappend="${activeSubmenu == 'admin'} ? 'active'"
-                 href="/admin/users/admin-list">관리자 관리</a>
+                 href="/admin/users/admin/user-list">관리자 관리</a>
             </li>
           </ul>
         </li>
 
         <!--자유 게시판 -->
-        <li class="nav-item">
+        <li class="nav-item" sec:authorize="hasAnyRole('SUPER_ADMIN', 'OPERATOR')">
           <a class="nav-link" th:classappend="${activeMenu == 'board'} ? 'active'"
              href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#boardSubmenu"
              aria-expanded="${activeMenu == 'board'} ? 'true' : 'false'">
@@ -96,14 +101,15 @@
             <span>Board</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
           </a>
-          <ul class="submenu collapse" id="boardSubmenu" th:classappend="${activeMenu == 'board'} ? 'show'">
+          <ul class="submenu collapse" id="boardSubmenu"
+              th:classappend="${activeMenu == 'board'} ? 'show'">
             <li><a th:classappend="${activeSubmenu == 'default'} ? 'active'"
                    href="/admin/board/list">자유게시판 리스트</a></li>
           </ul>
         </li>
 
         <!--오리지널 - 뉴스 -->
-        <li class="nav-item">
+        <li class="nav-item" sec:authorize="isAuthenticated()">
           <a class="nav-link" th:classappend="${activeMenu == 'news'} ? 'active'"
              href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#newsSubmenu"
              aria-expanded="${activeMenu == 'news'} ? 'true' : 'false'">
@@ -111,16 +117,17 @@
             <span>News</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
           </a>
-          <ul class="submenu collapse" id="newsSubmenu" th:classappend="${activeMenu == 'news'} ? 'show'">
+          <ul class="submenu collapse" id="newsSubmenu"
+              th:classappend="${activeMenu == 'news'} ? 'show'">
             <li><a th:classappend="${activeSubmenu == 'list'} ? 'active'"
-                  href="/admin/original/news/list">뉴스 리스트</a></li>
+                   href="/admin/original/news/list">뉴스 리스트</a></li>
             <li><a th:classappend="${activeSubmenu == 'create'} ? 'active'"
-                  href="/admin/original/news/create">뉴스 작성</a></li>
+                   href="/admin/original/news/create">뉴스 작성</a></li>
           </ul>
         </li>
 
         <!--오리지널 - 비디오-->
-        <li class="nav-item">
+        <li class="nav-item" sec:authorize="isAuthenticated()">
           <a class="nav-link" th:classappend="${activeMenu == 'video'} ? 'active'"
              href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#videoSubmenu"
              aria-expanded="${activeMenu == 'video'} ? 'true' : 'false'">
@@ -128,16 +135,17 @@
             <span>Video</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
           </a>
-          <ul class="submenu collapse" id="videoSubmenu" th:classappend="${activeMenu == 'video'} ? 'show'">
+          <ul class="submenu collapse" id="videoSubmenu"
+              th:classappend="${activeMenu == 'video'} ? 'show'">
             <li><a th:classappend="${activeSubmenu == 'list'} ? 'active'"
-                  href="/admin/original/video/list">비디오 리스트</a></li>
+                   href="/admin/original/video/list">비디오 리스트</a></li>
             <li><a th:classappend="${activeSubmenu == 'create'} ? 'active'"
-                  href="/admin/original/video/create">비디오 업로드</a></li>
+                   href="/admin/original/video/create">비디오 업로드</a></li>
           </ul>
         </li>
 
         <!-- 투표 -->
-        <li class="nav-item">
+        <li class="nav-item" sec:authorize="hasRole('SUPER_ADMIN')">
           <a class="nav-link" th:classappend="${activeMenu == 'vote'} ? 'active'"
              href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#voteSubmenu"
              aria-expanded="${activeMenu == 'vote'} ? 'true' : 'false'">
@@ -145,11 +153,12 @@
             <span>Vote</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
           </a>
-          <ul class="submenu collapse" id="voteSubmenu" th:classappend="${activeMenu == 'vote'} ? 'show'">
+          <ul class="submenu collapse" id="voteSubmenu"
+              th:classappend="${activeMenu == 'vote'} ? 'show'">
             <li><a th:classappend="${activeSubmenu == 'list'} ? 'active'"
-                  href="/admin/vote/list">투표 리스트</a></li>
+                   href="/admin/vote/list">투표 리스트</a></li>
             <li><a th:classappend="${activeSubmenu == 'create'} ? 'active'"
-                  href="/admin/vote/create">투표 작성</a></li>
+                   href="/admin/vote/create">투표 작성</a></li>
           </ul>
         </li>
       </ul>

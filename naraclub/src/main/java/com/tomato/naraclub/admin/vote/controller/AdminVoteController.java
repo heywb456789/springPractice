@@ -61,6 +61,8 @@ public class AdminVoteController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/vote/voteList";
     }
 
@@ -77,6 +79,8 @@ public class AdminVoteController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/vote/voteDetail";
     }
 
@@ -95,8 +99,12 @@ public class AdminVoteController {
 
         model.addAttribute("vote", vote);
         model.addAttribute("pageTitle", "투표 수정 - 나라사랑 클럽 관리자");
+
+        // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/vote/voteForm";
     }
 }

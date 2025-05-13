@@ -13,6 +13,26 @@
   <script src="/js/common.js" type="module"></script>
   <script src="/js/main/main.js" type="module"></script>
 </head>
+<style>
+  body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .news-container {
+      flex: 1;
+    }
+    .main-footer {
+      margin-top: auto;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+</style>
 <body>
   <!-- 공통 컴포넌트 컨테이너 -->
   <div id="side-menu-container"></div>
@@ -78,6 +98,22 @@
 
       </div>
     </div>
+
+    <!-- 푸터 섹션 -->
+    <footer class="main-footer">
+      <div class="footer-content">
+        <div class="company-info">
+          <div class="info-item"><strong>회사</strong> : (주)뉴스토마토</div>
+          <div class="info-item"><strong>대표</strong> : 정관섭</div>
+          <div class="info-item"><strong>주소</strong> : 서울특별시 마포구 양화진 4길 32, 이토마토빌딩(합정동)</div>
+          <div class="info-item"><strong>대표번호</strong> : 02-2128-3377</div>
+        </div>
+        <div class="copyright">
+          © 2025 뉴스토마토. 모든 권리 보유.
+        </div>
+      </div>
+    </footer>
+
   </div>
 </body>
 </html>

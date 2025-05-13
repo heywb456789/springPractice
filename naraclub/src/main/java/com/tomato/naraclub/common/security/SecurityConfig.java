@@ -78,7 +78,7 @@ public class SecurityConfig {
                 //1) 회원만 가능 리스트
                 .requestMatchers("/admin","/admin/auth/login", "/admin/auth/logout",  "/admin/auth/check/username", "/admin/auth/register").permitAll()
 
-                .requestMatchers("/admin/**").hasAnyRole("SUPER_ADMIN", "OPERATOR", "CONTENT_UPLOADER")
+                .requestMatchers("/admin/**").hasAnyRole("SUPER_ADMIN", "OPERATOR", "UPLOADER")
 
 
                 .requestMatchers("/api/auth/validate").authenticated()

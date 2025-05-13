@@ -4,6 +4,7 @@ import com.tomato.naraclub.admin.auth.dto.AdminAuthResponseDTO;
 import com.tomato.naraclub.admin.auth.dto.AdminDTO;
 import com.tomato.naraclub.admin.user.code.AdminRole;
 import com.tomato.naraclub.admin.user.code.AdminStatus;
+import com.tomato.naraclub.admin.user.dto.AdminUserResponse;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -63,6 +64,23 @@ public class Admin extends Audit {
     @Column
     private LocalDateTime lastAccessAt;
 
+
+    public void updateLastAccess() {
+        this.lastAccessAt = LocalDateTime.now();
+    }
+
+    public void updateRole(AdminRole role) {
+        this.role = role;
+    }
+
+    public void approveStatus() {
+        this.status = AdminStatus.ACTIVE;
+    }
+
+    public void updateStatus(AdminStatus status) {
+        this.status = status;
+    }
+
     public AdminDTO convertDTO() {
         return AdminDTO.builder()
             .id(id)
@@ -75,7 +93,21 @@ public class Admin extends Audit {
             .build();
     }
 
-    public void updateLastAccess() {
-        this.lastAccessAt = LocalDateTime.now();
+    public AdminUserResponse convertAdminUserResponse() {
+        return AdminUserResponse.builder()
+            .adminId(id)
+            .loginId(username)
+            .name(name)
+            .email(email)
+            .phoneNumber(phoneNumber)
+            .role(role)
+            .status(status)
+            .profileImage("")
+            .lastAccessAt(lastAccessAt)
+            .createAt(LocalDateTime.now())
+            .updateAt(LocalDateTime.now())
+            .build();
     }
+
+
 }

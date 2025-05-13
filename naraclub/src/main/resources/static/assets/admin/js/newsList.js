@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // 초기화
   initPage();
 
+  // 날짜 범위 값 정규화 (페이지 로딩 시 자동 실행)
+  normalizeDateRangeFormat();
+
   /**
    * 페이지 초기화 함수
    */
@@ -72,6 +75,30 @@ document.addEventListener('DOMContentLoaded', function () {
     if (searchForm) {
       searchForm.addEventListener('submit', function(e) {
         e.preventDefault();
+
+        // dateRange 값이 있는 경우 포맷 확인 및 정리
+        if (dateRangeInput && dateRangeInput.value) {
+          try {
+            const dateRange = dateRangeInput.value;
+            const parts = dateRange.split(/\s*~\s*/);
+
+            if (parts.length === 2) {
+              const startDate = parts[0].trim();
+              const endDate = parts[1].trim();
+
+              // 날짜 형식이 YYYY-MM-DD인지 확인
+              const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+              if (datePattern.test(startDate) && datePattern.test(endDate)) {
+                // 형식이 맞으면 깔끔하게 포맷팅
+                dateRangeInput.value = `${startDate} ~ ${endDate}`;
+              }
+            }
+          } catch (err) {
+            console.error('날짜 형식 검증 중 오류:', err);
+          }
+        }
+
         performSearch();
       });
 
@@ -136,28 +163,57 @@ document.addEventListener('DOMContentLoaded', function () {
    * Flatpickr 날짜 범위 선택기 초기화 함수
    */
   function initFlatpickrDateRange() {
-    const dateRangeInput = document.getElementById('dateRange');
-
     if (!dateRangeInput || typeof flatpickr === 'undefined') {
       console.error('Flatpickr가 로드되지 않았거나 dateRangeInput 요소가 없습니다.');
       return;
     }
 
     try {
-      // 상위 요소에 특별한 클래스 추가
-      const wrapper = dateRangeInput.closest('.input-group');
-      wrapper.classList.add('date-range-input-group');
-
       // 날짜 범위 값 파싱
-      let startDate = '';
-      let endDate = '';
-      if (dateRangeInput.value) {
-        const dates = dateRangeInput.value.split(' ~ ');
-        if (dates.length === 2) {
-          startDate = dates[0];
-          endDate = dates[1];
+      // 먼저 입력값의 형식 정규화
+      const currentValue = dateRangeInput.value.trim();
+      let initialDates = null;
+
+      if (currentValue) {
+        // '월월-날날' 패턴을 찾는 정규식으로 정리
+        let normalizedValue = currentValue;
+        const monthPattern = /(\d{4})-(\d{1,2})월\2월-(\d{1,2})(\d{1,2})/g;
+
+        if (monthPattern.test(normalizedValue)) {
+          normalizedValue = normalizedValue.replace(monthPattern, function(match, year, month, day1, day2) {
+            const paddedMonth = month.padStart(2, '0');
+            const paddedDay = (day1 + day2).padStart(2, '0');
+            return `${year}-${paddedMonth}-${paddedDay}`;
+          });
+        }
+
+        // 날짜 범위 분리
+        const parts = normalizedValue.split(/\s*~\s*/);
+        if (parts.length === 2) {
+          const startDate = parts[0].trim();
+          const endDate = parts[1].trim();
+
+          // 날짜 객체로 변환 시도
+          try {
+            initialDates = [new Date(startDate), new Date(endDate)];
+
+            // 유효하지 않은 날짜 확인
+            if (isNaN(initialDates[0].getTime()) || isNaN(initialDates[1].getTime())) {
+              console.warn('유효하지 않은 날짜 형식입니다:', startDate, endDate);
+              initialDates = null;
+            }
+          } catch (e) {
+            console.warn('날짜 변환 실패:', e);
+            initialDates = null;
+          }
         }
       }
+
+      // 상위 요소에 특별한 클래스 추가
+      const wrapper = dateRangeInput.closest('.input-group');
+      if (!wrapper) return;
+
+      wrapper.classList.add('date-range-input-group');
 
       // 클리어 버튼 생성
       let clearBtn = wrapper.querySelector('.date-clear-btn');
@@ -169,10 +225,10 @@ document.addEventListener('DOMContentLoaded', function () {
         wrapper.appendChild(clearBtn);
       }
 
-      // 초기 버튼 상태 설정
-      clearBtn.style.display = dateRangeInput.value ? 'flex' : 'none';
+      // 초기 클리어 버튼 표시 여부
+      clearBtn.style.display = initialDates ? 'flex' : 'none';
 
-      // 달력 아이콘 클릭 이벤트
+      // 달력 아이콘 설정
       const calendarIcon = wrapper.querySelector('.input-group-text');
       if (calendarIcon) {
         calendarIcon.style.cursor = 'pointer';
@@ -181,40 +237,125 @@ document.addEventListener('DOMContentLoaded', function () {
       // Flatpickr 설정
       const fpInstance = flatpickr(dateRangeInput, {
         mode: 'range',
-        dateFormat: 'Y-MM-dd',
+        dateFormat: 'Y-m-d',  // 날짜 형식을 명확하게 지정
         locale: 'ko',
         disableMobile: true,
-        defaultDate: [startDate, endDate].filter(Boolean),
+        defaultDate: initialDates,
         onChange: function(selectedDates) {
           if (selectedDates.length === 2) {
-            const formattedDates = selectedDates.map(date =>
-              date.getFullYear() + '-' +
-              String(date.getMonth() + 1).padStart(2, '0') + '-' +
-              String(date.getDate()).padStart(2, '0')
-            );
-            dateRangeInput.value = formattedDates.join(' ~ ');
+            // 날짜가 모두 선택된 경우, 명확한 형식으로 표시
+            const formatted = selectedDates.map(date => formatDate(date));
+            dateRangeInput.value = formatted.join(' ~ ');
             clearBtn.style.display = 'flex';
           }
         }
       });
 
-      // 클리어 버튼 클릭 이벤트
-      clearBtn.addEventListener('click', function() {
-        fpInstance.clear();
-        dateRangeInput.value = '';
-        this.style.display = 'none';
-      });
-
       // 달력 아이콘 클릭 이벤트
       if (calendarIcon) {
-        calendarIcon.addEventListener('click', function() {
-          fpInstance.toggle();
+        calendarIcon.addEventListener('click', () => fpInstance.toggle());
+      }
+
+      // 클리어 버튼 클릭 이벤트
+      if (clearBtn) {
+        clearBtn.addEventListener('click', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          fpInstance.clear();
+          dateRangeInput.value = '';
+          clearBtn.style.display = 'none';
+        });
+      }
+
+      // 폼 제출 전 날짜 형식 정규화
+      if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+          // 날짜 범위 필드 값 정규화
+          if (dateRangeInput.value) {
+            try {
+              // 월월-날날 패턴 수정
+              const monthPattern = /(\d{4})-(\d{1,2})월\2월-(\d{1,2})(\d{1,2})/g;
+              let normalizedValue = dateRangeInput.value;
+
+              if (monthPattern.test(normalizedValue)) {
+                normalizedValue = normalizedValue.replace(monthPattern, function(match, year, month, day1, day2) {
+                  const paddedMonth = month.padStart(2, '0');
+                  const paddedDay = (day1 + day2).padStart(2, '0');
+                  return `${year}-${paddedMonth}-${paddedDay}`;
+                });
+              }
+
+              // 날짜 범위 분리 및 재조합
+              const parts = normalizedValue.split(/\s*~\s*/);
+              if (parts.length === 2) {
+                dateRangeInput.value = `${parts[0].trim()} ~ ${parts[1].trim()}`;
+              }
+            } catch (err) {
+              console.error('폼 제출 전 날짜 형식 정규화 오류:', err);
+            }
+          }
         });
       }
 
     } catch (error) {
       console.error('Flatpickr 초기화 중 오류가 발생했습니다:', error);
     }
+  }
+
+  /**
+   * 날짜 범위 형식 정규화 함수
+   * - URL 파라미터에서 가져온 데이터 형식 정리
+   * - 페이지 로드 시 한 번 실행
+   */
+  function normalizeDateRangeFormat() {
+    if (!dateRangeInput) return;
+
+    try {
+      // 현재 입력란에 있는 값 확인
+      const currentValue = dateRangeInput.value.trim();
+      if (!currentValue) return;
+
+      // '월월-날날' 패턴을 찾는 정규식
+      const monthPattern = /(\d{4})-(\d{1,2})월\2월-(\d{1,2})(\d{1,2})/g;
+
+      // 정규식으로 잘못된 형식 변환
+      if (monthPattern.test(currentValue)) {
+        const correctedValue = currentValue.replace(monthPattern, function(match, year, month, day1, day2) {
+          // 월과 일을 2자리로 패딩
+          const paddedMonth = month.padStart(2, '0');
+          const paddedDay = (day1 + day2).padStart(2, '0');
+          return `${year}-${paddedMonth}-${paddedDay}`;
+        });
+
+        // 날짜 범위 형식 (~ 기호 기준)으로 분리
+        const parts = correctedValue.split(/\s*~\s*/);
+        if (parts.length === 2) {
+          const formattedValue = `${parts[0].trim()} ~ ${parts[1].trim()}`;
+          dateRangeInput.value = formattedValue;
+
+          // 클리어 버튼 표시 업데이트
+          const wrapper = dateRangeInput.closest('.input-group');
+          const clearBtn = wrapper?.querySelector('.date-clear-btn');
+          if (clearBtn) {
+            clearBtn.style.display = 'flex';
+          }
+        }
+      }
+    } catch (err) {
+      console.error('날짜 형식 정규화 중 오류:', err);
+    }
+  }
+
+  /**
+   * Date 객체를 YYYY-MM-DD 형식으로 변환
+   * @param {Date} date
+   * @returns {string}
+   */
+  function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   /**

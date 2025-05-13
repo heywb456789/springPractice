@@ -62,6 +62,8 @@ public class AdminVideoController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/video/videoList";
     }
 
@@ -77,6 +79,8 @@ public class AdminVideoController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
 
         return "admin/video/videoDetail";
     }
@@ -88,8 +92,11 @@ public class AdminVideoController {
         model.addAttribute("types", OriginalType.getVideoTypes());
         model.addAttribute("pageTitle", "Original Video 등록 - 나라사랑 클럽 관리자");
 
+        // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/video/videoForm";
     }
 
@@ -105,8 +112,12 @@ public class AdminVideoController {
 
         model.addAttribute("categories", OriginalCategory.values());
         model.addAttribute("types", OriginalType.getVideoTypes());
+
+        // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/video/videoForm";
     }
 }

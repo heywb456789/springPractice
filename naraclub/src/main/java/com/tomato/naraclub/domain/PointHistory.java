@@ -20,6 +20,7 @@ public class PointHistory {
     private Member member;
 
     private int amount;
+
     private String reason;
 
     private LocalDateTime earnedAt;

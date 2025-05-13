@@ -219,22 +219,22 @@
                       <td colspan="4" class="text-center py-4">로그인 기록이 없습니다.</td>
                     </tr>
                     <tr th:unless="${#lists.isEmpty(loginHistory)}" th:each="login : ${loginHistory}">
-                      <td th:text="${#temporals.format(login.loginTime, 'yyyy-MM-dd HH:mm:ss')}">2023-01-01 12:00:00</td>
+                      <td th:text="${#temporals.format(login.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2023-01-01 12:00:00</td>
                       <td th:text="${login.ipAddress}">127.0.0.1</td>
                       <td>
                         <span th:text="${login.userAgent}">Chrome on Windows</span>
-                        <i th:if="${login.isMobile}" class="fas fa-mobile-alt ms-1" title="모바일 기기"></i>
+<!--                        <i th:if="${login.isMobile}" class="fas fa-mobile-alt ms-1" title="모바일 기기"></i>-->
+                        <i class="fas fa-mobile-alt ms-1" title="모바일 기기"></i>
                       </td>
                       <td>
-                        <span class="badge" th:classappend="${login.isSuccess ? 'bg-success' : 'bg-danger'}"
-                            th:text="${login.isSuccess ? '성공' : '실패'}">성공</span>
+                        <span class="badge bg-success">성공</span>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              <div th:if="${!#lists.isEmpty(loginHistory)}" class="text-center mt-3">
+              <div th:if="${hasMoreLoginHistory}" class="text-center mt-3">
                 <button id="loadMoreHistory" class="btn btn-outline-primary btn-sm">더 보기</button>
               </div>
             </div>

@@ -18,7 +18,7 @@ public interface AuthService {
 
     AuthResponseDTO createToken(OneIdResponse resp, AuthRequestDTO request, HttpServletRequest servletRequest);
 
-    AuthResponseDTO refreshToken(String refreshToken);
+    AuthResponseDTO refreshToken(String refreshToken, HttpServletRequest servletRequest);
 
     void logout(MemberUserDetails userDetails, HttpServletRequest request);
 }

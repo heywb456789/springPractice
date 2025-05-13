@@ -116,7 +116,7 @@ public class AuthController {
 
 
     @PostMapping("/refresh")
-    public ResponseDTO<AuthResponseDTO> refreshToken(@RequestBody Map<String, String> request) {
-        return ResponseDTO.ok(authService.refreshToken(request.get("refreshToken")));
+    public ResponseDTO<AuthResponseDTO> refreshToken(@RequestBody Map<String, String> request, HttpServletRequest servletRequest) {
+        return ResponseDTO.ok(authService.refreshToken(request.get("refreshToken"), servletRequest));
     }
 }

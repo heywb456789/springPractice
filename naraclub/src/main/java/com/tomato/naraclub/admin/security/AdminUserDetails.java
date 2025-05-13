@@ -57,4 +57,8 @@ public class AdminUserDetails implements UserDetails {
     public Admin getAdmin() {
         return admin;
     }
+
+    public Long getId() {
+        return admin.getId();
+    }
 }

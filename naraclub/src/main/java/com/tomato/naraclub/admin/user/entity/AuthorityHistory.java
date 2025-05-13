@@ -1,5 +1,6 @@
 package com.tomato.naraclub.admin.user.entity;
 
+import com.tomato.naraclub.admin.user.code.AdminRole;
 import com.tomato.naraclub.admin.user.code.AdminStatus;
 import com.tomato.naraclub.common.audit.Audit;
 import com.tomato.naraclub.common.code.MemberStatus;
@@ -48,6 +49,10 @@ public class AuthorityHistory extends Audit {
     @Comment("어드민 유저 변경 스테이터스")
     @Enumerated(EnumType.STRING)
     private AdminStatus adminStatus;
+
+    @Comment("어드민 롤 ")
+    @Enumerated(EnumType.STRING)
+    private AdminRole adminRole;
 
     @Comment("이유")
     private String reason;

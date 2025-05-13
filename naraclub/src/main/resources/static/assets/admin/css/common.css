@@ -60,28 +60,63 @@ a:hover {
 }
 
 .sidebar-header {
-  padding: 1.5rem 1.5rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
 }
 
 .app-brand {
-  display: flex;
-  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .brand-logo {
-  font-size: 1.5rem;
-  margin-right: 0.75rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #fff;
 }
 
 .brand-name {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
+  white-space: nowrap;
   color: #fff;
+}
+
+.user-profile {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+}
+
+.user-name {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.user-role-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #fff;
+  background-color: var(--primary-color);
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* 각 역할에 따른 배지 색상 */
+.role-badge-SUPER_ADMIN {
+  background-color: #e63757; /* 슈퍼관리자: 빨강 계열 */
+}
+
+.role-badge-OPERATOR {
+  background-color: #27ae60; /* 운영자: 초록 계열 */
+}
+
+.role-badge-UPLOADER {
+  background-color: #39afd1; /* 업로더: 파랑 계열 */
+}
+
+.role-badge-PENDING {
+  background-color: #f6c23e; /* 대기중: 노랑 계열 */
 }
 
 .user-avatar img {

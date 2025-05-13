@@ -39,10 +39,10 @@
           <div class="col-md-3">
             <label for="searchType" class="form-label">검색 유형</label>
             <select class="form-select" id="searchType" name="searchType">
-              <option value="VIDEO_TITLE" th:selected="${request.searchType == 'VIDEO_TITLE'}">제목</option>
-              <option value="VIDEO_DESCRIPTION" th:selected="${request.searchType == 'VIDEO_DESCRIPTION'}">설명
+              <option value="VIDEO_TITLE" th:selected="${request.searchType?.name() == 'VIDEO_TITLE'}">제목</option>
+              <option value="VIDEO_DESCRIPTION" th:selected="${request.searchType?.name() == 'VIDEO_DESCRIPTION'}">설명
               </option>
-              <option value="VIDEO_AUTHOR" th:selected="${request.searchType == 'VIDEO_AUTHOR'}">등록자</option>
+              <option value="VIDEO_AUTHOR" th:selected="${request.searchType?.name() == 'VIDEO_AUTHOR'}">등록자</option>
             </select>
           </div>
           <div class="col-md-6">
@@ -53,60 +53,60 @@
           <div class="col-md-3">
             <label for="category" class="form-label">카테고리</label>
             <select class="form-select" id="category" name="category">
-              <option value="">전체</option>
-              <option th:each="cat : ${categories}" th:value="${cat}"
+              <option value="" th:selected="${request.category == null}">전체</option>
+              <option th:each="cat : ${categories}"
+                      th:value="${cat.name()}"
                       th:text="${cat.displayName}"
                       th:selected="${request.category == cat}">
-                카테고리 이름
               </option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="type" class="form-label">타입</label>
             <select class="form-select" id="type" name="type">
-              <option value="" th:selected="${request.type == null}">전체</option>
-              <option value="true" th:selected="${request.type == 'YOUTUBE_VIDEO'}">공개</option>
-              <option value="false" th:selected="${request.type == 'YOUTUBE_SHORTS'}">비공개</option>
+              <option value="" th:selected="${request.type?.name() == null}">전체</option>
+              <option value="YOUTUBE_VIDEO" th:selected="${request.type?.name() == 'YOUTUBE_VIDEO'}">롱폼</option>
+              <option value="YOUTUBE_SHORTS" th:selected="${request.type?.name() == 'YOUTUBE_SHORTS'}">숏폼</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="publishStatus" class="form-label">공개 상태</label>
             <select class="form-select" id="publishStatus" name="publishStatus">
               <option value="" th:selected="${request.publishStatus == null}">전체</option>
-              <option value="true" th:selected="${request.publishStatus == 'true'}">공개</option>
-              <option value="false" th:selected="${request.publishStatus == 'false'}">비공개</option>
+              <option value="true" th:selected="${request.publishStatus == true}">공개</option>
+              <option value="false" th:selected="${request.publishStatus == false}">비공개</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="isHot" class="form-label">핫 콘텐츠</label>
             <select class="form-select" id="isHot" name="isHot">
               <option value="" th:selected="${request.isHot == null}">전체</option>
-              <option value="true" th:selected="${request.isHot == 'true'}">핫 콘텐츠만</option>
-              <option value="false" th:selected="${request.isHot == 'false'}">일반 콘텐츠만</option>
+              <option value="true" th:selected="${request.isHot == true}">핫 콘텐츠만</option>
+              <option value="false" th:selected="${request.isHot == false}">일반 콘텐츠만</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="sortType" class="form-label">정렬 기준</label>
             <select class="form-select" id="sortType" name="sortType">
               <option value="PUBLISHED"
-                      th:selected="${request.sortType == 'PUBLISHED' || request.sortType == null}">공개일
+                      th:selected="${request.sortType?.name() == 'PUBLISHED' || request.sortType?.name() == null}">공개일
               </option>
-              <option value="LATEST" th:selected="${request.sortType == 'LATEST'}">등록일
+              <option value="LATEST" th:selected="${request.sortType?.name() == 'LATEST'}">등록일
               </option>
-              <option value="POPULAR" th:selected="${request.sortType == 'POPULAR'}">조회수</option>
-              <option value="COMMENT" th:selected="${request.sortType == 'COMMENT'}">댓글수
+              <option value="POPULAR" th:selected="${request.sortType?.name() == 'POPULAR'}">조회수</option>
+              <option value="COMMENT" th:selected="${request.sortType?.name() == 'COMMENT'}">댓글수
               </option>
-              <option value="TITLE" th:selected="${request.sortType == 'TITLE'}">제목</option>
+              <option value="TITLE" th:selected="${request.sortType?.name() == 'TITLE'}">제목</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="sortDirection" class="form-label">정렬 방향</label>
             <select class="form-select" id="sortDirection" name="sortDirection">
               <option value="DESC"
-                      th:selected="${request.sortDirection == 'DESC' || request.sortDirection == null}">
+                      th:selected="${request.sortDirection?.name() == 'DESC' || request.sortDirection?.name() == null}">
                 내림차순
               </option>
-              <option value="ASC" th:selected="${request.sortDirection == 'ASC'}">오름차순</option>
+              <option value="ASC" th:selected="${request.sortDirection?.name() == 'ASC'}">오름차순</option>
             </select>
           </div>
           <div class="col-md-6">

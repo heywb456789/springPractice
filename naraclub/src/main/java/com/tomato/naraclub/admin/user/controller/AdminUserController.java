@@ -1,16 +1,24 @@
 package com.tomato.naraclub.admin.user.controller;
 
 import com.tomato.naraclub.admin.security.AdminUserDetails;
+import com.tomato.naraclub.admin.user.code.AdminRole;
+import com.tomato.naraclub.admin.user.code.AdminStatus;
 import com.tomato.naraclub.admin.user.dto.AdminUserListRequest;
 import com.tomato.naraclub.admin.user.dto.AdminUserResponse;
 import com.tomato.naraclub.admin.user.dto.AppUserListRequest;
 import com.tomato.naraclub.admin.user.dto.AppUserResponse;
+import com.tomato.naraclub.admin.user.dto.UserLoginHistoryResponse;
 import com.tomato.naraclub.admin.user.service.AdminUserService;
 import com.tomato.naraclub.admin.user.service.AppUserService;
+import com.tomato.naraclub.application.auth.entity.MemberLoginHistory;
 import com.tomato.naraclub.application.board.dto.BoardListRequest;
 import com.tomato.naraclub.application.board.dto.BoardPostResponse;
 import com.tomato.naraclub.common.dto.ListDTO;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -40,14 +48,15 @@ public class AdminUserController {
 
     @GetMapping("/app/user-list")
     public String userList(
-            AppUserListRequest request,
-            @AuthenticationPrincipal AdminUserDetails user,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size,
-            Model model) {
+        AppUserListRequest request,
+        @AuthenticationPrincipal AdminUserDetails user,
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size,
+        Model model) {
         // 게시글 목록 조회
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        ListDTO<AppUserResponse> appUserList = appUserService.getAppUserList(user, request, pageable);
+        ListDTO<AppUserResponse> appUserList = appUserService.getAppUserList(user, request,
+            pageable);
 
         // 페이징 정보
         int totalPages = appUserList.getPagination().getTotalPages();
@@ -71,7 +80,8 @@ public class AdminUserController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
-//        model.addAttribute("userAvatar", "/assets/admin/images/default-avatar.png");
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
 
         return "admin/user/appUserList";
     }
@@ -80,10 +90,18 @@ public class AdminUserController {
     public String userDetail(
         @AuthenticationPrincipal AdminUserDetails user,
         @PathVariable long id,
-        Model model){
+        Model model) {
         AppUserResponse userResponse = appUserService.getAppUserDetail(id);
+        // 첫 페이지 로그인 기록만 가져오기 (10개)
+        Page<MemberLoginHistory> loginHistory = appUserService.getAppUserLoginHistory(id, 0, 10);
+
+        // 첫 페이지 활동 내역도 가져오기 (옵션)
+//        List<UserActivityResponse> userActivities = appUserService.getUserActivities(id, 0, 10);
+//        boolean hasMoreActivities = userActivities.size() >= 10;
 
         model.addAttribute("user", userResponse);
+        model.addAttribute("loginHistoryList", loginHistory.getContent());
+        model.addAttribute("hasMoreLoginHistory", loginHistory.getTotalElements() > 10);
 
         model.addAttribute("pageTitle", "앱 유저관리 - NaraSarang Admin");
         model.addAttribute("activeMenu", "users");
@@ -92,20 +110,40 @@ public class AdminUserController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
 
         return "admin/user/appUserDetail";
     }
 
     @GetMapping("/admin/user-list")
     public String adminUserList(
-            AdminUserListRequest request,
-            @AuthenticationPrincipal AdminUserDetails user,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size,
-            Model model) {
+        AdminUserListRequest request,
+        @AuthenticationPrincipal AdminUserDetails user,
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "50") int size,
+        Model model) {
         // 게시글 목록 조회
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        ListDTO<AdminUserResponse> adminUserList = adminUserService.getAdminUserList(user, request, pageable);
+        ListDTO<AdminUserResponse> adminUserList = adminUserService.getAdminUserList(user, request,
+            pageable);
+
+        // 전체 리스트
+        List<AdminUserResponse> all = adminUserList.getData();
+
+        List<AdminUserResponse> superAdmins = all.stream()
+            .filter(
+                a -> a.getRole() == AdminRole.SUPER_ADMIN && a.getStatus() == AdminStatus.ACTIVE)
+            .collect(Collectors.toList());
+        List<AdminUserResponse> operators = all.stream()
+            .filter(a -> a.getRole() == AdminRole.OPERATOR && a.getStatus() == AdminStatus.ACTIVE)
+            .collect(Collectors.toList());
+        List<AdminUserResponse> uploaders = all.stream()
+            .filter(a -> a.getRole() == AdminRole.UPLOADER && a.getStatus() == AdminStatus.ACTIVE)
+            .collect(Collectors.toList());
+        List<AdminUserResponse> pendings = all.stream()
+            .filter(a -> a.getRole() == AdminRole.COMMON)
+            .collect(Collectors.toList());
 
         // 페이징 정보
         int totalPages = adminUserList.getPagination().getTotalPages();
@@ -114,11 +152,20 @@ public class AdminUserController {
         int endPage = Math.min(startPage + 9, totalPages);
 
         //모델에 데이터 추가
-        model.addAttribute("userList", adminUserList.getData());
+        model.addAttribute("superAdmins", superAdmins);
+        model.addAttribute("operators", operators);
+        model.addAttribute("uploaders", uploaders);
+        model.addAttribute("pendings", pendings);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
+
+        // 관리자로 부여 가능한 롤만 골라서 넘기기
+        List<AdminRole> availableRoles = Arrays.stream(AdminRole.values())
+            .filter(r -> r != AdminRole.COMMON)
+            .collect(Collectors.toList());
+        model.addAttribute("availableRoles", availableRoles);
 
         // 페이지 제목 및 활성 메뉴 설정
         model.addAttribute("searchRequest", request);
@@ -129,8 +176,9 @@ public class AdminUserController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
-        model.addAttribute("userAvatar", "/assets/admin/images/default-avatar.png");
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
 
-        return "admin/user/appUserList";
+        return "admin/user/adminList";
     }
 }

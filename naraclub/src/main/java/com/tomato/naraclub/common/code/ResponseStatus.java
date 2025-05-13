@@ -27,6 +27,9 @@ public enum ResponseStatus {
   UNAUTHORIZED_ROLE("ER_1006", "계정이 활성화되어 있지 않거나 권한이 없습니다.", HttpStatus.UNAUTHORIZED),
   UNAUTHORIZED_ONE_ID("ER_1007", "원아이디 로그인 실패 ID / PW를 확인해주세요. ", HttpStatus.UNAUTHORIZED),
   ALREADY_MODIFIED_STATUS("ER_1008", "이미 변경된 상태 입니다.", HttpStatus.BAD_REQUEST),
+  CANNOT_GRANT_SUPER_ADMIN("ER_1009", "슈퍼 관리자는 3명까지만 부여 가능합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  CANNOT_GRANT_UPLOADER("ER_1010", "콘텐츠 관리자는 10명까지만 부여 가능합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  CANNOT_GRANT_OPERATOR("ER_1011", "운영진은 10명까지만 부여 가능합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
   BOARD_POST_NOT_EXIST("ER_2001", "게시글이 없습니다. 잘못 된 요청입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   ALREADY_LIKED("ER_2002","이미 좋아요 처리가 되었습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),

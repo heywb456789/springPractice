@@ -25,6 +25,10 @@ public class AdminNewsCustomRepositoryImpl implements AdminNewsCustomRepository{
     public ListDTO<NewsArticleResponse> getNewsList(NewsListRequest request, AdminUserDetails user, Pageable pageable) {
         QArticle qArticle = QArticle.article;
 
+        if (request.getDateRange() != null && !request.getDateRange().isBlank()) {
+            request.parseDateRange();
+        }
+
         Predicate condition = ExpressionUtils.allOf(
             request.getSearchCondition(),
             request.isPublishedAfter(qArticle.publishedAt),

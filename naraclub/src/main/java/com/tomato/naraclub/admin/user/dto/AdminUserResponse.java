@@ -29,6 +29,7 @@ public class AdminUserResponse {
     private String phoneNumber;
     private AdminRole role;
     private AdminStatus status;
+    private String profileImage;
     private LocalDateTime lastAccessAt;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;

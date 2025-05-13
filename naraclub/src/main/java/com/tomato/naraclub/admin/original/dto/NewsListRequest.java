@@ -13,11 +13,16 @@ import com.tomato.naraclub.application.original.code.VideoSortType;
 import com.tomato.naraclub.application.original.entity.QArticle;
 import com.tomato.naraclub.application.original.entity.QVideo;
 import com.tomato.naraclub.common.interfaces.SearchTypeRequest;
+import com.tomato.naraclub.common.util.DateUtils;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -27,6 +32,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
+@Slf4j
 //searchType=VIDEO_AUTHOR
 // &searchText=%EC%82%BC%EC%84%B1
 // &category=
@@ -78,8 +84,10 @@ public class NewsListRequest implements SearchTypeRequest {
     private LocalDateTime publishedAfter;
 
     @Hidden
-    private static final DateTimeFormatter DATE_RANGE_FORMATTER = DateTimeFormatter.ofPattern(
-        "yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    @Hidden
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     //날짜가 Null일 경우 필터 제외
     @Hidden
@@ -87,32 +95,85 @@ public class NewsListRequest implements SearchTypeRequest {
         return Objects.isNull(getFromTime()) || Objects.isNull(getToTime());
     }
 
+    /**
+     * 날짜 범위를 파싱하여 fromTime과 toTime 설정
+     */
     @Hidden
     public void parseDateRange() {
-        if (dateRange != null && !dateRange.isBlank()) {
-            String[] parts = dateRange.split(" ~ ");
-            if (parts.length == 2) {
+        if (dateRange == null || dateRange.isBlank()) {
+            return;
+        }
+
+        // 잘못된 날짜 형식 교정 (yyyy-M월M월-DD 형식 처리)
+        String normalizedDateRange = DateUtils.normalizeKoreanDateFormat(dateRange);
+
+        try {
+            // 공백을 무시하고 틸드(~)로 분리
+            String[] parts = normalizedDateRange.split("\\s*~\\s*");
+            if (parts.length != 2) {
+                log.warn("잘못된 날짜 범위 형식: {}", normalizedDateRange);
+                return;
+            }
+
+            String fromDateStr = parts[0].trim();
+            String toDateStr = parts[1].trim();
+
+            log.debug("날짜 범위 파싱: {} ~ {}", fromDateStr, toDateStr);
+
+            // yyyy-MM-dd 형식인지 확인 (정규식 패턴 검사)
+            if (fromDateStr.matches("\\d{4}-\\d{2}-\\d{2}") && toDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                // 시간이 없는 경우 시작일은 00:00:00, 종료일은 23:59:59로 설정
+                LocalDate fromDate = LocalDate.parse(fromDateStr, DATE_FORMATTER);
+                LocalDate toDate = LocalDate.parse(toDateStr, DATE_FORMATTER);
+
+                fromTime = fromDate.atStartOfDay(); // 00:00:00
+                toTime = toDate.atTime(LocalTime.MAX); // 23:59:59.999999999
+
+                log.debug("날짜 범위 파싱 완료(DATE 형식): {} ~ {}", fromTime, toTime);
+            }
+            // 날짜+시간 형식인지 확인 (정규식 패턴 검사)
+            else if (fromDateStr.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}") &&
+                     toDateStr.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                // 이미 시간까지 포함된 경우
+                fromTime = LocalDateTime.parse(fromDateStr, DATETIME_FORMATTER);
+                toTime = LocalDateTime.parse(toDateStr, DATETIME_FORMATTER);
+
+                log.debug("날짜 범위 파싱 완료(DATETIME 형식): {} ~ {}", fromTime, toTime);
+            }
+            // 날짜 형식이 맞지 않는 경우 마지막 시도
+            else {
+                log.warn("지원하지 않는 날짜 형식, 다른 파싱 방법 시도: {} ~ {}", fromDateStr, toDateStr);
                 try {
-                    // 날짜 형식이 yyyy-MM-dd인 경우 시간 부분 추가
-                    String fromDateStr = parts[0].trim();
-                    String toDateStr = parts[1].trim();
-
-                    if (fromDateStr.length() == 10) { // yyyy-MM-dd 형식인 경우
-                        fromDateStr = fromDateStr + " 00:00:00";
+                    // 다양한 날짜 형식 시도
+                    fromTime = DateUtils.parseFlexibleDate(fromDateStr);
+                    toTime = DateUtils.parseFlexibleDate(toDateStr);
+                    if (toTime != null) {
+                        // 종료일은 해당 일의 마지막 시간으로 설정
+                        toTime = LocalDateTime.of(
+                            toTime.toLocalDate(),
+                            LocalTime.of(23, 59, 59, 999999999)
+                        );
                     }
-
-                    if (toDateStr.length() == 10) { // yyyy-MM-dd 형식인 경우
-                        toDateStr = toDateStr + " 23:59:59";
-                    }
-
-                    fromTime = LocalDateTime.parse(fromDateStr, DATE_RANGE_FORMATTER);
-                    toTime = LocalDateTime.parse(toDateStr, DATE_RANGE_FORMATTER);
+                    log.debug("유연한 날짜 파싱 완료: {} ~ {}", fromTime, toTime);
                 } catch (Exception e) {
-                    // 파싱 오류 처리
+                    log.error("유연한 날짜 파싱 실패: {}", e.getMessage());
                     fromTime = null;
                     toTime = null;
                 }
             }
+        } catch (DateTimeParseException e) {
+            // 파싱 오류 시 null로 설정하고 로그 남김
+            log.error("날짜 파싱 오류: {}", e.getMessage());
+            fromTime = null;
+            toTime = null;
+        }
+
+        // 변환된 날짜를 다시 dateRange에 설정 (일관성 유지)
+        if (fromTime != null && toTime != null) {
+            // 형식: yyyy-MM-dd ~ yyyy-MM-dd
+            String normalizedFromDate = fromTime.toLocalDate().format(DATE_FORMATTER);
+            String normalizedToDate = toTime.toLocalDate().format(DATE_FORMATTER);
+            dateRange = normalizedFromDate + " ~ " + normalizedToDate;
         }
     }
 

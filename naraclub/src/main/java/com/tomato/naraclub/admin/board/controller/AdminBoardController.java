@@ -58,7 +58,8 @@ public class AdminBoardController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
-//        model.addAttribute("userAvatar", "/assets/admin/images/default-avatar.png");
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
 
         return "admin/board/boardList";
     }
@@ -81,7 +82,8 @@ public class AdminBoardController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
-//        model.addAttribute("userAvatar", "/assets/admin/images/default-avatar.png");
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
 
         return "admin/board/boardDetail";
     }

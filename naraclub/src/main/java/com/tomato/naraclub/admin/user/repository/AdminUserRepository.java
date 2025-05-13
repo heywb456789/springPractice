@@ -1,7 +1,10 @@
 package com.tomato.naraclub.admin.user.repository;
 
+import com.tomato.naraclub.admin.user.code.AdminRole;
+import com.tomato.naraclub.admin.user.code.AdminStatus;
 import com.tomato.naraclub.admin.user.entity.Admin;
 import com.tomato.naraclub.admin.user.repository.custom.AdminUserCustomRepository;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -14,4 +17,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface AdminUserRepository extends JpaRepository<Admin, Long>, AdminUserCustomRepository {
 
+    Optional<Admin> findByIdAndRole(Long id, AdminRole adminRole);
+
+    Optional<Admin> findByIdAndStatus(Long id, AdminStatus adminStatus);
+
+    long countByRoleAndStatus(AdminRole role, AdminStatus adminStatus);
 }

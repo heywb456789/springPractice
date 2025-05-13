@@ -61,6 +61,8 @@ public class AdminNewsController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/news/newsList";
     }
 
@@ -74,6 +76,8 @@ public class AdminNewsController {
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
 
         return "admin/news/newsDetail";
     }
@@ -85,8 +89,11 @@ public class AdminNewsController {
         model.addAttribute("pageTitle", "Original News 등록 - 나라사랑 클럽 관리자");
         model.addAttribute("mode", "create");
 
+        // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/news/newsForm";
     }
 
@@ -103,8 +110,12 @@ public class AdminNewsController {
         model.addAttribute("mode", "update");
         model.addAttribute("categories", OriginalCategory.values());
         model.addAttribute("types", OriginalType.getNewsArticleTypes());
+
+        // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
         return "admin/news/newsForm";
     }
 }

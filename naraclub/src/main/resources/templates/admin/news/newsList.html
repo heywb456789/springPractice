@@ -40,13 +40,13 @@
             <label for="searchType" class="form-label">검색 유형</label>
             <select class="form-select" id="searchType" name="searchType">
               <option value="ARTICLE_TITLE"
-                      th:selected="${searchRequest.searchType == 'ARTICLE_TITLE'}">제목
+                      th:selected="${searchRequest.searchType?.name() == 'ARTICLE_TITLE'}">제목
               </option>
               <option value="ARTICLE_CONTENT"
-                      th:selected="${searchRequest.searchType == 'ARTICLE_CONTENT'}">내용
+                      th:selected="${searchRequest.searchType?.name() == 'ARTICLE_CONTENT'}">내용
               </option>
               <option value="ARTICLE_AUTHOR"
-                      th:selected="${searchRequest.searchType == 'ARTICLE_AUTHOR'}">작성자
+                      th:selected="${searchRequest.searchType?.name() == 'ARTICLE_AUTHOR'}">작성자
               </option>
             </select>
           </div>
@@ -58,11 +58,11 @@
           <div class="col-md-3">
             <label for="category" class="form-label">카테고리</label>
             <select class="form-select" id="category" name="category">
-              <option value="">전체</option>
-              <option th:each="cat : ${categories}" th:value="${cat}"
+              <option value="" th:selected="${searchRequest.category == null}">전체</option>
+              <option th:each="cat : ${categories}"
+                      th:value="${cat.name()}"
                       th:text="${cat.displayName}"
                       th:selected="${searchRequest.category == cat}">
-                카테고리 이름
               </option>
             </select>
           </div>
@@ -87,24 +87,24 @@
             <label for="sortType" class="form-label">정렬 기준</label>
             <select class="form-select" id="sortType" name="sortType">
               <option value="PUBLISHED"
-                      th:selected="${searchRequest.sortType == 'PUBLISHED' || searchRequest.sortType == null}">
+                      th:selected="${searchRequest.sortType?.name() == 'PUBLISHED' || searchRequest.sortType?.name() == null}">
                 공개일
               </option>
-              <option value="LATEST" th:selected="${searchRequest.sortType == 'LATEST'}">등록일
+              <option value="LATEST" th:selected="${searchRequest.sortType?.name() == 'LATEST'}">등록일
               </option>
-              <option value="POPULAR" th:selected="${searchRequest.sortType == 'POPULAR'}">조회수
+              <option value="POPULAR" th:selected="${searchRequest.sortType?.name() == 'POPULAR'}">조회수
               </option>
-              <option value="TITLE" th:selected="${searchRequest.sortType == 'TITLE'}">제목</option>
+              <option value="TITLE" th:selected="${searchRequest.sortType?.name() == 'TITLE'}">제목</option>
             </select>
           </div>
           <div class="col-md-3">
             <label for="sortDirection" class="form-label">정렬 방향</label>
             <select class="form-select" id="sortDirection" name="sortDirection">
               <option value="DESC"
-                      th:selected="${searchRequest.sortDirection == 'DESC' || searchRequest.sortDirection == null}">
+                      th:selected="${searchRequest.sortDirection?.name() == 'DESC' || searchRequest.sortDirection?.name() == null}">
                 내림차순
               </option>
-              <option value="ASC" th:selected="${searchRequest.sortDirection == 'ASC'}">오름차순
+              <option value="ASC" th:selected="${searchRequest.sortDirection?.name() == 'ASC'}">오름차순
               </option>
             </select>
           </div>

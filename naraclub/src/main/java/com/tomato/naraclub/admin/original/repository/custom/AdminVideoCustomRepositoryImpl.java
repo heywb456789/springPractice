@@ -37,6 +37,10 @@ public class AdminVideoCustomRepositoryImpl implements AdminVideoCustomRepositor
         Pageable pageable) {
         QVideo video = QVideo.video;
 
+        if (request.getDateRange() != null && !request.getDateRange().isBlank()) {
+            request.parseDateRange();
+        }
+
         Predicate condition = ExpressionUtils.allOf(
             request.getSearchCondition(),
             request.isPublishedAfter(video.publishedAt),

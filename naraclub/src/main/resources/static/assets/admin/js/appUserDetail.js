@@ -263,89 +263,89 @@ document.addEventListener('DOMContentLoaded', function () {
    * @param {boolean} reset - 기존 내역 초기화 여부
    */
   async function loadLoginHistory(reset = false) {
-    if (!userId) {
-      return;
+  if (!userId) {
+    return;
+  }
+
+  const loginHistoryTable = document.querySelector('#login-history table tbody');
+
+  if (!loginHistoryTable) {
+    return;
+  }
+
+  // 로딩 표시
+  if (loadMoreHistoryBtn) {
+    loadMoreHistoryBtn.disabled = true;
+    loadMoreHistoryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로딩 중...';
+  }
+
+  try {
+    const response = await adminAuthFetch(`/admin/users/app/user/${userId}/login-history?page=${loginHistoryPage}&size=${pageSize}`);
+
+    if (!response.ok) {
+      throw new Error('서버 응답 오류: ' + response.status);
     }
 
-    const loginHistoryTable = document.querySelector('#login-history table tbody');
+    const result = await response.json();
 
-    if (!loginHistoryTable) {
-      return;
+    // 기존 내역 초기화
+    if (reset) {
+      loginHistoryTable.innerHTML = '';
     }
 
-    // 로딩 표시
-    if (loadMoreHistoryBtn) {
-      loadMoreHistoryBtn.disabled = true;
-      loadMoreHistoryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로딩 중...';
-    }
-
-    try {
-      const response = await adminAuthFetch(`/admin/users/app/user/${userId}/login-history?page=${loginHistoryPage}&size=${pageSize}`);
-
-      if (!response.ok) {
-        throw new Error('서버 응답 오류: ' + response.status);
-      }
-
-      const result = await response.json();
-
-      // 기존 내역 초기화
-      if (reset) {
-        loginHistoryTable.innerHTML = '';
-      }
-
-      if (!result.history || result.history.length === 0) {
-        // 로그인 기록이 없는 경우
-        if (loginHistoryPage === 0) {
-          loginHistoryTable.innerHTML = `
-            <tr>
-              <td colspan="4" class="text-center py-4">로그인 기록이 없습니다.</td>
-            </tr>
-          `;
-        } else {
-          showAlert('더 이상 표시할 로그인 기록이 없습니다.', 'info');
-        }
-
-        // 더 보기 버튼 숨김
-        if (loadMoreHistoryBtn) {
-          loadMoreHistoryBtn.style.display = 'none';
-        }
+    if (!result.response.history || result.response.history.length === 0) {
+      // 로그인 기록이 없는 경우
+      if (loginHistoryPage === 0) {
+        loginHistoryTable.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center py-4">로그인 기록이 없습니다.</td>
+          </tr>
+        `;
       } else {
-        // 로그인 기록 표시
-        const history = result.history;
-
-        history.forEach(login => {
-          const row = document.createElement('tr');
-
-          row.innerHTML = `
-            <td>${formatDate(login.loginTime, true)}</td>
-            <td>${login.ipAddress || '-'}</td>
-            <td>
-              <span>${login.userAgent || '알 수 없음'}</span>
-              ${login.isMobile ? '<i class="fas fa-mobile-alt ms-1" title="모바일 기기"></i>' : ''}
-            </td>
-            <td>
-              <span class="badge ${login.isSuccess ? 'bg-success' : 'bg-danger'}">${login.isSuccess ? '성공' : '실패'}</span>
-            </td>
-          `;
-
-          loginHistoryTable.appendChild(row);
-        });
-
-        // 더 보기 버튼 표시 여부
-        if (loadMoreHistoryBtn) {
-          loadMoreHistoryBtn.style.display = result.hasMore ? 'inline-block' : 'none';
-        }
+        showAlert('더 이상 표시할 로그인 기록이 없습니다.', 'info');
       }
-    } catch (error) {
-      console.error('로그인 기록 로드 오류:', error);
-      showAlert('로그인 기록을 로드하는 중 오류가 발생했습니다.', 'danger');
-    } finally {
+
+      // 더 보기 버튼 숨김
       if (loadMoreHistoryBtn) {
-        loadMoreHistoryBtn.innerHTML = '더 보기';
-        loadMoreHistoryBtn.disabled = false;
+        loadMoreHistoryBtn.style.display = 'none';
       }
+    } else {
+      // 로그인 기록 표시
+      const history = result.response.history;
+
+      history.forEach(login => {
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td>${formatDate(login.createdAt, true)}</td>
+          <td>${login.ipAddress || '-'}</td>
+          <td>
+            <span>${login.userAgent || '알 수 없음'}</span>
+            ${login.isMobile ? '<i class="fas fa-mobile-alt ms-1" title="모바일 기기"></i>' : ''}
+          </td>
+          <td>
+            <span class="badge bg-success">성공</span>
+          </td>
+        `;
+
+        loginHistoryTable.appendChild(row);
+      });
+
+      // 더 보기 버튼 표시 여부
+      if (loadMoreHistoryBtn) {
+        loadMoreHistoryBtn.style.display = result.response.hasMore ? 'inline-block' : 'none';
+      }
+    }
+  } catch (error) {
+    console.error('로그인 기록 로드 오류:', error);
+    showAlert('로그인 기록을 로드하는 중 오류가 발생했습니다.', 'danger');
+  } finally {
+    if (loadMoreHistoryBtn) {
+      loadMoreHistoryBtn.innerHTML = '더 보기';
+      loadMoreHistoryBtn.disabled = false;
     }
   }
+}
 
   /**
    * 날짜 포맷팅 함수

@@ -126,4 +126,8 @@ public class Member extends Audit {
             .verified(verified)
             .build();
     }
+
+    public void setLastAccessAt() {
+        this.lastAccessAt = LocalDateTime.now();
+    }
 }
