@@ -68,6 +68,15 @@ one-id:
 kakao:
   admin-key: c96a3dcf1bd646ad68f5d46d5318a748
 
+x:
+  api-key: d5Xop7XGuEMqMRzzgl3R5Cekn
+  api-secret-key: IqZSrUs5tK208W4iwToaItGsIJO654hbQ1eMA2wTCsIL5yn0Nm
+  bearer-token: AAAAAAAAAAAAAAAAAAAAAJsX1QEAAAAAujYT9cCShmMKNknkG3pXs6PZZbU%3DInppwQda2HRPE3x6lZueZCRYpv3WTSvDyQVgQMZbVDC1oMFEJL
+  access-token: 1456126042825891843-8alouKqKHOMHdAOAC741Nyt1aHoNCe
+  access-token-secret: 7FmnHCwj0d98XoP7K9sueb4EiPkQ1kDdEfQjaKB1KxDqR
+  client-id: dVlEeEVrSWRFWFFtenJFZFl6cDY6MTpjaQ
+  client-secret: XMKid9fHXB_UfX6__mhktlz_Tm7eIa8LbZsStN-mwKMLXkunHF
+
 logging:
   level:
     org.springframework.web.reactive.function.client.ExchangeFilterFunctions: DEBUG

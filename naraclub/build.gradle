@@ -69,6 +69,9 @@ dependencies {
 	//FTP
 	implementation 'commons-net:commons-net:3.8.0'
 
+	//x(twitter)
+	implementation 'org.twitter4j:twitter4j-core:4.0.7'
+
 
 	// TEST
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
