@@ -8,6 +8,8 @@ import com.tomato.naraclub.application.comment.entity.BoardComments;
 import com.tomato.naraclub.application.comment.repository.BoardCommentsRepository;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
+import com.tomato.naraclub.application.point.code.PointType;
+import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.ResponseStatus;
@@ -36,6 +38,7 @@ public class CommentServiceImpl implements CommentService {
     private final BoardCommentsRepository commentRepo;
     private final MemberRepository memberRepo;
     private final BoardPostRepository postRepo;
+    private final PointService pointService;
 
     /**
      * 1) 댓글 목록 (최신순) 페이징
@@ -68,6 +71,13 @@ public class CommentServiceImpl implements CommentService {
 
         //4) 댓글수 ++
         post.setCommentCount(post.getCommentCount() + 1);
+
+        //5) 포인트 적립
+        try{
+            pointService.awardPoints(author, PointType.WRITE_BOARD_COMMENT, saved.getId());
+        }catch (Exception e){
+            log.warn("포인트 적립 실패: {}", e.getMessage());
+        }
 
         return saved.convertDTOWithMine();
     }

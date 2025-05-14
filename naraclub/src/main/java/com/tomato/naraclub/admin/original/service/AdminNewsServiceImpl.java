@@ -65,10 +65,10 @@ public class AdminNewsServiceImpl implements AdminNewsService {
             .thumbnailUrl("")
             .viewCount(0L)
             .commentCount(0L)
-            .isPublic(request.isPublic())
+            .isPublic(request.getIsPublic())
             .publishedAt(
                 request.getPublishDate() != null ? request.getPublishDate() : LocalDateTime.now())
-            .isHot(request.isHot())
+            .isHot(request.getIsHot())
             .build();
 
         Article savedArticle = adminNewsRepository.save(article);
@@ -127,8 +127,8 @@ public class AdminNewsServiceImpl implements AdminNewsService {
         article.setTitle(request.getTitle());
         article.setSubTitle(request.getSubtitle());
         article.setCategory(request.getCategory());
-        article.setPublic(request.isPublic());
-        article.setHot(request.isHot());
+        article.setPublic(request.getIsPublic());
+        article.setHot(request.getIsHot());
         article.setContent(request.getContent());
 
         // 발행일 설정

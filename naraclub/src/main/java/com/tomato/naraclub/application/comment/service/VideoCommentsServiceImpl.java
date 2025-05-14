@@ -7,8 +7,11 @@ import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.comment.repository.VideoCommentRepository;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
+import com.tomato.naraclub.application.original.code.OriginalType;
 import com.tomato.naraclub.application.original.entity.Video;
 import com.tomato.naraclub.application.original.repository.VideoRepository;
+import com.tomato.naraclub.application.point.code.PointType;
+import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.application.vote.entity.VotePost;
 import com.tomato.naraclub.common.code.MemberStatus;
@@ -36,6 +39,7 @@ public class VideoCommentsServiceImpl implements VideoCommentsService {
     private final MemberRepository memberRepository;
     private final VideoRepository videoRepository;
     private final VideoCommentRepository videoCommentRepository;
+    private final PointService pointService;
 
     @Override
     @Transactional(readOnly = true)
@@ -63,6 +67,18 @@ public class VideoCommentsServiceImpl implements VideoCommentsService {
 
         //4) 댓글수 ++
         video.incrementCommentCount();
+
+        //5) 포인트 적립
+        try{
+            PointType pointType = video.getType().equals(OriginalType.YOUTUBE_VIDEO)
+                ? PointType.WRITE_VIDEO_LONG_COMMENT :
+                PointType.WRITE_VIDEO_SHORT_COMMENT;
+
+            pointService.awardPoints(author, pointType, saved.getId());
+
+        }catch (Exception e){
+            log.warn("포인트 적립 실패: {}", e.getMessage());
+        }
 
         return saved.convertDTOWithMine();
     }

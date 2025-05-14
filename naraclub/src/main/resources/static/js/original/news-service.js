@@ -16,7 +16,7 @@ export default class NewsService {
     try {
       let url = `/api/news?page=${page}&size=${size}`;
       if (category) url += `&category=${category}`;
-      if (keyword) url += `&searchType=NEWS_TITLE_CONTENT&searchText=${encodeURIComponent(keyword)}`;
+      if (keyword) url += `&searchType=ARTICLE_TITLE_CONTENT&searchText=${encodeURIComponent(keyword)}`;
 
       const response = await optionalAuthFetch(url);
       // 콘텐츠 없음

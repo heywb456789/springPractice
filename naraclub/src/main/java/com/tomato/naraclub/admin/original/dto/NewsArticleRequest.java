@@ -46,9 +46,9 @@ public class NewsArticleRequest {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime publishDate;
 
-    private boolean isPublic;
+    private Boolean isPublic;
 
-    private boolean isHot;
+    private Boolean isHot;
 
     private String externalId;
 

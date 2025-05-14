@@ -3,9 +3,12 @@ package com.tomato.naraclub.application.original.entity;
 import com.tomato.naraclub.admin.original.dto.NewsArticleResponse;
 import com.tomato.naraclub.admin.user.entity.Admin;
 import com.tomato.naraclub.application.board.dto.ShareResponse;
+import com.tomato.naraclub.application.board.entity.BoardPost;
 import com.tomato.naraclub.application.comment.entity.ArticleComments;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
+import com.tomato.naraclub.application.search.code.SearchCategory;
+import com.tomato.naraclub.application.search.dto.SearchDTO;
 import com.tomato.naraclub.common.audit.Audit;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -135,5 +138,17 @@ public class Article extends Audit {
                 .summary(subTitle)
                 .thumbnailUrl(thumbnailUrl)
                 .build();
+    }
+
+    public SearchDTO convertSearchDTO(Article e) {
+        return SearchDTO.builder()
+            .id(e.getId())
+            .title(e.getTitle())
+            .content(e.getContent())
+            .imageUrl(e.thumbnailUrl)
+            .searchCategory(SearchCategory.ORIGINAL_NEWS)
+            .createdAt(e.getCreatedAt())
+            .redirectionUrl("/original/newsDetail.html?id=" + e.getId())
+            .build();
     }
 }

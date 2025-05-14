@@ -5,6 +5,8 @@ import {
   getUserId
 } from '../commonFetch.js'
 
+let shareModal;
+
 document.addEventListener('DOMContentLoaded', () => {
   initBackButton();
   loadVoteData();
@@ -174,22 +176,95 @@ function showError(msg) {
 
 // 공유 기능 (모바일/웹 지원)
 function initShareFeatures() {
+  // Bootstrap Modal 인스턴스
+  shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+
   document.getElementById('openShareModal')?.addEventListener('click', () => {
-    new bootstrap.Modal(document.getElementById('shareModal')).show();
+    shareModal.show();
     setupKakaoShare();
   });
   document.getElementById('copyUrl')?.addEventListener('click', copyCurrentUrl);
+  // 통통 공유 버튼 이벤트 추가
+  document.getElementById('shareTongtong')?.addEventListener('click', () => {
+    shareTongtongApp();
+  });
+}
+
+// 통통 앱 공유 함수
+function shareTongtongApp() {
+  const voteId = getVoteIdFromUrl();
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/vote/${voteId}`;
+
+  // 모바일 기기 확인
+  const userAgent = navigator.userAgent.toLowerCase();
+  let appScheme = '';
+  let storeUrl = '';
+
+  // iOS 기기 확인
+  if (/iphone|ipad|ipod/.test(userAgent)) {
+    appScheme = `tongtongios://tongtongiOS?url=${encodeURIComponent(shareUrl)}`;
+    storeUrl = 'https://apps.apple.com/kr/app/통통-암호화-메신저/id982895719';
+  }
+  // 안드로이드 기기 확인
+  else if (/android/.test(userAgent)) {
+    appScheme = `tongtong://m.etomato.com?url=${encodeURIComponent(shareUrl)}`;
+    storeUrl = 'https://play.google.com/store/apps/details?id=tomato.solution.tongtong';
+  }
+  // 데스크톱 또는 기타 기기
+  else {
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => {
+        alert('URL이 클립보드에 복사되었습니다. 통통 앱에서 공유해주세요.');
+      })
+      .catch(err => {
+        console.error('클립보드 복사 오류:', err);
+        alert('복사에 실패했습니다.');
+      });
+    shareModal.hide();
+    return;
+  }
+
+  // URL 자동 복사 (앱으로 전환되기 전에)
+  navigator.clipboard.writeText(shareUrl)
+    .then(() => {
+      console.log('URL이 클립보드에 복사되었습니다.');
+    })
+    .catch(err => {
+      console.error('클립보드 복사 오류:', err);
+    });
+
+  // 앱 실행 시도 시간
+  const appCheckTimeout = 1500;
+  const now = Date.now();
+
+  // 앱 스킴 호출
+  window.location.href = appScheme;
+
+  // 앱 실행 확인
+  setTimeout(function() {
+    // 페이지가 숨겨지지 않았다면 (앱이 실행되지 않았다면)
+    if (document.hidden === false && Date.now() - now > appCheckTimeout) {
+      if (confirm('통통 앱이 설치되어 있지 않은 것 같습니다. 앱 스토어로 이동하시겠습니까?')) {
+        window.location.href = storeUrl;
+      }
+    }
+    shareModal.hide();
+  }, appCheckTimeout + 500);
 }
 
 async function setupKakaoShare() {
   const id = getVoteIdFromUrl();
   const userId = await getUserId();
   const title = document.getElementById('voteQuestion').textContent;
-  const url = window.location.href;
-  const img = 'https://image.newstomato.com/newstomato/club/share/voting.png';
+  const description = '토마토 뉴스 투표광장에서 참여해 보세요!';
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/vote/${id}`;
+  const imageUrl = 'https://image.newstomato.com/newstomato/club/share/voting.png';
 
   const container = document.getElementById('kakaotalk-sharing-btn');
-  container.innerHTML = `<img src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png" alt="카카오톡 공유 버튼"/>`;
+  container.innerHTML = `
+    <img src="/images/kakao.svg" alt="카카오톡" width="32"/>
+    <span class="share-label">카카오톡</span>
+  `;
 
   if (window.Kakao && Kakao.isInitialized()) {
     Kakao.Share.createDefaultButton({
@@ -197,11 +272,10 @@ async function setupKakaoShare() {
       objectType: 'feed',
       content: {
         title,
-        description: '토마토 뉴스 투표광장에서 참여해 보세요!',
-        imageUrl: img,
-        link: {mobileWebUrl: url, webUrl: url}
+        description,
+        imageUrl,
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
       },
-      buttons: [{title: '투표 참여하기', link: {mobileWebUrl: url, webUrl: url}}],
       serverCallbackArgs: {
         type: 'vote',      // 'board' | 'vote' | 'news' | 'video'
         id: id,        // 게시물 PK
@@ -219,7 +293,7 @@ function copyCurrentUrl() {
   navigator.clipboard.writeText(shareUrl)
   .then(() => {
     alert('URL이 복사되었습니다.');
-    new bootstrap.Modal(document.getElementById('shareModal')).hide();
+    shareModal.hide();
   })
   .catch(err => {
     console.error('복사 실패', err);

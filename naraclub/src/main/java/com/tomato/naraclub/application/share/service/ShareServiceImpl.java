@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.share.service;
 
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
+import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.share.code.ShareTargetType;
 import com.tomato.naraclub.application.share.dto.KakaoShareResponse;
 import com.tomato.naraclub.application.share.entity.ShareHistory;
@@ -29,6 +30,7 @@ public class ShareServiceImpl implements ShareService {
 
     private final ShareHistoryRepository shareHistoryRepository;
     private final MemberRepository memberRepository;
+    private final PointService pointService;
 
     @Override
     @Transactional
@@ -42,16 +44,25 @@ public class ShareServiceImpl implements ShareService {
         }
 
         // 회원이 존재하면 저장, 없으면 패스
-        memberRepository.findByIdAndStatus(userId, MemberStatus.ACTIVE)
-            .ifPresent(member -> {
-                ShareHistory history = ShareHistory.builder()
-                    .author(member)
-                    .targetType(ShareTargetType.fromString(payload.getType()))
-                    .targetId(payload.getId())
-                    .sharedAt(LocalDateTime.now())
-                    .build();
+        Optional<Member> author = memberRepository.findByIdAndStatus(userId, MemberStatus.ACTIVE);
 
-                shareHistoryRepository.save(history);
-            });
+        author.ifPresent(member -> {
+            ShareHistory history = ShareHistory.builder()
+                .author(member)
+                .targetType(ShareTargetType.fromString(payload.getType()))
+                .targetId(payload.getId())
+                .sharedAt(LocalDateTime.now())
+                .build();
+
+            shareHistoryRepository.save(history);
+
+            try {
+                pointService.awardSharePoints(member, payload);
+            } catch (Exception e) {
+                log.warn("포인트 적립 실패: {}", e.getMessage());
+            }
+        });
+
+
     }
 }

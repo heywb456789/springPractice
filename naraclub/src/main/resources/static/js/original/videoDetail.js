@@ -543,6 +543,7 @@ function initMoreButton() {
  */
 // 공유 기능 초기화: 모달 열기 & 버튼 연결
 function initShareFeatures() {
+  // Bootstrap Modal 인스턴스
   shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
 
   document.getElementById('shareButton')?.addEventListener('click', () => {
@@ -553,14 +554,84 @@ function initShareFeatures() {
   document.getElementById('copyUrl')?.addEventListener('click', () => {
     copyCurrentUrl();
   });
+
+  // 통통 공유 버튼 이벤트 추가
+  document.getElementById('shareTongtong')?.addEventListener('click', () => {
+    shareTongtongApp();
+  });
+}
+
+/**
+ * 통통 앱 공유 함수
+ */
+function shareTongtongApp() {
+  const videoId = getVideoIdFromUrl();
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/original/${videoId}`;
+
+  // 모바일 기기 확인
+  const userAgent = navigator.userAgent.toLowerCase();
+  let appScheme = '';
+  let storeUrl = '';
+
+  // iOS 기기 확인
+  if (/iphone|ipad|ipod/.test(userAgent)) {
+    appScheme = `tongtongios://tongtongiOS?url=${encodeURIComponent(shareUrl)}`;
+    storeUrl = 'https://apps.apple.com/kr/app/통통-암호화-메신저/id982895719';
+  }
+  // 안드로이드 기기 확인
+  else if (/android/.test(userAgent)) {
+    appScheme = `tongtong://m.etomato.com?url=${encodeURIComponent(shareUrl)}`;
+    storeUrl = 'https://play.google.com/store/apps/details?id=tomato.solution.tongtong';
+  }
+  // 데스크톱 또는 기타 기기
+  else {
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => {
+        alert('URL이 클립보드에 복사되었습니다. 통통 앱에서 공유해주세요.');
+      })
+      .catch(err => {
+        console.error('클립보드 복사 오류:', err);
+        alert('복사에 실패했습니다.');
+      });
+    shareModal.hide();
+    return;
+  }
+
+  // URL 자동 복사 (앱으로 전환되기 전에)
+  navigator.clipboard.writeText(shareUrl)
+    .then(() => {
+      console.log('URL이 클립보드에 복사되었습니다.');
+    })
+    .catch(err => {
+      console.error('클립보드 복사 오류:', err);
+    });
+
+  // 앱 실행 시도 시간
+  const appCheckTimeout = 1500;
+  const now = Date.now();
+
+  // 앱 스킴 호출
+  window.location.href = appScheme;
+
+  // 앱 실행 확인
+  setTimeout(function() {
+    // 페이지가 숨겨지지 않았다면 (앱이 실행되지 않았다면)
+    if (document.hidden === false && Date.now() - now > appCheckTimeout) {
+      if (confirm('통통 앱이 설치되어 있지 않은 것 같습니다. 앱 스토어로 이동하시겠습니까?')) {
+        window.location.href = storeUrl;
+      }
+    }
+    shareModal.hide();
+  }, appCheckTimeout + 500);
 }
 
 // 카카오톡 기본공유 버튼 생성
 async function setupKakaoShare() {
   const id = getVideoIdFromUrl();
   const userId = await getUserId();
-  const shareUrl = window.location.href;
   const title = document.getElementById('videoTitle')?.textContent || '동영상 공유';
+  const description = document.getElementById('videoDescription')?.textContent?.slice(0, 100) || '';
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/original/${id}`;
   const imageUrl = document.getElementById('videoThumbnail')?.src || '';
 
   const container = document.getElementById('kakaotalk-sharing-btn');
@@ -575,7 +646,7 @@ async function setupKakaoShare() {
       objectType: 'feed',
       content: {
         title,
-        description: '',
+        description,
         imageUrl,
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
       },
@@ -592,7 +663,7 @@ async function setupKakaoShare() {
       objectType: 'feed',
       content: {
         title,
-        description: '',
+        description,
         imageUrl,
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
       },

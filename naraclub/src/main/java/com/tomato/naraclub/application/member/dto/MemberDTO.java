@@ -27,6 +27,7 @@ public class MemberDTO {
     @Builder.Default
     private Boolean verified = false;
     private String profileImg;
+    private Integer points;
 //    private Member inviter;    // 추천인
 
 

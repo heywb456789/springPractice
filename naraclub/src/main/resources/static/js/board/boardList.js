@@ -1,4 +1,8 @@
-import { optionalAuthFetch, handleFetchError  } from '../commonFetch.js';
+import {
+  optionalAuthFetch,
+  handleFetchError,
+  authFetch, FetchError
+} from '../commonFetch.js';
 
 /**
  * 게시판 목록을 API에서 불러와 동적으로 구성하는 함수
@@ -288,6 +292,21 @@ function initSearch() {
   }
 }
 
+async function loadBoardWrite(){
+  try {
+    // 인증 상태 확인 API 호출 (authFetch 사용)
+    await authFetch('/api/auth/validate', {method: 'GET'});
+    window.location.href = 'boardWrite.html';
+  } catch (err) {
+    if (err instanceof FetchError && err.httpStatus === 401) {
+      alert('로그인이 필요합니다.');
+      window.location.href = '/login/login.html';
+    } else {
+      handleFetchError(err);
+    }
+  }
+}
+
 // 페이지 로드 시 게시글 목록 초기화
 document.addEventListener('DOMContentLoaded', function () {
   // 게시글 목록 로드
@@ -300,7 +319,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const writeButton = document.querySelector('.write-button');
   if (writeButton) {
     writeButton.addEventListener('click', function () {
-      window.location.href = 'boardWrite.html';
+
+      loadBoardWrite();
     });
   }
 });

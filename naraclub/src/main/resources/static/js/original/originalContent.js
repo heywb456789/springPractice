@@ -82,7 +82,7 @@ async function loadContent(tab = 'video', page = 0, size = PAGE_SIZE,
     console.log(contentType);
     let response = '';
     if(contentType === 'NEWS_ARTICLE'){
-      response = await NewsArticleService.getNewsList(page, size, '', keyword);
+      response = await NewsArticleService.getNewsList(page, 10, '', keyword);
     }else{
       response = await VideoService.getLatestVideos(page, size,
         contentType, keyword);

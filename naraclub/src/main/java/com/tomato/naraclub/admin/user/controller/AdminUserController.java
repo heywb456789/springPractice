@@ -7,6 +7,7 @@ import com.tomato.naraclub.admin.user.dto.AdminUserListRequest;
 import com.tomato.naraclub.admin.user.dto.AdminUserResponse;
 import com.tomato.naraclub.admin.user.dto.AppUserListRequest;
 import com.tomato.naraclub.admin.user.dto.AppUserResponse;
+import com.tomato.naraclub.admin.user.dto.UserActivityResponse;
 import com.tomato.naraclub.admin.user.dto.UserLoginHistoryResponse;
 import com.tomato.naraclub.admin.user.service.AdminUserService;
 import com.tomato.naraclub.admin.user.service.AppUserService;
@@ -96,8 +97,7 @@ public class AdminUserController {
         Page<MemberLoginHistory> loginHistory = appUserService.getAppUserLoginHistory(id, 0, 10);
 
         // 첫 페이지 활동 내역도 가져오기 (옵션)
-//        List<UserActivityResponse> userActivities = appUserService.getUserActivities(id, 0, 10);
-//        boolean hasMoreActivities = userActivities.size() >= 10;
+//        Page<UserActivityResponse> userActivities = appUserService.getUserActivities(id, 0, 10);
 
         model.addAttribute("user", userResponse);
         model.addAttribute("loginHistoryList", loginHistory.getContent());

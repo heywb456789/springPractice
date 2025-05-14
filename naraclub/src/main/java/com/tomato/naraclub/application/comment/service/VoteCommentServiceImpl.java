@@ -6,6 +6,8 @@ import com.tomato.naraclub.application.comment.entity.VoteComments;
 import com.tomato.naraclub.application.comment.repository.VoteCommentsRepository;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
+import com.tomato.naraclub.application.point.code.PointType;
+import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.application.vote.entity.VotePost;
 import com.tomato.naraclub.application.vote.repository.VotePostRepository;
@@ -27,6 +29,7 @@ public class VoteCommentServiceImpl implements VoteCommentService {
     private final MemberRepository memberRepository;
     private final VotePostRepository votePostRepository;
     private final VoteCommentsRepository voteCommentsRepository;
+    private final PointService pointService;
 
     @Override
     @Transactional(readOnly = true)
@@ -54,6 +57,13 @@ public class VoteCommentServiceImpl implements VoteCommentService {
 
         //4) 댓글수 ++
         post.incrementCommentCount();
+
+        //5) 포인트 적립
+        try{
+            pointService.awardPoints(author, PointType.WRITE_VOTE_COMMENT, saved.getId());
+        }catch (Exception e){
+            log.warn("포인트 적립 실패: {}", e.getMessage());
+        }
 
         return saved.convertDTOWithMine();
     }

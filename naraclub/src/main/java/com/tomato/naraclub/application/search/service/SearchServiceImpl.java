@@ -5,7 +5,9 @@ import com.querydsl.core.types.dsl.StringPath;
 import com.tomato.naraclub.application.board.entity.QBoardPost;
 import com.tomato.naraclub.application.board.repository.BoardPostRepository;
 import com.tomato.naraclub.application.original.code.OriginalType;
+import com.tomato.naraclub.application.original.entity.QArticle;
 import com.tomato.naraclub.application.original.entity.QVideo;
+import com.tomato.naraclub.application.original.repository.NewsArticleRepository;
 import com.tomato.naraclub.application.original.repository.VideoRepository;
 import com.tomato.naraclub.application.search.code.SearchCategory;
 import com.tomato.naraclub.application.search.dto.SeachRequest;
@@ -41,6 +43,7 @@ public class SearchServiceImpl implements SearchService {
     private final VideoRepository videoRepository;
     private final BoardPostRepository boardPostRepository;
     private final VotePostRepository votePostRepository;
+    private final NewsArticleRepository articleRepository;
 
     @Override
     public ListDTO<SearchDTO> search(SeachRequest req, Pageable pageable) {
@@ -76,12 +79,17 @@ public class SearchServiceImpl implements SearchService {
                 .forEach(e -> merged.add(e.convertSearchDTO(e, SearchCategory.ORIGINAL_SHORTS)));
         }
 
-//        if (allCat || cat == SearchCategory.ORIGINAL_NEWS) {
-//            QArticle a = QArticle.article;
-//            BooleanBuilder b = buildPredicate(a.title, a.content, a.authorName, req);
-//            articleRepo.findAll(b, pageable)
-//                       .forEach(e -> merged.add(mapArticle(e)));
-//        }
+        if (allCat || cat == SearchCategory.ORIGINAL_NEWS) {
+            QArticle a = QArticle.article;
+            BooleanBuilder b = buildPredicate(a.title, a.content, a.author.name, req);
+
+            long newsCount = articleRepository.count(b);
+            counts.put(SearchCategory.ORIGINAL_NEWS.name(), newsCount);
+            allCount += newsCount;
+
+            articleRepository.findAll(b, pageable)
+                       .forEach(e -> merged.add(e.convertSearchDTO(e)));
+        }
 
         if (allCat || cat == SearchCategory.BOARD_POST) {
             QBoardPost bp = QBoardPost.boardPost;

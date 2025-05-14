@@ -17,7 +17,9 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/invite")
-    public ResponseEntity<MemberDTO> enrollInviteCode(@RequestBody MemberInviteRequest request, @AuthenticationPrincipal MemberUserDetails userDetails) {
+    public ResponseEntity<MemberDTO> enrollInviteCode(
+        @RequestBody MemberInviteRequest request,
+        @AuthenticationPrincipal MemberUserDetails userDetails) {
         return ResponseEntity.ok(memberService.enrollInviteCode(request.getInviteCode(), userDetails));
     }
 

@@ -134,60 +134,6 @@
   background-color: #8e8e93;
 }
 
-/* 포인트 섹션 */
-.point-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  margin-top: 20px;
-}
-
-.point-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.point-icon {
-  width: 30px;
-  height: 30px;
-  background-color: #6c2dc7;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.point-value {
-  font-weight: bold;
-  color: #333;
-}
-
-.point-label {
-  font-size: 12px;
-  color: #666;
-}
-
-.point-button {
-  background-color: #6c7dfd;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 15px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.point-button:hover {
-  background-color: #5c6dfd;
-}
-
 /* 로딩 상태 */
 .loading {
   display: flex;

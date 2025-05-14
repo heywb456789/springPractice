@@ -78,6 +78,11 @@ public class Member extends Audit {
     @JoinColumn(name = "inviter_id")
     private Member inviter;    // 추천인
 
+    @Comment("회원 포인트")
+    @Column(nullable = false,columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
+    private Integer points = 0;
+
     @Comment("활동 내역")
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -109,6 +114,7 @@ public class Member extends Audit {
                 .lastAccessAt(lastAccessAt)
                 .verified(verified)
                 .profileImg(profileImg)
+                .points(points)
                 .build();
     }
 
@@ -124,10 +130,15 @@ public class Member extends Audit {
             .role(role)
             .email(email)
             .verified(verified)
+            .points(points)
             .build();
     }
 
     public void setLastAccessAt() {
         this.lastAccessAt = LocalDateTime.now();
+    }
+
+    public void increasePoint(int amount) {
+        this.points += amount;
     }
 }

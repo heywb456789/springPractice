@@ -6,6 +6,11 @@ import com.tomato.naraclub.application.board.repository.*;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 
+import com.tomato.naraclub.application.point.code.PointStatus;
+import com.tomato.naraclub.application.point.code.PointType;
+import com.tomato.naraclub.application.point.entity.PointHistory;
+import com.tomato.naraclub.application.point.repository.PointRepository;
+import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.ResponseStatus;
@@ -16,6 +21,7 @@ import com.tomato.naraclub.common.util.FileStorageService;
 import com.tomato.naraclub.common.util.UserDeviceInfoUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +31,7 @@ import java.util.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BoardPostServiceImpl implements BoardPostService {
@@ -33,6 +40,8 @@ public class BoardPostServiceImpl implements BoardPostService {
     private final BoardPostLikeRepository postLikeRepository;
     private final BoardPostViewHistoryRepository viewHistoryRepository;
     private final MemberRepository memberRepository;
+
+    private final PointService pointService;
     private final FileStorageService imageService;
 
     @Value("${spring.app.display}")
@@ -136,7 +145,14 @@ public class BoardPostServiceImpl implements BoardPostService {
             }
         }
 
-        // 4) DTO 변환 후 반환
+        //4) 포인트 적립
+        try{
+            pointService.awardPoints(author, PointType.WRITE_BOARD, saved.getId());
+        }catch (Exception e){
+            log.warn("포인트 적립 실패: {}", e.getMessage());
+        }
+
+        // 5) DTO 변환 후 반환
         return saved.convertDTO();
     }
 

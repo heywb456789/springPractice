@@ -3,13 +3,13 @@ package com.tomato.naraclub.application.comment.service;
 import com.tomato.naraclub.application.comment.dto.CommentRequest;
 import com.tomato.naraclub.application.comment.dto.CommentResponse;
 import com.tomato.naraclub.application.comment.entity.ArticleComments;
-import com.tomato.naraclub.application.comment.entity.VideoComments;
 import com.tomato.naraclub.application.comment.repository.ArticleCommentsRepository;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.original.entity.Article;
-import com.tomato.naraclub.application.original.entity.Video;
 import com.tomato.naraclub.application.original.repository.NewsArticleRepository;
+import com.tomato.naraclub.application.point.code.PointType;
+import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.code.ResponseStatus;
@@ -38,6 +38,8 @@ public class NewsArticleCommentsServiceImpl implements NewsArticleCommentsServic
     private final MemberRepository memberRepository;
     private final NewsArticleRepository articleRepository;
 
+    private final PointService pointService;
+
     @Override
     @Transactional(readOnly = true)
     public ListDTO<CommentResponse> getNewsComments(Long newsId, MemberUserDetails user,
@@ -65,6 +67,13 @@ public class NewsArticleCommentsServiceImpl implements NewsArticleCommentsServic
 
         //4) 댓글수 ++
         article.incrementCommentCount();
+
+        //5) 포인트 적립
+        try{
+            pointService.awardPoints(author, PointType.WRITE_NEWS_COMMENT, saved.getId());
+        }catch (Exception e){
+            log.warn("포인트 적립 실패: {}", e.getMessage());
+        }
 
         return saved.convertDTOWithMine();
     }

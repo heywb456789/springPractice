@@ -4,9 +4,13 @@ import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.board.service.BoardPostService;
 import com.tomato.naraclub.application.original.service.NewsArticleService;
 import com.tomato.naraclub.application.original.service.VideoService;
+import com.tomato.naraclub.application.point.code.PointType;
+import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.share.dto.KakaoShareResponse;
 import com.tomato.naraclub.application.share.service.ShareService;
 import com.tomato.naraclub.application.vote.service.VotePostService;
+import com.tomato.naraclub.common.code.ResponseStatus;
+import com.tomato.naraclub.common.exception.APIException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +41,7 @@ public class ShareController {
     private final NewsArticleService newsArticleService;
     private final VideoService videoService;
     private final ShareService shareService;
+    private final PointService pointService;
 
     @GetMapping("/board/{id}")
     public String shareBoard(@PathVariable Long id, Model model) {

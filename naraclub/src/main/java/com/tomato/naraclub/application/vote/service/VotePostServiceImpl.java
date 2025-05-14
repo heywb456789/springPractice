@@ -3,6 +3,8 @@ package com.tomato.naraclub.application.vote.service;
 import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
+import com.tomato.naraclub.application.point.code.PointType;
+import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.application.vote.dto.VoteListRequest;
 import com.tomato.naraclub.application.vote.dto.VotePostResponse;
@@ -47,6 +49,7 @@ public class VotePostServiceImpl implements VotePostService {
     private final VoteOptionRepository voteOptionRepository;
     private final VoteViewHistoryRepository viewHistoryRepository;
     private final MemberRepository memberRepository;
+    private final PointService pointService;
 
     @Override
     public ListDTO<VotePostResponse> getList(MemberUserDetails userDetails, VoteListRequest request, Pageable pageable) {
@@ -145,6 +148,13 @@ public class VotePostServiceImpl implements VotePostService {
         // 6) 카운트 증가
         voteOption.increment();
         votePost.increment();
+
+        //7 포인트
+        try{
+            pointService.awardPoints(member, PointType.APPLY_VOTE, votePost.getId());
+        }catch (Exception e){
+            log.warn("포인트 적립 실패: {}", e.getMessage());
+        }
 
         return votePost.getVoteCount();
     }
