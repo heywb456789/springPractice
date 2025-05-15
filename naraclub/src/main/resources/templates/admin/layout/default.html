@@ -85,7 +85,7 @@
               <a th:classappend="${activeSubmenu == 'app'} ? 'active'"
                  href="/admin/users/app/user-list">유저 관리</a>
             </li>
-            <li>
+            <li sec:authorize="hasAnyRole('SUPER_ADMIN')">
               <a th:classappend="${activeSubmenu == 'admin'} ? 'active'"
                  href="/admin/users/admin/user-list">관리자 관리</a>
             </li>

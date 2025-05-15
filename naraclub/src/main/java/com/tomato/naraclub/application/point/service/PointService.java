@@ -25,4 +25,6 @@ public interface PointService {
     void awardSharePoints(Member author, KakaoShareResponse payload);
 
     void awardShareTweetPoints(Member member, TwitterShareDTO param);
+
+    UserPointResponse exchangePoints(MemberUserDetails userDetails);
 }

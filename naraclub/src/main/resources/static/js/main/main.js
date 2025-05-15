@@ -16,6 +16,31 @@ document.addEventListener('DOMContentLoaded', async function () {
   initMoreLink();
   initPollMoreLink();     // 투표 공간
 
+  const exchangeBtn = document.getElementById('exchangeButton');
+  if (exchangeBtn) {
+    exchangeBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/point/exchange', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({}) // 필요 시 userId 등 전달 가능
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          alert('교환 완료: ' + result.message);
+        } else {
+          alert('실패: ' + result.message);
+        }
+      } catch (err) {
+        console.error('교환 요청 실패:', err);
+        alert('시스템 오류로 교환에 실패했습니다.');
+      }
+    });
+  }
+
 });
 
 /**

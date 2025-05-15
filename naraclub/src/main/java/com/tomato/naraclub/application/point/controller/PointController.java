@@ -6,10 +6,7 @@ import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.dto.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author : MinjaeKim
@@ -31,5 +28,12 @@ public class PointController {
         @AuthenticationPrincipal MemberUserDetails userDetails
     ) {
         return pointService.getUserPoints(userDetails);
+    }
+
+    @PostMapping("/points/exchange")
+    public ResponseDTO<UserPointResponse> exchange(
+            @AuthenticationPrincipal MemberUserDetails userDetails
+    ) {
+        return ResponseDTO.ok(pointService.exchangePoints(userDetails));
     }
 }

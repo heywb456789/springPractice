@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/default :: html(
+        ~{::title},
+        ~{::section},
+        ~{::customCSS},
+        ~{::customJS},
+        'points',
+        'list'
+      )}">
+<head>
+    <title>포인트 내역 목록 - 관리자</title>
+
+    <!-- Custom CSS -->
+    <customCSS>
+        <link th:href="@{/assets/admin/css/pointHistoryList.css}" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css"
+              rel="stylesheet">
+        <link th:href="@{/assets/admin/css/dateRange.css}" rel="stylesheet">
+    </customCSS>
+</head>
+<body>
+<section>
+    <!-- Page Title & Actions -->
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <h4 class="page-title">포인트 내역 목록</h4>
+        <div class="page-actions">
+            <button type="button" class="btn btn-success me-2" id="btnExportExcel">
+                <i class="fas fa-download me-1"></i> Excel 내보내기
+            </button>
+            <button type="button" class="btn btn-primary" id="btnAddPoints">
+                <i class="fas fa-plus me-1"></i> 포인트 지급
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="searchForm" method="get" action="/admin/points/list">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="searchType" class="form-label">검색 유형</label>
+                        <select class="form-select" id="searchType" name="searchType">
+                            <option value="USER_NAME"
+                                    th:selected="${searchRequest.searchType?.name() == 'USER_NAME'}">회원 이름
+                            </option>
+                            <option value="USER_ID"
+                                    th:selected="${searchRequest.searchType?.name() == 'USER_ID'}">회원 아이디
+                            </option>
+                            <option value="POINT_DESC"
+                                    th:selected="${searchRequest.searchType?.name() == 'POINT_DESC'}">내용
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="searchText" class="form-label">검색어</label>
+                        <input type="text" class="form-control" id="searchText" name="searchText"
+                               th:value="${searchRequest.searchText}" placeholder="검색어를 입력하세요">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="pointType" class="form-label">포인트 유형</label>
+                        <select class="form-select" id="pointType" name="pointType">
+                            <option value="" th:selected="${searchRequest.pointType == null}">전체</option>
+                            <option value="EARN" th:selected="${searchRequest.pointType == 'EARN'}">적립</option>
+                            <option value="USE" th:selected="${searchRequest.pointType == 'USE'}">사용</option>
+                            <option value="CANCEL" th:selected="${searchRequest.pointType == 'CANCEL'}">회수</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="minAmount" class="form-label">최소 금액</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="minAmount" name="minAmount"
+                                   th:value="${searchRequest.minAmount}" placeholder="최소 금액">
+                            <span class="input-group-text">원</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="maxAmount" class="form-label">최대 금액</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="maxAmount" name="maxAmount"
+                                   th:value="${searchRequest.maxAmount}" placeholder="최대 금액">
+                            <span class="input-group-text">원</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="dateRange" class="form-label">날짜 범위</label>
+                        <div class="input-group date-range-input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                            <input type="text" class="form-control" id="dateRange" name="dateRange"
+                                   th:value="${searchRequest.dateRange}" placeholder="날짜 범위 선택">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sortType" class="form-label">정렬 기준</label>
+                        <select class="form-select" id="sortType" name="sortType">
+                            <option value="LATEST"
+                                    th:selected="${searchRequest.sortType?.name() == 'LATEST' || searchRequest.sortType?.name() == null}">
+                                최신순
+                            </option>
+                            <option value="AMOUNT_HIGH" th:selected="${searchRequest.sortType?.name() == 'AMOUNT_HIGH'}">금액 높은순
+                            </option>
+                            <option value="AMOUNT_LOW" th:selected="${searchRequest.sortType?.name() == 'AMOUNT_LOW'}">금액 낮은순
+                            </option>
+                            <option value="USER_NAME" th:selected="${searchRequest.sortType?.name() == 'USER_NAME'}">회원명순</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="pageSize" class="form-label">표시 개수</label>
+                        <select class="form-select" id="pageSize" name="size">
+                            <option value="10" th:selected="${pointHistoryList.size == 10}">10개</option>
+                            <option value="20" th:selected="${pointHistoryList.size == 20}">20개</option>
+                            <option value="50" th:selected="${pointHistoryList.size == 50}">50개</option>
+                            <option value="100" th:selected="${pointHistoryList.size == 100}">100개</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="d-grid w-100">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i> 검색
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1 text-white-50">총 적립 포인트</h6>
+                            <h3 class="mb-0" th:text="${#numbers.formatInteger(totalEarnedPoints, 0, 'COMMA')}">6,250,000</h3>
+                        </div>
+                        <div>
+                            <i class="fas fa-gift fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1 text-white-50">총 사용 포인트</h6>
+                            <h3 class="mb-0" th:text="${#numbers.formatInteger(totalUsedPoints, 0, 'COMMA')}">2,190,000</h3>
+                        </div>
+                        <div>
+                            <i class="fas fa-shopping-cart fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1 text-white-50">총 회수 포인트</h6>
+                            <h3 class="mb-0" th:text="${#numbers.formatInteger(totalCanceledPoints, 0, 'COMMA')}">150,000</h3>
+                        </div>
+                        <div>
+                            <i class="fas fa-undo fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1 text-white-50">잔여 포인트</h6>
+                            <h3 class="mb-0" th:text="${#numbers.formatInteger(totalRemainingPoints, 0, 'COMMA')}">3,910,000</h3>
+                        </div>
+                        <div>
+                            <i class="fas fa-coins fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-title mb-0 d-inline-block">총 <span th:text="${pointHistoryList.totalElements}">0</span>개의
+                    포인트 내역</h5>
+                <span class="text-muted ms-2">
+          (페이지 <span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span>)
+        </span>
+            </div>
+            <div class="header-actions">
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="bulkActionButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        일괄 작업
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="bulkActionButton">
+                        <li><a class="dropdown-item" href="#" id="btnBulkCancel">선택 항목 회수</a></li>
+                        <li><a class="dropdown-item" href="#" id="btnBulkExport">선택 항목 내보내기</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div class="table-responsive">
+            <table class="table table-centered table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th style="width: 20px;">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
+                            <label class="form-check-label" for="selectAll"></label>
+                        </div>
+                    </th>
+                    <th style="width: 50px;">#</th>
+                    <th style="width: 120px;">회원 ID</th>
+                    <th style="width: 120px;">회원 이름</th>
+                    <th>내용</th>
+                    <th style="width: 100px;">유형</th>
+                    <th style="width: 120px;">금액</th>
+                    <th style="width: 120px;">잔여 포인트</th>
+                    <th style="width: 160px;">처리일시</th>
+                    <th style="width: 100px;">작업</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${pointHistoryList.empty}">
+                    <td colspan="10" class="text-center py-5">
+                        <i class="fas fa-coins fa-3x text-muted mb-3"></i>
+                        <p class="mb-0">조건에 맞는 포인트 내역이 없습니다.</p>
+                    </td>
+                </tr>
+                <tr th:unless="${pointHistoryList.empty}" th:each="point : ${pointHistoryList}">
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input point-select"
+                                   th:id="${'select-' + point.id}"
+                                   th:data-id="${point.id}"
+                                   th:data-type="${point.pointType}"
+                                   th:disabled="${point.pointType != 'EARN' || point.isUsed}">
+                            <label class="form-check-label" th:for="${'select-' + point.id}"></label>
+                        </div>
+                    </td>
+                    <td th:text="${point.id}">1</td>
+                    <td>
+                        <a href="#" class="text-dark" th:text="${point.userId}"
+                           th:href="@{/admin/users/detail/{id}(id=${point.userId})}">user123</a>
+                    </td>
+                    <td>
+                        <a href="#" class="text-dark" th:text="${point.userName}"
+                           th:href="@{/admin/users/detail/{id}(id=${point.userId})}">홍길동</a>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/points/{id}(id=${point.id})}" class="text-reset">
+                            <span th:text="${point.description}">회원가입 축하 포인트</span>
+                            <span th:if="${point.isUsed}" class="badge bg-light text-dark ms-1">
+                <i class="fas fa-check-circle text-success"></i> 사용됨
+              </span>
+                        </a>
+                    </td>
+                    <td>
+            <span class="badge"
+                  th:classappend="${point.pointType == 'EARN' ? 'bg-success' : (point.pointType == 'USE' ? 'bg-primary' : 'bg-warning')}"
+                  th:text="${point.pointType == 'EARN' ? '적립' : (point.pointType == 'USE' ? '사용' : '회수')}">적립</span>
+                    </td>
+                    <td>
+            <span th:class="${point.pointType == 'EARN' ? 'text-success' : (point.pointType == 'USE' ? 'text-danger' : 'text-warning')}">
+              <i th:class="${point.pointType == 'EARN' ? 'fas fa-plus' : 'fas fa-minus'}" th:if="${point.pointType != 'CANCEL'}"></i>
+              <i class="fas fa-undo" th:if="${point.pointType == 'CANCEL'}"></i>
+              <span th:text="${#numbers.formatInteger(point.amount, 0, 'COMMA')}">5,000</span>
+            </span>
+                    </td>
+                    <td>
+                        <span th:text="${#numbers.formatInteger(point.remainingPoints, 0, 'COMMA')}">15,000</span>
+                    </td>
+                    <td>
+                        <span th:text="${#temporals.format(point.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</span>
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" th:href="@{/admin/points/{id}(id=${point.id})}">
+                                        <i class="fas fa-eye me-1"></i> 상세보기
+                                    </a>
+                                </li>
+                                <li th:if="${point.pointType == 'EARN' && !point.isUsed}">
+                                    <a class="dropdown-item btn-cancel-point" href="#" th:data-id="${point.id}" th:data-amount="${point.amount}">
+                                        <i class="fas fa-undo me-1"></i> 회수하기
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" th:href="@{/admin/users/points/{id}(id=${point.userId})}">
+                                        <i class="fas fa-user me-1"></i> 회원 포인트 내역
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer d-flex justify-content-center" th:if="${totalPages > 0}">
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    <!-- First Page -->
+                    <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                           th:href="@{/admin/points/list(page=0, size=${pointHistoryList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, pointType=${searchRequest.pointType}, minAmount=${searchRequest.minAmount}, maxAmount=${searchRequest.maxAmount}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Previous Page -->
+                    <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                           th:href="@{/admin/points/list(page=${currentPage - 2}, size=${pointHistoryList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, pointType=${searchRequest.pointType}, minAmount=${searchRequest.minAmount}, maxAmount=${searchRequest.maxAmount}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Page Numbers -->
+                    <li class="page-item"
+                        th:each="pageNumber : ${#numbers.sequence(currentPage - 2 <= 0 ? 1 : currentPage - 2, currentPage + 2 >= totalPages ? totalPages : currentPage + 2)}"
+                        th:classappend="${pageNumber == currentPage ? 'active' : ''}">
+                        <a class="page-link"
+                           th:href="@{/admin/points/list(page=${pageNumber - 1}, size=${pointHistoryList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, pointType=${searchRequest.pointType}, minAmount=${searchRequest.minAmount}, maxAmount=${searchRequest.maxAmount}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           th:text="${pageNumber}">1</a>
+                    </li>
+
+                    <!-- Next Page -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                           th:href="@{/admin/points/list(page=${currentPage}, size=${pointHistoryList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, pointType=${searchRequest.pointType}, minAmount=${searchRequest.minAmount}, maxAmount=${searchRequest.maxAmount}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Last Page -->
+                    <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                           th:href="@{/admin/points/list(page=${totalPages - 1}, size=${pointHistoryList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, pointType=${searchRequest.pointType}, minAmount=${searchRequest.minAmount}, maxAmount=${searchRequest.maxAmount}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Add Points Modal -->
+    <div class="modal fade" id="addPointsModal" tabindex="-1" aria-labelledby="addPointsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPointsModalLabel">포인트 지급</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPointsForm">
+                        <div class="mb-3">
+                            <label for="pointRecipientType" class="form-label">지급 대상</label>
+                            <select class="form-select" id="pointRecipientType">
+                                <option value="INDIVIDUAL">개별 회원</option>
+                                <option value="MULTIPLE">다수 회원</option>
+                                <option value="ALL">전체 회원</option>
+                            </select>
+                        </div>
+
+                        <div id="individualUserSection">
+                            <div class="mb-3">
+                                <label for="userId" class="form-label">회원 아이디</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="userId" placeholder="회원 아이디 입력">
+                                    <button class="btn btn-outline-secondary" type="button" id="btnSearchUser">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="userName" class="form-label">회원 이름</label>
+                                <input type="text" class="form-control" id="userName" readonly>
+                            </div>
+                        </div>
+
+                        <div id="multipleUserSection" style="display: none;">
+                            <div class="mb-3">
+                                <label for="userIdList" class="form-label">회원 아이디 목록</label>
+                                <textarea class="form-control" id="userIdList" rows="4" placeholder="쉼표(,) 또는 줄바꿈으로 구분된 회원 아이디 목록"></textarea>
+                                <div class="form-text">총 <span id="userCount">0</span>명의 회원에게 지급됩니다.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="pointAmount" class="form-label">포인트 금액</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="pointAmount" min="10" step="10" placeholder="지급할 포인트 금액">
+                                <span class="input-group-text">P</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="pointDescription" class="form-label">지급 사유</label>
+                            <input type="text" class="form-control" id="pointDescription" placeholder="포인트 지급 사유">
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1 quick-reason" data-reason="회원가입 축하">회원가입 축하</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1 quick-reason" data-reason="이벤트 참여 보상">이벤트 참여</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1 quick-reason" data-reason="구매 보상">구매 보상</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary quick-reason" data-reason="불편 사항 보상">불편 사항 보상</button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="expiryDate" class="form-label">만료일 (선택)</label>
+                            <input type="date" class="form-control" id="expiryDate">
+                            <div class="form-text">설정하지 않으면 포인트가 만료되지 않습니다.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmitAddPoints">
+                        <i class="fas fa-check me-1"></i> 포인트 지급
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Point Modal -->
+    <div class="modal fade" id="cancelPointModal" tabindex="-1" aria-labelledby="cancelPointModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelPointModalLabel">포인트 회수</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="cancelPointForm">
+                        <input type="hidden" id="cancelPointId">
+                        <div class="mb-3">
+                            <label for="cancelAmount" class="form-label">회수 금액</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="cancelAmount" min="10" step="10">
+                                <span class="input-group-text">P</span>
+                            </div>
+                            <div class="form-text">최대 <span id="maxCancelAmount">0</span>P까지 회수 가능합니다.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cancelReason" class="form-label">회수 사유</label>
+                            <input type="text" class="form-control" id="cancelReason" placeholder="포인트 회수 사유 입력">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-warning" id="btnConfirmCancel">
+                        <i class="fas fa-undo me-1"></i> 포인트 회수
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Cancel Modal -->
+    <div class="modal fade" id="bulkCancelModal" tabindex="-1" aria-labelledby="bulkCancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkCancelModalLabel">일괄 포인트 회수</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>선택한 <span id="selectedItemCount" class="fw-bold">0</span>개의 항목에서 포인트를 회수하시겠습니까?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i> 이 작업은 되돌릴 수 없으며, 해당 포인트가 모두 회수됩니다.
+                    </div>
+                    <div class="mb-3">
+                        <label for="bulkCancelReason" class="form-label">회수 사유</label>
+                        <input type="text" class="form-control" id="bulkCancelReason" placeholder="일괄 포인트 회수 사유 입력">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-warning" id="btnConfirmBulkCancel">
+                        <i class="fas fa-undo me-1"></i> 일괄 회수
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom JS -->
+<customJS>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/plugins/rangePlugin.min.js"></script>
+    <script th:src="@{/assets/admin/js/pointHistoryList.js}" type="module"></script>
+</customJS>
+</body>
+</html>

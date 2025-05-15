@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.point.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.point.code.PointStatus;
 import com.tomato.naraclub.application.point.code.PointType;
@@ -15,9 +16,13 @@ import com.tomato.naraclub.common.dto.ResponseDTO;
 import com.tomato.naraclub.common.exception.APIException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.Map;
 
 /**
  * @author : MinjaeKim
@@ -33,6 +38,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class PointServiceImpl implements PointService {
 
     private final PointRepository pointRepository;
+
+    private final WebClient webClient = WebClient.builder().baseUrl("http://127.0.0.1:9000").build();
+
+    private static final String AUTH_HEADER = "1AA75CC269F33FB15479233CAC6705D2DD0016072F561E1547E4BF731C49C6FD";
+    private static final String CORPORATE_ADDRESS = "TTCJNqEHb9BU5qgQCeHvvqPbQzF6pPmn7UAX";
+
 
     @Override
     public ResponseDTO<UserPointResponse> getUserPoints(MemberUserDetails userDetails) {
@@ -108,5 +119,46 @@ public class PointServiceImpl implements PointService {
         pointRepository.save(history);
 
         author.increasePoint(amount);
+    }
+
+
+    @Override
+    public UserPointResponse exchangePoints(MemberUserDetails userDetails) {
+        // 1. 잔액 조회
+        Double balance = getBalance(CORPORATE_ADDRESS);
+        if (balance < 0.1) {
+            throw new IllegalStateException("잔액 부족: " + balance);
+        }
+
+        // 2. 전송
+        String txResult = transferCoin("0.1", "TTC8vwqR8M2eUFUFXThygLTDKgWxn");
+        return null;
+
+    }
+
+    private Double getBalance(String address) {
+        return webClient.post()
+                .uri("/api/v1/address_balance")
+                .header("Authorization", AUTH_HEADER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("address", address))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .map(json -> json.get("balance").asDouble())
+                .block();
+    }
+
+    private String transferCoin(String amount, String toAddress) {
+        return webClient.post()
+                .uri("/api/v1/wallet_transfer_to_address")
+                .header("Authorization", AUTH_HEADER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of(
+                        "amount_to_transfer", amount,
+                        "to_address", toAddress
+                ))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
     }
 }

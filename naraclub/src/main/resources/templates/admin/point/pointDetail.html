@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/layout/default :: html(
+        ~{::title},
+        ~{::section},
+        ~{::customCSS},
+        ~{::customJS},
+        'points',
+        'detail'
+      )}">
+<head>
+  <title>포인트 내역 상세 - 관리자</title>
+
+  <!-- Custom CSS -->
+  <customCSS>
+    <link th:href="@{/assets/admin/css/pointHistoryDetail.css}" rel="stylesheet">
+  </customCSS>
+</head>
+<body>
+<section>
+  <!-- Page Title & Actions -->
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="page-title">포인트 내역 상세</h4>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">홈</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/admin/points/list}">포인트 관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">상세 내역</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="page-actions">
+      <a th:href="@{/admin/users/points/{id}(id=${pointHistory.userId})}" class="btn btn-info">
+        <i class="fas fa-user me-1"></i> 회원 포인트 내역
+      </a>
+      <a th:href="@{/admin/points/list}" class="btn btn-light ms-2">
+        <i class="fas fa-arrow-left me-1"></i> 목록으로
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- 포인트 내역 정보 -->
+    <div class="col-xl-8">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div>
+              <h5 class="card-title mb-0">포인트 내역 정보</h5>
+            </div>
+            <div class="ms-auto">
+              <span class="badge"
+                    th:classappend="${pointHistory.pointType == 'EARN' ? 'bg-success' : (pointHistory.pointType == 'USE' ? 'bg-primary' : 'bg-warning')}"
+                    th:text="${pointHistory.pointType == 'EARN' ? '적립' : (pointHistory.pointType == 'USE' ? '사용' : '회수')}">적립</span>
+              <span th:if="${pointHistory.isUsed}" class="badge bg-light text-dark ms-1">
+                <i class="fas fa-check-circle text-success"></i> 사용됨
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <table class="table table-sm table-borderless mb-0">
+                <tbody>
+                <tr>
+                  <td class="text-muted fw-bold" style="width: 35%">포인트 ID</td>
+                  <td th:text="${pointHistory.id}">12345</td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-bold">포인트 내용</td>
+                  <td th:text="${pointHistory.description}">회원가입 축하 포인트</td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-bold">포인트 금액</td>
+                  <td>
+                      <span th:class="${pointHistory.pointType == 'EARN' ? 'text-success' : (pointHistory.pointType == 'USE' ? 'text-danger' : 'text-warning')}">
+                        <i th:class="${pointHistory.pointType == 'EARN' ? 'fas fa-plus' : 'fas fa-minus'}" th:if="${pointHistory.pointType != 'CANCEL'}"></i>
+                        <i class="fas fa-undo" th:if="${pointHistory.pointType == 'CANCEL'}"></i>
+                        <span th:text="${#numbers.formatInteger(pointHistory.amount, 0, 'COMMA')}">5,000</span>P
+                      </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-bold">처리 시간</td>
+                  <td th:text="${#temporals.format(pointHistory.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2023-01-01 00:00:00</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <table class="table table-sm table-borderless mb-0">
+                <tbody>
+                <tr>
+                  <td class="text-muted fw-bold" style="width: 35%">회원 ID</td>
+                  <td>
+                    <a th:href="@{/admin/users/detail/{id}(id=${pointHistory.userId})}" th:text="${pointHistory.userId}">user123</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-bold">회원 이름</td>
+                  <td>
+                    <a th:href="@{/admin/users/detail/{id}(id=${pointHistory.userId})}" th:text="${pointHistory.userName}">홍길동</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-bold">거래 후 잔액</td>
+                  <td>
+                    <span class="fw-bold" th:text="${#numbers.formatInteger(pointHistory.remainingPoints, 0, 'COMMA')}">15,000</span>P
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-bold">만료일</td>
+                  <td>
+                    <span th:if="${pointHistory.expiryDate}" th:text="${#temporals.format(pointHistory.expiryDate, 'yyyy-MM-dd')}">2024-01-01</span>
+                    <span th:unless="${pointHistory.expiryDate}" class="text-muted">만료 없음</span>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 추가 정보 (취소 내역) -->
+          <div th:if="${pointHistory.cancelInfo != null}" class="alert alert-warning">
+            <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-1"></i> 회수 정보</h6>
+            <hr>
+            <p class="mb-1"><strong>회수 일시:</strong> <span th:text="${#temporals.format(pointHistory.cancelInfo.canceledAt, 'yyyy-MM-dd HH:mm:ss')}">2023-01-05 10:30:00</span></p>
+            <p class="mb-1"><strong>회수 사유:</strong> <span th:text="${pointHistory.cancelInfo.cancelReason}">중복 적립 회수</span></p>
+            <p class="mb-0"><strong>처리자:</strong> <span th:text="${pointHistory.cancelInfo.canceledBy}">admin</span></p>
+          </div>
+
+          <!-- 추가 정보 (사용 내역) -->
+          <div th:if="${pointHistory.useInfo != null}" class="alert alert-info">
+            <h6 class="alert-heading"><i class="fas fa-info-circle me-1"></i> 사용 정보</h6>
+            <hr>
+            <p class="mb-1"><strong>사용 일시:</strong> <span th:text="${#temporals.format(pointHistory.useInfo.usedAt, 'yyyy-MM-dd HH:mm:ss')}">2023-01-05 10:30:00</span></p>
+            <p class="mb-1"><strong>사용 내용:</strong> <span th:text="${pointHistory.useInfo.useDescription}">상품 주문 결제</span></p>
+            <p class="mb-0"><strong>주문 번호:</strong> <a th:if="${pointHistory.useInfo.orderId}" th:href="@{/admin/orders/{id}(id=${pointHistory.useInfo.orderId})}" th:text="${pointHistory.useInfo.orderId}">ORD-20230105-12345</a></p>
+          </div>
+
+          <!-- 액션 버튼 -->
+          <div class="mt-4 d-flex justify-content-end">
+            <button th:if="${pointHistory.pointType == 'EARN' && !pointHistory.isUsed}" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#cancelPointModal">
+              <i class="fas fa-undo me-1"></i> 포인트 회수
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 회원 요약 정보 -->
+    <div class="col-xl-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">회원 정보</h5>
+        </div>
+        <div class="card-body">
+          <div class="text-center mb-3">
+            <div class="avatar avatar-lg">
+              <img th:if="${userInfo.profileImage}" th:src="${userInfo.profileImage}" class="rounded-circle" alt="프로필">
+              <div th:unless="${userInfo.profileImage}" class="avatar-initial rounded-circle bg-primary">
+                <span th:text="${#strings.substring(userInfo.userName, 0, 1)}">홍</span>
+              </div>
+            </div>
+            <h5 class="mt-3 mb-1" th:text="${userInfo.userName}">홍길동</h5>
+            <p class="text-muted mb-0" th:text="${userInfo.userId}">user123</p>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="text-muted">회원 등급</div>
+            <div>
+              <span class="badge bg-primary" th:text="${userInfo.userLevel}">골드</span>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="text-muted">가입일</div>
+            <div th:text="${#temporals.format(userInfo.registeredAt, 'yyyy-MM-dd')}">2023-01-01</div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="text-muted">최근 로그인</div>
+            <div th:text="${#temporals.format(userInfo.lastLoginAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</div>
+          </div>
+
+          <hr>
+
+          <div class="pt-1">
+            <h6 class="text-uppercase mb-3">포인트 요약</h6>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="text-muted">총 적립 포인트</div>
+                <div class="fw-bold text-success" th:text="${#numbers.formatInteger(userInfo.pointSummary.totalEarnedPoints, 0, 'COMMA')} + 'P'">25,000P</div>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="text-muted">총 사용 포인트</div>
+                <div class="fw-bold text-danger" th:text="${#numbers.formatInteger(userInfo.pointSummary.totalUsedPoints, 0, 'COMMA')} + 'P'">15,000P</div>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-danger" role="progressbar"
+                     th:style="'width: ' + ${userInfo.pointSummary.totalEarnedPoints > 0 ? userInfo.pointSummary.totalUsedPoints * 100 / userInfo.pointSummary.totalEarnedPoints : 0} + '%'"></div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="text-muted">총 회수 포인트</div>
+                <div class="fw-bold text-warning" th:text="${#numbers.formatInteger(userInfo.pointSummary.totalCanceledPoints, 0, 'COMMA')} + 'P'">5,000P</div>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-warning" role="progressbar"
+                     th:style="'width: ' + ${userInfo.pointSummary.totalEarnedPoints > 0 ? userInfo.pointSummary.totalCanceledPoints * 100 / userInfo.pointSummary.totalEarnedPoints : 0} + '%'"></div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <div class="text-muted fs-5">현재 사용 가능 포인트</div>
+              <div class="fs-4 fw-bold" th:text="${#numbers.formatInteger(userInfo.pointSummary.availablePoints, 0, 'COMMA')} + 'P'">5,000P</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 관련 포인트 내역 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <h5 class="card-title mb-0">관련 포인트 내역</h5>
+            <a th:href="@{/admin/users/points/{id}(id=${pointHistory.userId})}" class="btn btn-sm btn-link ms-auto">
+              전체보기 <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush">
+            <a th:href="@{/admin/points/{id}(id=${relatedPoint.id})}"
+               class="list-group-item list-group-item-action"
+               th:each="relatedPoint : ${relatedPoints}"
+               th:classappend="${relatedPoint.id == pointHistory.id ? 'active' : ''}">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1" th:text="${relatedPoint.description}">상품 구매 적립</h6>
+                <small th:text="${#temporals.format(relatedPoint.createdAt, 'yyyy-MM-dd')}">2023-01-01</small>
+              </div>
+              <div class="d-flex w-100 justify-content-between mt-2">
+                <span class="badge"
+                      th:classappend="${relatedPoint.pointType == 'EARN' ? 'bg-success' : (relatedPoint.pointType == 'USE' ? 'bg-primary' : 'bg-warning')}"
+                      th:text="${relatedPoint.pointType == 'EARN' ? '적립' : (relatedPoint.pointType == 'USE' ? '사용' : '회수')}">적립</span>
+                <span th:class="${relatedPoint.pointType == 'EARN' ? 'text-success' : (relatedPoint.pointType == 'USE' ? 'text-danger' : 'text-warning')}">
+                  <i th:class="${relatedPoint.pointType == 'EARN' ? 'fas fa-plus' : 'fas fa-minus'}" th:if="${relatedPoint.pointType != 'CANCEL'}"></i>
+                  <i class="fas fa-undo" th:if="${relatedPoint.pointType == 'CANCEL'}"></i>
+                  <span th:text="${#numbers.formatInteger(relatedPoint.amount, 0, 'COMMA')}">5,000</span>P
+                </span>
+              </div>
+            </a>
+            <div class="list-group-item text-center text-muted py-3" th:if="${#lists.isEmpty(relatedPoints)}">
+              관련 포인트 내역이 없습니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Point Modal -->
+  <div class="modal fade" id="cancelPointModal" tabindex="-1" aria-labelledby="cancelPointModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelPointModalLabel">포인트 회수</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="cancelPointForm">
+            <input type="hidden" id="cancelPointId" th:value="${pointHistory.id}">
+            <div class="mb-3">
+              <label for="cancelAmount" class="form-label">회수 금액</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="cancelAmount" min="10" step="10" th:value="${pointHistory.amount}" th:max="${pointHistory.amount}">
+                <span class="input-group-text">P</span>
+              </div>
+              <div class="form-text">최대 <span id="maxCancelAmount" th:text="${#numbers.formatInteger(pointHistory.amount, 0, 'COMMA')}">5,000</span>P까지 회수 가능합니다.</div>
+            </div>
+            <div class="mb-3">
+              <label for="cancelReason" class="form-label">회수 사유</label>
+              <input type="text" class="form-control" id="cancelReason" placeholder="포인트 회수 사유 입력">
+            </div>
+          </form>
+
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-1"></i> 포인트 회수는 되돌릴 수 없으며, 해당 회원의 사용 가능한 포인트가 차감됩니다.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-warning" id="btnConfirmCancel">
+            <i class="fas fa-undo me-1"></i> 포인트 회수
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Custom JS -->
+<customJS>
+  <script th:src="@{/assets/admin/js/pointHistoryDetail.js}" type="module"></script>
+</customJS>
+</body>
+</html>
