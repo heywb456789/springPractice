@@ -29,6 +29,7 @@ public class MemberDTO {
     private String profileImg;
     private Integer points;
 //    private Member inviter;    // 추천인
+    private boolean twitterConnected;
 
 
 }

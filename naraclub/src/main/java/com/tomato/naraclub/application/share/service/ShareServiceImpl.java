@@ -1,10 +1,15 @@
 package com.tomato.naraclub.application.share.service;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tomato.naraclub.application.member.entity.Member;
+import com.tomato.naraclub.application.member.entity.TwitterAccount;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
+import com.tomato.naraclub.application.member.repository.TwitterAccountRepository;
 import com.tomato.naraclub.application.point.service.PointService;
+import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.application.share.code.ShareTargetType;
 import com.tomato.naraclub.application.share.dto.KakaoShareResponse;
+import com.tomato.naraclub.application.share.dto.TwitterShareDTO;
 import com.tomato.naraclub.application.share.entity.ShareHistory;
 import com.tomato.naraclub.application.share.repository.ShareHistoryRepository;
 import com.tomato.naraclub.common.code.MemberStatus;
@@ -14,6 +19,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.auth.AccessToken;
 
 /**
  * @author : MinjaeKim
@@ -31,6 +40,7 @@ public class ShareServiceImpl implements ShareService {
     private final ShareHistoryRepository shareHistoryRepository;
     private final MemberRepository memberRepository;
     private final PointService pointService;
+
 
     @Override
     @Transactional
@@ -62,7 +72,26 @@ public class ShareServiceImpl implements ShareService {
                 log.warn("포인트 적립 실패: {}", e.getMessage());
             }
         });
+    }
 
+    @Override
+    @Transactional
+    public void saveTweetHistory(Member member, TwitterShareDTO param, ObjectNode root) {
 
+        ShareHistory history = ShareHistory.builder()
+            .author(member)
+            .targetType(param.getType())
+            .targetId(param.getTargetId())
+            .sharedAt(LocalDateTime.now())
+            .etc(root.toString())
+            .build();
+
+        shareHistoryRepository.save(history);
+
+        try {
+            pointService.awardShareTweetPoints(member, param);
+        } catch (Exception e) {
+            log.warn("포인트 적립 실패: {}", e.getMessage());
+        }
     }
 }

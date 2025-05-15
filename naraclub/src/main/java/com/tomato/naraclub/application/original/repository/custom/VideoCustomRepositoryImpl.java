@@ -5,6 +5,7 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tomato.naraclub.application.original.dto.VideoListRequest;
@@ -54,20 +55,9 @@ public class VideoCustomRepositoryImpl implements VideoCustomRepository {
                 .from(video)
                 .where(condition);
 
-        // 3) contentQuery: 실제 페이지 데이터 조회
-        JPAQuery<VideoResponse> selectQuery = query
+        List<VideoResponse> content = query
                 .select(getVideoFields(memberId, video, viewHistory))
-                .from(video);
-
-        if (memberId != null) {
-            selectQuery.leftJoin(viewHistory)
-                    .on(
-                        viewHistory.reader.id.eq(memberId),
-                        viewHistory.video.id.eq(video.id)
-                    );
-        }
-
-        List<VideoResponse> content = selectQuery
+                .from(video)
                 .where(condition)
                 .orderBy(request.getSortOrder())
                 .offset(pageable.getOffset())
@@ -84,12 +74,20 @@ public class VideoCustomRepositoryImpl implements VideoCustomRepository {
 
         BooleanExpression createdToday = video.createdAt.goe(startOfToday)
                 .and(video.createdAt.lt(startOfTomorrow));
-        BooleanExpression noHistory    = viewHistory.id.isNull();
+
+        BooleanExpression hasHistory = JPAExpressions
+            .selectOne()
+            .from(viewHistory)
+            .where(
+                viewHistory.reader.id.eq(memberId),
+                viewHistory.video.id.eq(video.id)
+            )
+            .exists();
 
         // isNew 식만 분기
         BooleanExpression isNewExpr = (memberId == null
                 ? createdToday
-                : createdToday.and(noHistory)
+                : createdToday.and(hasHistory.not())
         );
 
 

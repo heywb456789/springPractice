@@ -49,6 +49,13 @@ public enum ResponseStatus {
   THUMBNAIL_IS_NECESSARY("ER_6002","썸네일은 필수 입니다.", HttpStatus.BAD_REQUEST ),
 
   ACTIVITY_NOT_EXIST("ER_7001","활동내역이 존재하지 않습니다.", HttpStatus.BAD_REQUEST ),
+
+  TWITTER_NOT_FOUND("ER_8001","X(구 트위터) 계정 연동을 진행해주세요!", HttpStatus.INTERNAL_SERVER_ERROR ),
+  DUPLICATE_POST("ER_8002","중복된 내용의 트윗은 공유할 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
+  CANNOT_TWEET("ER_8003","트위터 발행 권한이 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
+  FAIL_TWEET("ER_8004","트위터 공유에 실패 하였습니다. 문제가 계속 된다면 관리자에게 문의해주세요.", HttpStatus.INTERNAL_SERVER_ERROR ),
+
+  ALREADY_EXIST_URL("ER_9001","이미 존재하는 활동 링크입니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
   ;
   @JsonProperty("code")
   private final String code;

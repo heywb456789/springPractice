@@ -90,12 +90,10 @@ function displayUserInfo(userInfo) {
   };
 
   // 나중에 snsLinks가 구현되면 아래 주석 해제
-  // if (userInfo.snsLinks && Array.isArray(userInfo.snsLinks)) {
-  //     userInfo.snsLinks.forEach(link => {
-  //         if (link.type === 'TWITTER') linkedAccounts.twitter = true;
-  //         if (link.type === 'DCINSIDE') linkedAccounts.dcinside = true;
-  //     });
-  // }
+  if (userInfo.twitterConnected) {
+    linkedAccounts.twitter = true;
+  }
+
 
   updateAccountLinkStatus(linkedAccounts);
 }
@@ -527,19 +525,41 @@ function updateAccountLinkStatus(linkedAccounts) {
 // 계정 연동 / 해제
 async function linkAccount(accountType) {
   try {
-    const authUrl = accountType === 'twitter' ? '/api/oauth/twitter' : '/api/oauth/dcinside';
-    window.open(authUrl, `${accountType}Auth`, 'width=600,height=600');
+    if(accountType==='twitter'){
+      await callTwitter();
+    }else {
+      console.log("dc")
+    }
   } catch (err) {
     handleFetchError(err);
     alert('계정 연동에 실패했습니다.');
   }
 }
 
+async function callTwitter(){
+    try {
+      const response = await authFetch(`/twitter/connect`);
+
+      const result =  await response.json();
+
+      window.location.href = result.response.connectUrl;
+
+      return result;
+    } catch (err) {
+      console.error('오류 발생:', err);
+      return null;
+    }
+}
+
 async function unlinkAccount(accountType) {
   try {
-    const endpoint = accountType === 'twitter'
-      ? '/api/oauth/unlink/twitter' : '/api/oauth/unlink/dcinside';
-    await authFetch(endpoint, { method: 'POST' });
+    if(accountType==='twitter'){
+      const response = await authFetch(`/twitter/disconnect`,{method: 'POST'});
+      const data     = await response.json();
+      if(!data.response){
+        throw new Error();
+      }
+    }
 
     const linkedAccounts = {
       twitter: accountType === 'twitter' ? false : document.getElementById(
@@ -550,9 +570,10 @@ async function unlinkAccount(accountType) {
 
     updateAccountLinkStatus(linkedAccounts);
 
-    alert(`${accountType} 연동 해제되었습니다.`);
+    alert(`X(구 트위터) 연동 해제되었습니다.`);
   } catch (err) {
     handleFetchError(err);
     alert('계정 연동 해제에 실패했습니다.');
   }
 }
+

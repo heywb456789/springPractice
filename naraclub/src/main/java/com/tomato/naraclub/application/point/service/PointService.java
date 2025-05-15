@@ -5,6 +5,7 @@ import com.tomato.naraclub.application.point.code.PointType;
 import com.tomato.naraclub.application.point.dto.UserPointResponse;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.application.share.dto.KakaoShareResponse;
+import com.tomato.naraclub.application.share.dto.TwitterShareDTO;
 import com.tomato.naraclub.common.dto.ResponseDTO;
 
 /**
@@ -22,4 +23,6 @@ public interface PointService {
     void awardPoints(Member author, PointType pointType, Long id);
 
     void awardSharePoints(Member author, KakaoShareResponse payload);
+
+    void awardShareTweetPoints(Member member, TwitterShareDTO param);
 }

@@ -8,6 +8,19 @@
   <script src="/bootstrap/js/bootstrap.bundle.js"></script>
   <link href="/css/login/login.css" rel="stylesheet"/>
   <script src="/js/login/login.js" type="module"></script>
+  <!-- 토스트 CSS 추가 -->
+  <style>
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+    .custom-toast {
+      background-color: rgba(255, 255, 255, 0.95);
+      border-left: 4px solid #ff9999;
+    }
+  </style>
 </head>
 <body class="d-flex align-items-start justify-content-center py-5">
 <div class="container">
@@ -67,6 +80,19 @@
           <button type="button" class="btn btn-secondary" id="inviteCancelBtn" data-bs-dismiss="modal">취소</button>
           <button type="button" class="btn btn-primary" id="inviteSubmitBtn">확인</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 메시지 컨테이너 -->
+  <div class="toast-container">
+    <div id="inviteCodeToast" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">알림</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body">
+        초대 코드가 확인되었습니다. 로그인 후 자동으로 적용됩니다.
       </div>
     </div>
   </div>

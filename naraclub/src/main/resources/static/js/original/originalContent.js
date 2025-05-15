@@ -304,7 +304,7 @@ function initInfiniteScroll() {
  */
 function createVideoListHTML(items) {
   return items.map(item => {
-    const isNew = isItemNew(item.publishedAt || item.createdAt);
+    const isNew = item.new;
     const videoId = item.videoId;
     const videoUrl = item.videoUrl;
 
@@ -344,7 +344,7 @@ function createVideoListHTML(items) {
  */
 function createShortsListHTML(items) {
   return items.map(item => {
-    const isNew = isItemNew(item.publishedAt || item.createdAt);
+    const isNew = item.new;
     const videoId = item.videoId;
     const videoUrl = item.videoUrl;
 

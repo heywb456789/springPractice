@@ -43,3 +43,6 @@ google:
   key-path:
     console: "/google/pc-api-6501066511374588335-380-1ad7a0f489f4.json"
     firebase: "/firebase/dev-bread-4908a-firebase-adminsdk-cp247-2bc9dd1010.json"
+
+x:
+  redirect-url: "http://localhost:8032/twitter/callback"

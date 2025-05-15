@@ -13,6 +13,7 @@ let isPlaying = false;
 let isMuted = false;
 let isFullscreen = false;
 let shareModal = null;
+let videoType = null;
 
 
 // 문서 로드 완료 시 실행
@@ -100,6 +101,9 @@ async function loadVideoData() {
  * 비디오 UI 업데이트
  */
 function updateVideoUI(data) {
+
+  videoType = data.type === 'YOUTUBE_VIDEO' ? 'video_long' : 'video_short';
+
   // 타이틀 업데이트
   const titleElement = document.getElementById('videoTitle');
   if (titleElement) {
@@ -559,6 +563,10 @@ function initShareFeatures() {
   document.getElementById('shareTongtong')?.addEventListener('click', () => {
     shareTongtongApp();
   });
+
+  document.getElementById('shareX')?.addEventListener('click', () => {
+    shareToX();
+  });
 }
 
 /**
@@ -651,7 +659,7 @@ async function setupKakaoShare() {
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
       },
       serverCallbackArgs: {
-        type: 'video',      // 'board' | 'vote' | 'news' | 'video'
+        type: videoType,      // 'board' | 'vote' | 'news' | 'video'
         id: id,        // 게시물 PK
         userId: userId // 로그인한 회원 ID
       }
@@ -668,11 +676,45 @@ async function setupKakaoShare() {
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
       },
       serverCallbackArgs: {
-        type: 'video',      // 'board' | 'vote' | 'news' | 'video'
+        type: videoType,      // 'board' | 'vote' | 'news' | 'video'
         id: id,        // 게시물 PK
         userId: userId // 로그인한 회원 ID
       }
     });
+  }
+}
+
+/**
+ * X(구 Twitter) 공유 함수
+ */
+async function shareToX() {
+  const title = document.querySelector('.post-title')?.textContent.trim() || '';
+  const postId = getVideoIdFromUrl();
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/original/${postId}`;
+
+  try {
+    const res = await authFetch('/twitter/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title,
+        shareUrl: shareUrl,
+        type: videoType.toUpperCase(),
+        targetId: postId
+      })
+    });
+    await res.json(); // 서버 메시지 무시해도 OK
+    alert('X에 성공적으로 공유되었습니다!');
+  } catch (err) {
+    if (err instanceof FetchError && err.httpStatus === 401) {
+      alert('트위터 연동이 필요합니다.');
+      window.location.href = '/mypage/mypage.html';
+    } else {
+      console.error('트위터 공유 실패:', err);
+      handleFetchError(err);
+    }
+  } finally {
+    shareModal.hide();
   }
 }
 

@@ -7,9 +7,11 @@ import com.tomato.naraclub.application.auth.entity.MemberLoginHistory;
 import com.tomato.naraclub.application.auth.entity.RefreshToken;
 import com.tomato.naraclub.application.auth.repository.MemberLoginHistoryRepository;
 import com.tomato.naraclub.application.auth.repository.RefreshTokenRepository;
+import com.tomato.naraclub.application.member.dto.MemberDTO;
 import com.tomato.naraclub.application.oneld.dto.OneIdResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
+import com.tomato.naraclub.common.exception.BadRequestException;
 import com.tomato.naraclub.common.security.JwtTokenProvider;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.MemberRole;
@@ -161,5 +163,13 @@ public class AuthServiceImpl implements AuthService {
                     userAgent.equals(rt.getUserAgent()) &&
                     ipAddress.equals(rt.getIpAddress()))
             .forEach(refreshTokenRepository::delete);
+    }
+
+    @Override
+    public MemberDTO me(MemberUserDetails user) {
+        Member member = memberRepository.findById(user.getMember().getId())
+            .orElseThrow(() -> new BadRequestException("존재하지 않는 회원입니다."));
+
+        return member.convertDTO();
     }
 }

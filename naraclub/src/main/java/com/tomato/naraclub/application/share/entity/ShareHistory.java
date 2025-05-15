@@ -34,5 +34,6 @@ public class ShareHistory extends Audit {
 
     private LocalDateTime sharedAt;
 
+    private String etc;
 
 }

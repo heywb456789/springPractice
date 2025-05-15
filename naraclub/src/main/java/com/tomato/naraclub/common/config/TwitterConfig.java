@@ -11,7 +11,7 @@ public class TwitterConfig {
     @Value("${x.api-key}")
     private String apiKey;
 
-    @Value("${x.api-key-secret}")
+    @Value("${x.api-secret-key}")
     private String apiKeySecret;
 
     @Bean

@@ -5,6 +5,8 @@
  */
 
 // 페이지 로드 완료 시 실행
+import {authFetch, optionalAuthFetch} from "/js/commonFetch.js";
+
 document.addEventListener('DOMContentLoaded', async () => {
   const loaded = await loadCommonComponents();
   initSideMenu();
@@ -162,10 +164,10 @@ function injectDefaultComponents() {
         </div>
         <div class="side-menu-content">
           <div class="side-menu-item" data-page="home">클럽 홈</div>
-          <div class="side-menu-item" data-page="write">리워드 정책</div>
-//          <div class="side-menu-item" data-page="news">계정인증(엑스)</div>
-//          <div class="side-menu-item" data-page="community">계정인증(디시인사이드)</div>
-          <div class="side-menu-item" data-page="exchange">활동내역 업로드</div>
+          <div class="side-menu-item" data-page="rewards">리워드 정책</div>
+          <div class="side-menu-item" data-page="link-x">계정인증(엑스)</div>
+<!--          <div class="side-menu-item" data-page="community">계정인증(디시인사이드)</div>-->
+          <div class="side-menu-item" data-page="upload">활동내역 업로드</div>
         </div>
       </div>
     `;
@@ -250,9 +252,11 @@ function matchPathToPage(path, page) {
     'original': ['/original/original.html'],
     'board': ['/board/boardList.html'],
     'vote': ['/vote/voteList.html'],
-    'popular': ['/popular.html'],
+
+    'rewards': ['/side/rewards.html'],
+    'upload': ['/side/activity.html'],
+
     'write': ['/boardWrite.html'],
-    'news': ['/newsList.html'],
     'community': ['/boardList.html'],
     'exchange': ['/exchange.html']
   };
@@ -351,15 +355,35 @@ function navigateToPage(page) {
   const pageUrls = {
     'home': '/main/main.html',
     'rewards': '/side/rewards.html',
-    'link-x': '/side/link-x.html',
+    'link-x': '/twitter/connect',
     'link-dc': '/side/link-dc.html',
     'upload': '/side/activity.html'
   };
+
+  if (page === 'link-x') {
+    callTwitter();
+    return;
+  }
 
   // 해당 페이지로 이동
   if (pageUrls[page]) {
     window.location.href = pageUrls[page];
   }
+}
+
+async function callTwitter(){
+    try {
+      const response = await authFetch(`/twitter/connect`);
+
+      const result =  await response.json();
+
+      window.location.href = result.response.connectUrl;
+
+      return result;
+    } catch (err) {
+      console.error('오류 발생:', err);
+      return null;
+    }
 }
 
 /**

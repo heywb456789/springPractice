@@ -87,7 +87,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/login", "/api/auth/refresh", "/api/board/**",
                     "/api/vote/**", "/api/videos/**", "/api/news/**",
-                    "/share/**"
+                    "/share/**", "twitter/callback"
                 ).permitAll()
 
                 // 3) swagger, 정적 리소스 등

@@ -2,7 +2,7 @@
  * 활동 내역 업로드 페이지 JavaScript - 인증 및 페이징 적용 버전
  */
 
-import {authFetch} from '../commonFetch.js';
+import {authFetch, FetchError, handleFetchError} from '../commonFetch.js';
 
 // 페이징 관련 전역 변수
 let currentPage = 0;
@@ -11,27 +11,31 @@ let pageSize = 10;
 let totalItems = 0;
 
 // 페이지 로드시 초기화
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // 페이지 진입 시 인증 확인
   checkAuthentication();
 
   // 업로드 버튼 클릭 이벤트
-  document.getElementById('uploadButton')?.addEventListener('click', function() {
-    // 모달 창 표시
-    const modal = new bootstrap.Modal(document.getElementById('activityModal'));
-    modal.show();
-  });
+  document.getElementById('uploadButton')?.addEventListener('click',
+      function () {
+        // 모달 창 표시
+        const modal = new bootstrap.Modal(
+            document.getElementById('activityModal'));
+        modal.show();
+      });
 
   // 활동 저장 버튼 클릭 이벤트
-  document.getElementById('saveActivity')?.addEventListener('click', createActivity);
+  document.getElementById('saveActivity')?.addEventListener('click',
+      createActivity);
 
   // 모달 창이 닫힐 때 입력 폼 초기화
-  document.getElementById('activityModal')?.addEventListener('hidden.bs.modal', function() {
-    document.getElementById('activityForm').reset();
-  });
+  document.getElementById('activityModal')?.addEventListener('hidden.bs.modal',
+      function () {
+        document.getElementById('activityForm').reset();
+      });
 
   // 페이지 이동 버튼 이벤트 등록
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     if (e.target.closest('.page-link')) {
       const pageBtn = e.target.closest('.page-link');
 
@@ -67,7 +71,7 @@ async function checkAuthentication() {
     // 인증 상태 확인 API 호출
     const res = await fetch('/api/auth/validate', {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: {'Authorization': `Bearer ${token}`}
     });
 
     // 204 No Content면 인증 완료 상태
@@ -119,7 +123,8 @@ async function fetchActivities(page = 0) {
 
   try {
     // 서버에서 활동 내역 데이터 요청 (API도 페이지 번호를 0부터 시작)
-    const response = await authFetch(`/api/members/activities?page=${page}&size=${pageSize}`);
+    const response = await authFetch(
+        `/api/members/activities?page=${page}&size=${pageSize}`);
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -150,7 +155,7 @@ async function fetchActivities(page = 0) {
   } catch (error) {
     console.error('활동 내역 가져오기 오류:', error);
 
-    if (error instanceof Response) {
+    if (error instanceof FetchError) {
       if (error.status === 401) {
         alert('로그인이 필요합니다.');
         window.location.href = '/login/login.html';
@@ -179,7 +184,9 @@ function updatePagination() {
   const paginationEl = document.getElementById('pagination');
   const pageInfoEl = document.getElementById('pageInfo');
 
-  if (!paginationEl) return;
+  if (!paginationEl) {
+    return;
+  }
 
   // 페이지 정보 업데이트
   if (pageInfoEl) {
@@ -292,12 +299,12 @@ async function createActivity() {
         window.location.href = '/login/login.html';
         return;
       }
-
       throw new Error('서버 응답 오류: ' + response.status);
     }
 
     // 모달 창 닫기
-    const modal = bootstrap.Modal.getInstance(document.getElementById('activityModal'));
+    const modal = bootstrap.Modal.getInstance(
+        document.getElementById('activityModal'));
     modal.hide();
 
     // 첫 페이지로 이동하여 테이블 데이터 새로고침
@@ -305,31 +312,18 @@ async function createActivity() {
     fetchActivities(currentPage);
 
     // 완료 메시지 표시
-    setTimeout(function() {
-      const completionModal = new bootstrap.Modal(document.getElementById('completionModal'));
+    setTimeout(function () {
+      const completionModal = new bootstrap.Modal(
+          document.getElementById('completionModal'));
       completionModal.show();
     }, 300);
   } catch (error) {
-    console.error('활동 등록 오류:', error);
-
-    if (error instanceof Response) {
-      try {
-        const errJson = await error.json();
-        const statusCode = errJson?.status?.code;
-        const statusMessage = errJson?.status?.message;
-
-        if (statusCode === 'UNAUTHORIZED' || error.status === 401) {
-          alert('로그인이 필요합니다.');
-          window.location.href = '/login/login.html';
-          return;
-        }
-
-        showErrorMessage(statusMessage || '활동 등록 중 오류가 발생했습니다.');
-      } catch {
-        showErrorMessage('활동 등록 중 오류가 발생했습니다.');
-      }
+    if (error instanceof FetchError) {
+      console.error('[API Error]', error);
+      showErrorMessage(error.statusMessage);
     } else {
-      showErrorMessage('활동 등록 중 오류가 발생했습니다.');
+      console.error('[Network/Error]', error);
+      showErrorMessage('활동 등록중 오류가 발생했습니다.');
     }
   } finally {
     // 버튼 상태 복원
@@ -380,7 +374,7 @@ async function deleteActivity(id, stage) {
   } catch (error) {
     console.error('활동 삭제 오류:', error);
 
-    if (error instanceof Response && error.status === 401) {
+    if (error instanceof FetchError && error.status === 401) {
       alert('로그인이 필요합니다.');
       window.location.href = '/login/login.html';
       return;
@@ -425,7 +419,7 @@ function updateActivityTable(activities) {
     emptyMessage.style.display = 'none';
     document.getElementById('activityTable').style.display = 'table';
 
-    activities.forEach(function(activity) {
+    activities.forEach(function (activity) {
       const row = document.createElement('tr');
 
       // 제목 셀
@@ -477,7 +471,7 @@ function updateActivityTable(activities) {
         deleteButton.classList.add('btn', 'btn-sm', 'btn-danger');
         deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
         deleteButton.title = '삭제';
-        deleteButton.addEventListener('click', function() {
+        deleteButton.addEventListener('click', function () {
           deleteActivity(activity.activityId, activity.stage);
         });
         actionCell.appendChild(deleteButton);
@@ -499,10 +493,13 @@ function updateActivityTable(activities) {
  * @returns {string} - 포맷된 날짜 문자열
  */
 function formatDate(dateString) {
-  if (!dateString) return '';
+  if (!dateString) {
+    return '';
+  }
 
   const date = new Date(dateString);
-  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2,
+      '0')}-${date.getDate().toString().padStart(2, '0')}`;
 }
 
 /**

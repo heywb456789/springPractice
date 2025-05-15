@@ -6,6 +6,7 @@ spring:
       enabled: true
   jpa:
     hibernate:
+#      ddl-auto: update
       ddl-auto: validate
     database: mysql
     open-in-view: true
@@ -44,3 +45,6 @@ google:
   key-path:
     console: "/google/pc-api-6501066511374588335-380-1ad7a0f489f4.json"
     firebase: "/firebase/dev-bread-4908a-firebase-adminsdk-cp247-2bc9dd1010.json"
+
+x:
+  redirect-url: "https://xn--w69at2fhshwrs.kr/twitter/callback"

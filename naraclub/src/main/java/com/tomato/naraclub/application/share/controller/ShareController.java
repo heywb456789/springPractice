@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.share.controller;
 
 import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.board.service.BoardPostService;
+import com.tomato.naraclub.application.member.service.MemberService;
 import com.tomato.naraclub.application.original.service.NewsArticleService;
 import com.tomato.naraclub.application.original.service.VideoService;
 import com.tomato.naraclub.application.point.code.PointType;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Slf4j
 @Controller
@@ -34,14 +36,16 @@ public class ShareController {
     @Value("${kakao.admin-key}")
     private String adminKey;
 
-    public static final String VOTING_IMAGE = "https://image.newstomato.com/newstomato/club/share/voting.png";
-    public static final String FREE_BOARD_IMAGE = "https://image.newstomato.com/newstomato/club/share/freeboard.png";
+    public static final String VOTING_IMAGE = "https://image.newstomato.com/newstomato/club/share/voting_v2.png";
+    public static final String FREE_BOARD_IMAGE = "https://image.newstomato.com/newstomato/club/share/freeboard_v2.png";
+    public static final String INVITE_IMAGE = "https://image.newstomato.com/newstomato/club/share/invite.png";
     private final BoardPostService boardPostService;
     private final VotePostService votePostService;
     private final NewsArticleService newsArticleService;
     private final VideoService videoService;
     private final ShareService shareService;
     private final PointService pointService;
+    private final MemberService memberService;
 
     @GetMapping("/board/{id}")
     public String shareBoard(@PathVariable Long id, Model model) {
@@ -70,6 +74,13 @@ public class ShareController {
         ShareResponse post = videoService.getShareInfo(id);
         String redirectUrl = post.getTitle().isEmpty() ? "/" : "/original/videoDetail.html?id=" + id;
         return setModelAndReturn(id, model, post, post.getThumbnailUrl(), redirectUrl);
+    }
+
+    @GetMapping("/invite")
+    public String shareInvite(@RequestParam("code") String code, Model model) {
+        ShareResponse invite = memberService.getShareInfo(code);
+        String redirectUrl = "/login/login.html?code=" + code;
+        return setModelAndReturn(0L, model, invite, INVITE_IMAGE, redirectUrl);
     }
 
     /**

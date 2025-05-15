@@ -7,7 +7,9 @@ import com.tomato.naraclub.application.point.dto.UserPointResponse;
 import com.tomato.naraclub.application.point.entity.PointHistory;
 import com.tomato.naraclub.application.point.repository.PointRepository;
 import com.tomato.naraclub.application.security.MemberUserDetails;
+import com.tomato.naraclub.application.share.code.ShareTargetType;
 import com.tomato.naraclub.application.share.dto.KakaoShareResponse;
+import com.tomato.naraclub.application.share.dto.TwitterShareDTO;
 import com.tomato.naraclub.common.code.ResponseStatus;
 import com.tomato.naraclub.common.dto.ResponseDTO;
 import com.tomato.naraclub.common.exception.APIException;
@@ -64,11 +66,34 @@ public class PointServiceImpl implements PointService {
         PointType pointType = switch (payload.getType()) {
             case "news" -> PointType.SHARE_NEWS;
             case "vote" -> PointType.SHARE_VOTE;
-            case "video" -> PointType.SHARE_VIDEO_LONG;
+            case "video_long" -> PointType.SHARE_VIDEO_LONG;
+            case "video_short" -> PointType.SHARE_VIDEO_SHORT;
             case "board" -> PointType.SHARE_BOARD;
             default -> throw new APIException(ResponseStatus.BAD_REQUEST);
         };
 
+        savePoint(author, payload.getId(), pointType);
+    }
+
+
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void awardShareTweetPoints(Member member, TwitterShareDTO param) {
+        PointType pointType = switch (param.getType()) {
+            case ShareTargetType.NEWS -> PointType.SHARE_NEWS;
+            case ShareTargetType.VOTE -> PointType.SHARE_VOTE;
+            case ShareTargetType.VIDEO_LONG -> PointType.SHARE_VIDEO_LONG;
+            case ShareTargetType.VIDEO_SHORT -> PointType.SHARE_VIDEO_SHORT;
+            case ShareTargetType.BOARD -> PointType.SHARE_BOARD;
+            default -> throw new APIException(ResponseStatus.BAD_REQUEST);
+        };
+
+        savePoint(member, param.getTargetId(), pointType);
+    }
+
+
+    private void savePoint(Member author, Long targetId, PointType pointType) {
         int amount = pointType.getAmount();
 
         PointHistory history = PointHistory.builder()
@@ -77,7 +102,7 @@ public class PointServiceImpl implements PointService {
             .reason(pointType.getDisplayName())
             .status(PointStatus.POINT_EARN)
             .type(pointType)
-            .targetId(payload.getId())
+            .targetId(targetId)
             .build();
 
         pointRepository.save(history);

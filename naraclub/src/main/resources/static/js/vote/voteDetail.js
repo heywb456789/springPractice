@@ -188,6 +188,10 @@ function initShareFeatures() {
   document.getElementById('shareTongtong')?.addEventListener('click', () => {
     shareTongtongApp();
   });
+
+  document.getElementById('shareX')?.addEventListener('click', () => {
+    shareToX();
+  });
 }
 
 // 통통 앱 공유 함수
@@ -299,4 +303,38 @@ function copyCurrentUrl() {
     console.error('복사 실패', err);
     alert('URL 복사에 실패했습니다.');
   });
+}
+
+/**
+ * X(구 Twitter) 공유 함수
+ */
+async function shareToX() {
+  const title = document.querySelector('.post-title')?.textContent.trim() || '';
+  const postId = getVoteIdFromUrl();
+  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/vote/${postId}`;
+
+  try {
+    const res = await authFetch('/twitter/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title,
+        shareUrl: shareUrl,
+        type: 'VOTE',
+        targetId: postId
+      })
+    });
+    await res.json(); // 서버 메시지 무시해도 OK
+    alert('X에 성공적으로 공유되었습니다!');
+  } catch (err) {
+    if (err instanceof FetchError && err.httpStatus === 401) {
+      alert('트위터 연동이 필요합니다.');
+      window.location.href = '/mypage/mypage.html';
+    } else {
+      console.error('트위터 공유 실패:', err);
+      handleFetchError(err);
+    }
+  } finally {
+    shareModal.hide();
+  }
 }

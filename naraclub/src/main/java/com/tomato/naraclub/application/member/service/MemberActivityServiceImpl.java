@@ -53,6 +53,9 @@ public class MemberActivityServiceImpl implements MemberActivityService {
         Member member = memberRepository.findByIdAndStatus(userDetails.getMember().getId(), MemberStatus.ACTIVE)
             .orElseThrow(() -> new APIException(ResponseStatus.FORBIDDEN));
 
+        memberActivityRepository.findByAuthorAndShareLink(member, activity.getShareLink())
+            .ifPresent(existing -> {throw new APIException(ResponseStatus.ALREADY_EXIST_URL);});
+
         MemberActivity saved = memberActivityRepository.save(MemberActivity.builder()
                 .author(member)
                 .title(activity.getTitle())

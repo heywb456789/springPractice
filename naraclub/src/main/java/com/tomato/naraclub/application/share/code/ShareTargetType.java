@@ -1,7 +1,5 @@
 package com.tomato.naraclub.application.share.code;
 
-import java.util.Locale;
-
 /**
  * @author : MinjaeKim
  * @packageName : com.tomato.naraclub.application.share.code
@@ -11,7 +9,8 @@ import java.util.Locale;
  * @AUTHOR : MinjaeKim
  */
 public enum ShareTargetType {
-    VIDEO,
+    VIDEO_LONG,
+    VIDEO_SHORT,
     NEWS,
     BOARD,
     VOTE;

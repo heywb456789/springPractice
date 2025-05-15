@@ -1,7 +1,10 @@
 package com.tomato.naraclub.application.member.entity;
 
 import com.tomato.naraclub.admin.user.dto.AppUserResponse;
+import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.member.dto.MemberDTO;
+import com.tomato.naraclub.application.search.code.SearchCategory;
+import com.tomato.naraclub.application.search.dto.SearchDTO;
 import com.tomato.naraclub.application.vote.entity.VoteOption;
 import com.tomato.naraclub.common.audit.Audit;
 import com.tomato.naraclub.common.code.MemberStatus;
@@ -79,7 +82,7 @@ public class Member extends Audit {
     private Member inviter;    // 추천인
 
     @Comment("회원 포인트")
-    @Column(nullable = false,columnDefinition = "INT DEFAULT 0")
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     @Builder.Default
     private Integer points = 0;
 
@@ -87,6 +90,14 @@ public class Member extends Audit {
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<MemberActivity> memberActivities = new ArrayList<>();
+
+    @OneToOne(
+        mappedBy = "member",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    private TwitterAccount twitterAccount;
 
     public void setStatus(MemberStatus status) {
         this.status = status;
@@ -100,22 +111,23 @@ public class Member extends Audit {
         this.inviter = inviter;
     }
 
-    public MemberDTO convertDTO(){
+    public MemberDTO convertDTO() {
         return MemberDTO.builder()
-                .id(id)
-                .createdAt(createdAt)
-                .password(password)
-                .phoneNumber(phoneNumber)
-                .inviteCode(inviteCode)
-                .status(status.name())
-                .role(role.name())
-                .email(email)
-                .name(name)
-                .lastAccessAt(lastAccessAt)
-                .verified(verified)
-                .profileImg(profileImg)
-                .points(points)
-                .build();
+            .id(id)
+            .createdAt(createdAt)
+            .password(password)
+            .phoneNumber(phoneNumber)
+            .inviteCode(inviteCode)
+            .status(status.name())
+            .role(role.name())
+            .email(email)
+            .name(name)
+            .lastAccessAt(lastAccessAt)
+            .verified(verified)
+            .profileImg(profileImg)
+            .points(points)
+            .twitterConnected(twitterAccount != null)
+            .build();
     }
 
     public AppUserResponse convertAppUserResponse() {
@@ -140,5 +152,14 @@ public class Member extends Audit {
 
     public void increasePoint(int amount) {
         this.points += amount;
+    }
+
+    public ShareResponse covertShareDTO() {
+        return ShareResponse.builder()
+                .id(id)
+                .title("나라걱정.kr 지금 가입하세요! 초대 코드로 가입하면 10TTR 지급!")
+                .summary("나라걱정.kr 지금 가입하세요! 초대 코드로 가입하면 10TTR 지급!")
+                .thumbnailUrl("")
+                .build();
     }
 }
