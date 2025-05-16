@@ -11,6 +11,7 @@ import com.tomato.naraclub.application.original.dto.VideoUploadRequest;
 import com.tomato.naraclub.application.original.entity.Video;
 import com.tomato.naraclub.common.dto.ListDTO;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 
@@ -26,7 +27,8 @@ public interface AdminVideoService {
 
     ListDTO<VideoResponse> getVideoList(AdminUserDetails user, VideoListRequest request, Pageable pageable);
 
-    VideoResponse uploadVideo(@Valid VideoUploadRequest req, AdminUserDetails user);
+    VideoResponse uploadVideo(@Valid VideoUploadRequest req, AdminUserDetails user)
+        throws IOException;
 
     Video getVideoById(Long id);
 

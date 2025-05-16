@@ -27,9 +27,10 @@ public class PointHistory extends Audit {
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
 
-    @Comment("금액")
-    @Column(nullable = false)
-    private int amount;
+    @Comment("회원 포인트")
+    @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0")
+    @Builder.Default
+    private Double amount= 0.0;
 
     @Comment("사유")
     @Column(nullable = false)

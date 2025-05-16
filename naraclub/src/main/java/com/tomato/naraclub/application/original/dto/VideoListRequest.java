@@ -240,6 +240,11 @@ public class VideoListRequest implements SearchTypeRequest {
     }
 
     @Hidden
+    public BooleanExpression isPublic() {
+        return QVideo.video.isPublic.eq(true);
+    }
+
+    @Hidden
     public BooleanExpression getPublishStatus(QVideo video) {
         if (publishStatus == null) {
             return null;

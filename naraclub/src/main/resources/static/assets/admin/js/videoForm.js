@@ -199,10 +199,35 @@ document.addEventListener('DOMContentLoaded', function () {
    * @param {File} file - 선택된 동영상 파일
    */
   function handleVideoFileSelect(file) {
-    // 파일 유형 검증
-    const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
-    if (!validTypes.includes(file.type)) {
-      showAlert('지원하지 않는 파일 형식입니다. MP4, MOV, AVI 파일만 허용됩니다.', 'danger');
+    // 파일 유형 검증 - 확장된 비디오 형식 지원
+    const validTypes = [
+      'video/mp4',            // MP4
+      'video/quicktime',      // MOV
+      'video/x-msvideo',      // AVI
+      'video/x-ms-wmv',       // WMV
+      'video/x-matroska',     // MKV
+      'video/webm',           // WEBM
+      'video/x-flv',          // FLV
+      'video/mpeg',           // MPG
+      'video/x-m4v'           // M4V
+    ];
+
+    // 파일 확장자로도 체크 (MIME 타입이 제대로 인식되지 않는 경우를 위해)
+    const fileName = file.name.toLowerCase();
+    const isValidExtension =
+      fileName.endsWith('.mp4') ||
+      fileName.endsWith('.mov') ||
+      fileName.endsWith('.avi') ||
+      fileName.endsWith('.wmv') ||
+      fileName.endsWith('.mkv') ||
+      fileName.endsWith('.webm') ||
+      fileName.endsWith('.flv') ||
+      fileName.endsWith('.mpg') ||
+      fileName.endsWith('.mpeg') ||
+      fileName.endsWith('.m4v');
+
+    if (!validTypes.includes(file.type) && !isValidExtension) {
+      showAlert('지원하지 않는 파일 형식입니다. MP4, MOV, AVI, WMV, MKV, WEBM, FLV, MPG, M4V 파일만 허용됩니다.', 'danger');
       return;
     }
 
@@ -225,6 +250,24 @@ document.addEventListener('DOMContentLoaded', function () {
     videoPreview.onloadedmetadata = function () {
       const duration = Math.round(videoPreview.duration);
       durationSec.value = duration;
+    };
+
+    // 비디오 로드 에러 처리 (MSG 등 브라우저에서 재생 불가능한 형식)
+    videoPreview.onerror = function() {
+      // 미리보기 불가능한 형식이지만 업로드는 허용
+      videoPreview.style.display = 'none';
+      const placeholderMsg = document.createElement('div');
+      placeholderMsg.className = 'video-format-notice';
+      placeholderMsg.innerHTML = `<p><i class="fas fa-exclamation-circle"></i> 미리보기를 지원하지 않는 형식입니다.</p>
+                                  <p>파일: ${file.name}</p>`;
+      uploadPreview.insertBefore(placeholderMsg, videoPreview.nextSibling);
+
+      // 예상 길이 입력 요청
+      if (!durationSec.value) {
+        durationSec.value = ""; // 비워두기
+        durationSec.focus();
+        showAlert('이 비디오 형식은 자동으로 길이를 계산할 수 없습니다. 영상 길이(초)를 직접 입력해주세요.', 'warning');
+      }
     };
 
     // 미리보기 표시
@@ -270,6 +313,14 @@ document.addEventListener('DOMContentLoaded', function () {
   function resetVideoUploader() {
     videoFile.value = '';
     videoPreview.src = '';
+    videoPreview.style.display = ''; // 스타일 초기화
+
+    // 포맷 공지 제거
+    const formatNotice = uploadPreview.querySelector('.video-format-notice');
+    if (formatNotice) {
+      formatNotice.remove();
+    }
+
     uploadPreview.classList.add('d-none');
     uploadPlaceholder.classList.remove('d-none');
   }

@@ -1,5 +1,5 @@
 /**
- * 나라사랑 클럽 - 회원가입 페이지 JavaScript
+ * 나라걱정 클럽 - 회원가입 페이지 JavaScript
  */
 
 document.addEventListener('DOMContentLoaded', function() {

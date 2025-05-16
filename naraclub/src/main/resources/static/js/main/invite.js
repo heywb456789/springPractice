@@ -1,5 +1,9 @@
-// invite.js - 에러 시 포인트 섹션 숨김 기능 추가
-import { optionalAuthFetch, handleFetchError } from '../commonFetch.js';
+// invite.js - 교환 버튼에만 로딩 표시 구현
+import {
+  optionalAuthFetch,
+  handleFetchError,
+  authFetch
+} from '../commonFetch.js';
 
 document.addEventListener('DOMContentLoaded', function() {
   // 초대 버튼 클릭 이벤트
@@ -14,8 +18,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const exchangeButton = document.getElementById('exchangeButton');
   if (exchangeButton) {
     exchangeButton.addEventListener('click', function() {
-      // 교환 페이지로 이동하거나 교환 모달 열기
-      window.location.href = '/point/exchange.html';
+      // 이미 처리 중이면 무시
+      if (exchangeButton.disabled) {
+        return;
+      }
+      exchangePoint(exchangeButton);
     });
   }
 
@@ -34,6 +41,48 @@ document.addEventListener('DOMContentLoaded', function() {
   // 로드 시 사용자 정보 가져오기 (포인트 & 초대 코드)
   fetchUserInfo();
 });
+
+/**
+ * 포인트 교환 처리
+ * @param {HTMLElement} button - 교환 버튼 요소
+ */
+async function exchangePoint(button){
+  // 버튼 비활성화 및 로딩 아이콘 추가
+  button.disabled = true;
+  
+  // 원래 내용 저장
+  const originalText = button.textContent;
+  
+  // 로딩 아이콘 추가 (버튼 안에만 표시)
+  button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 교환중';
+
+  try {
+    const res = await authFetch('/api/user/points/exchange', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({}) // 필요 시 userId 등 전달 가능
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      updatePointsUI(result.response);
+      alert('교환이 완료되었습니다.');
+    } else {
+      alert('실패: ' + (result.status?.message || '알 수 없는 오류가 발생했습니다.'));
+    }
+  } catch (err) {
+    handleFetchError(err);
+  } finally {
+    // 버튼 상태 복원 (약간의 딜레이를 주어 UI 깜박임 방지)
+    setTimeout(() => {
+      button.disabled = false;
+      button.textContent = originalText; // innerHTML 대신 textContent 사용하여 원래 텍스트만 복원
+    }, 500);
+  }
+}
 
 /**
  * API에서 사용자 정보 가져오기 (포인트 & 초대 코드)

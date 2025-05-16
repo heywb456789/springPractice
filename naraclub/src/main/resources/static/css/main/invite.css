@@ -1,4 +1,4 @@
-/* invite.css - 포인트 현황 타이틀 추가 */
+/* invite.css */
 /* 포인트 섹션 컨테이너 추가 */
 .point-section-container {
   margin-top: 20px;
@@ -60,6 +60,12 @@
   white-space: nowrap;
   background-color: #e9ecef;
   color: #495057;
+  transition: all 0.2s ease; /* 상태 변화를 부드럽게 */
+  position: relative; /* 로딩 아이콘 위치 기준 */
+  min-width: 75px; /* 최소 너비 설정으로 크기 변화 최소화 */
+  display: inline-flex; /* 아이콘과 텍스트를 함께 배치 */
+  align-items: center; /* 수직 가운데 정렬 */
+  justify-content: center; /* 수평 가운데 정렬 */
 }
 
 /* 친구 추천 버튼 스타일 (주요 버튼) */
@@ -74,6 +80,20 @@
 
 .point-button-primary:hover {
   background-color: #5c6dfd;
+}
+
+/* 버튼 비활성화 상태 */
+.point-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* 스피너 스타일 - 버튼 내부 */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 5px;
+  border-width: 0.15em;
 }
 
 /* 섹션 헤더 스타일 - 기존 다른 섹션과 일관성 유지 */

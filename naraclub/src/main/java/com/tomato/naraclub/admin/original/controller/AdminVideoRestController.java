@@ -8,6 +8,7 @@ import com.tomato.naraclub.application.original.dto.VideoResponse;
 import com.tomato.naraclub.application.original.dto.VideoUploadRequest;
 import com.tomato.naraclub.common.dto.ResponseDTO;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,7 +33,7 @@ public class AdminVideoRestController {
     @PostMapping(value = "/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDTO<VideoResponse> uploadVideo(
         @ModelAttribute @Valid VideoUploadRequest req,
-        @AuthenticationPrincipal AdminUserDetails user){
+        @AuthenticationPrincipal AdminUserDetails user) throws IOException {
         return ResponseDTO.ok(adminVideoService.uploadVideo(req, user));
     }
     @PutMapping(value="/update" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -34,7 +34,7 @@ public class AppUserResponse {
     private Boolean verified;
     private Long inviterId;
     private String inviterName;
-    private Integer points;
+    private Double points;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

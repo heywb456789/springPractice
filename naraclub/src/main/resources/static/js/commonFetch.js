@@ -201,7 +201,7 @@ export async function adminAuthFetch(url, options = {}) {
   });
 
   // 토큰 만료
-  if (res.status === 401) {
+  if (res.status === 401 || res.status===403) {
     await adminHandleTokenRefresh();            // refresh 시도
     const newToken = localStorage.getItem('adminAccessToken');
     headers.Authorization = `Bearer ${newToken}`;

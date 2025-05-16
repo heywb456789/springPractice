@@ -48,3 +48,10 @@ google:
 
 x:
   redirect-url: "https://xn--w69at2fhshwrs.kr/twitter/callback"
+
+ttr:
+  base-url: http://127.0.0.1:9000
+  header-token: 1AA75CC269F33FB15479233CAC6705D2DD0016072F561E1547E4BF731C49C6FD
+  wallet-address: TTCJNqEHb9BU5qgQCeHvvqPbQzF6pPmn7UAX
+  get-balance: /api/v1/address_balance
+  transfer_points: /api/v1/wallet_transfer_to_address

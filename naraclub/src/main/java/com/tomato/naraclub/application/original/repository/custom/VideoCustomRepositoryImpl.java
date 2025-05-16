@@ -43,6 +43,7 @@ public class VideoCustomRepositoryImpl implements VideoCustomRepository {
         // Predicate 로 선언
         Predicate condition = ExpressionUtils.allOf(
             request.getSearchCondition(),
+            request.isPublic(),
             request.isPublishedAfter(video.publishedAt),
             request.getOriginalTypeCondition(video),
             request.isPeriod(video.createdAt),

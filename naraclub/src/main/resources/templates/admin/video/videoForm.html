@@ -9,7 +9,7 @@
         'form'
       )}">
 <head>
-    <title th:text="${video != null ? '동영상 수정' : '동영상 업로드'} + ' - 나라사랑 관리자'">동영상 업로드/수정 - 나라사랑 관리자</title>
+    <title th:text="${video != null ? '동영상 수정' : '동영상 업로드'} + ' - 나라걱정 관리자'">동영상 업로드/수정 - 나라걱정 관리자</title>
 
     <!-- Custom CSS -->
     <customCSS>
@@ -145,7 +145,7 @@
                                                     <div class="upload-placeholder" id="uploadPlaceholder">
                                                         <i class="fas fa-cloud-upload-alt"></i>
                                                         <p>영상 파일을 드래그하거나 클릭하여 업로드하세요</p>
-                                                        <span class="text-muted">지원 형식: MP4, MOV, AVI (최대 500MB)</span>
+                                                        <span class="text-muted">지원 형식: MP4, MOV, AVI, WMV, MKV, WEBM, FLV, MPG, M4V (최대 500MB)</span>
                                                     </div>
                                                     <div class="upload-preview d-none" id="uploadPreview">
                                                         <video id="videoPreview" controls class="w-100"></video>

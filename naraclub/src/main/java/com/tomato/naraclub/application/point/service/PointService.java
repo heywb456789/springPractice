@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.point.service;
 
+import com.tomato.naraclub.application.member.dto.MemberDTO;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.point.code.PointType;
 import com.tomato.naraclub.application.point.dto.UserPointResponse;
@@ -26,5 +27,5 @@ public interface PointService {
 
     void awardShareTweetPoints(Member member, TwitterShareDTO param);
 
-    UserPointResponse exchangePoints(MemberUserDetails userDetails);
+    MemberDTO exchangePoints(MemberUserDetails userDetails);
 }

@@ -56,6 +56,16 @@ public enum ResponseStatus {
   FAIL_TWEET("ER_8004","트위터 공유에 실패 하였습니다. 문제가 계속 된다면 관리자에게 문의해주세요.", HttpStatus.INTERNAL_SERVER_ERROR ),
 
   ALREADY_EXIST_URL("ER_9001","이미 존재하는 활동 링크입니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
+
+  CANNOT_EXCHANGE_TTR("ER_A001","현재 교환이 불가 합니다. 관리자에게 문의해 주세요. CODE_3469", HttpStatus.INTERNAL_SERVER_ERROR ),
+  CANNOT_FIND_BALANCE("ER_A002","현재 교환이 불가 합니다. 관리자에게 문의해 주세요. CODE_3470", HttpStatus.INTERNAL_SERVER_ERROR ),
+  CANNOT_FIND_WALLET("ER_A003","지갑 정보를 찾을수 없습니다. 문제가 지속될 경우 관리자에게 문의해 주세요.", HttpStatus.INTERNAL_SERVER_ERROR ),
+  TTR_BAD_REQUEST("ER_A004","현재 교환이 불가 합니다. 관리자에게 문의해 주세요. CODE_3471", HttpStatus.BAD_REQUEST ),
+  TTR_CONNECTION_FAIL("ER_A005","현재 교환이 불가 합니다. 관리자에게 문의해 주세요. CODE_3472", HttpStatus.INTERNAL_SERVER_ERROR ),
+  TTR_EXCHANGE_FAIL("ER_A006","현재 교환이 불가 합니다. 관리자에게 문의해 주세요. CODE_3473", HttpStatus.INTERNAL_SERVER_ERROR ),
+  
+  FILE_UPLOAD_FAIL("ER_B001","파일 업로드 실패", HttpStatus.INTERNAL_SERVER_ERROR ),
+
   ;
   @JsonProperty("code")
   private final String code;

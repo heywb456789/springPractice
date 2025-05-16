@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: local
+    active: prod
   application:
     name: narasarang
   output:
@@ -62,6 +62,7 @@ one-id:
   sendSmsCert: /v1/api/external/{apptype}/join/certi
   verifySmsCert : /v1/api/external/{apptype}/join/certicheck
   register: /v1/api/external/{apptype}/join
+  coinInfo: /v1/api/external/{apptype}/coin-info
   nation : KR
   appType : newstong
 

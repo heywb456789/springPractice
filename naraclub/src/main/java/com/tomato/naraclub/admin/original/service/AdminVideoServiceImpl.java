@@ -17,9 +17,12 @@ import com.tomato.naraclub.common.code.StorageCategory;
 import com.tomato.naraclub.common.dto.ListDTO;
 import com.tomato.naraclub.common.exception.APIException;
 import com.tomato.naraclub.common.util.FileStorageService;
+
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @packageName : com.tomato.naraclub.admin.original.service
  * @fileName : AdminVideoServiceImpl
  * @date : 2025-05-02
- * @description :
+ * @description : 관리자용 비디오 서비스 구현
  * @AUTHOR : MinjaeKim
  */
 @Service
@@ -69,15 +72,15 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     @Override
     @Transactional
     public VideoResponse uploadVideo(VideoUploadRequest req, AdminUserDetails user) {
-
+        // 1. 비디오 엔티티 생성 (파일 업로드 전에 ID 확보)
         Video video = adminVideoRepository.save(Video.builder()
             .title(req.getTitle())
             .description(req.getDescription())
             .author(user.getAdmin())
             .type(req.getType())
             .category(req.getCategory())
-            .thumbnailUrl("")
-            .videoUrl("")
+            .thumbnailUrl("")  // 임시값
+            .videoUrl("")     // 임시값
             .durationSec(req.getDurationSec())
             .isPublic(req.getIsPublic())
             .publishedAt(req.getPublishedAt())
@@ -86,15 +89,32 @@ public class AdminVideoServiceImpl implements AdminVideoService {
             .viewCount(0L)
             .build());
 
-        String videoUrl = fileStorageService.upload(req.getVideoFile(), StorageCategory.VIDEO,
-            video.getId());
-        String thumbnailUrl = fileStorageService.upload(req.getThumbnailFile(),
-            StorageCategory.IMAGE, video.getId());
+        try {
+            // 2. 파일 저장 서비스를 통한 비디오 업로드 (변환 포함)
+            String videoUrl = fileStorageService.uploadVideo(
+                req.getVideoFile(),
+                StorageCategory.VIDEO,
+                video.getId()
+            );
 
-        video.setThumbnailUrl(displayUrl + thumbnailUrl);
-        video.setVideoUrl(displayUrl + videoUrl);
+            // 3. 썸네일 업로드 (일반 이미지)
+            String thumbnailUrl = fileStorageService.upload(
+                req.getThumbnailFile(),
+                StorageCategory.IMAGE,
+                video.getId()
+            );
 
-        return video.convertDTO();
+            // 4. 최종 URL 설정
+            video.setThumbnailUrl(displayUrl + thumbnailUrl);
+            video.setVideoUrl(displayUrl + videoUrl);
+
+            return video.convertDTO();
+        } catch (Exception e) {
+            // 파일 업로드 실패 시 생성된 비디오 엔티티 삭제 (DB 롤백)
+            adminVideoRepository.delete(video);
+            log.error("비디오 업로드 실패: {}", e.getMessage(), e);
+            throw new APIException(ResponseStatus.FILE_UPLOAD_FAIL);
+        }
     }
 
     @Override
@@ -103,12 +123,12 @@ public class AdminVideoServiceImpl implements AdminVideoService {
         List<Object[]> raw = viewHistoryRepository.findViewTrend(id, since);
 
         List<String> labels = raw.stream()
-          .map(arr -> ((java.sql.Date)arr[0]).toLocalDate().toString())
-          .collect(Collectors.toList());
+            .map(arr -> ((java.sql.Date) arr[0]).toLocalDate().toString())
+            .collect(Collectors.toList());
 
         List<Long> values = raw.stream()
-          .map(arr -> (Long)arr[1])
-          .collect(Collectors.toList());
+            .map(arr -> (Long) arr[1])
+            .collect(Collectors.toList());
 
         return ViewTrendResponse.builder()
             .labels(labels)
@@ -132,56 +152,91 @@ public class AdminVideoServiceImpl implements AdminVideoService {
         Video video = adminVideoRepository.findByIdAndDeleted(req.getVideoId(), false)
             .orElseThrow(() -> new APIException(ResponseStatus.VIDEO_NOT_EXIST));
 
-        // 2) 기본 필드 덮어쓰기
+        // 1. 기본 필드 업데이트
         video.setTitle(req.getTitle());
         video.setDescription(req.getDescription());
         video.setCategory(req.getCategory());
         video.setType(req.getType());
         video.setPublic(req.getIsPublic());
         video.setHot(req.getIsHot());
+        video.setYoutubeId(req.getYoutubeId());
 
         if (req.getPublishedAt() != null) {
             video.setPublishedAt(req.getPublishedAt());
         }
-        // YouTube ID (수정 폼에서 넘어오면 덮어쓰고, 아니면 그대로 둡니다)
-        video.setYoutubeId(req.getYoutubeId());
 
+        // 2. 비디오 파일 업데이트 (있는 경우)
         if (req.getVideoFile() != null && !req.getVideoFile().isEmpty()) {
-            fileStorageService.delete(video.getVideoUrl().substring(displayUrl.length()));
+            try {
+                // 기존 파일 삭제
+                if (video.getVideoUrl() != null && !video.getVideoUrl().isEmpty()) {
+                    String oldVideoPath = video.getVideoUrl().substring(displayUrl.length());
+                    fileStorageService.delete(oldVideoPath);
+                }
 
-            String newVideoUrl = fileStorageService.upload(req.getVideoFile(), StorageCategory.VIDEO,
-            video.getId());
+                // 새 파일 업로드 (변환 포함)
+                String newVideoUrl = fileStorageService.uploadVideo(
+                    req.getVideoFile(),
+                    StorageCategory.VIDEO,
+                    video.getId()
+                );
 
-            video.setVideoUrl(displayUrl + newVideoUrl);
-            video.setDurationSec(req.getDurationSec());
+                video.setVideoUrl(displayUrl + newVideoUrl);
+                video.setDurationSec(req.getDurationSec());
+            } catch (Exception e) {
+                log.error("비디오 파일 업데이트 실패: {}", e.getMessage(), e);
+                throw new APIException(ResponseStatus.FILE_UPLOAD_FAIL);
+            }
         }
 
+        // 3. 썸네일 업데이트 (있는 경우)
         if (req.getThumbnailFile() != null && !req.getThumbnailFile().isEmpty()) {
+            try {
+                // 기존 파일 삭제
+                if (video.getThumbnailUrl() != null && !video.getThumbnailUrl().isEmpty()) {
+                    String oldThumbPath = video.getThumbnailUrl().substring(displayUrl.length());
+                    fileStorageService.delete(oldThumbPath);
+                }
 
-            fileStorageService.delete(video.getThumbnailUrl().substring(displayUrl.length()));
+                // 새 썸네일 업로드
+                String newThumbUrl = fileStorageService.upload(
+                    req.getThumbnailFile(),
+                    StorageCategory.IMAGE,
+                    video.getId()
+                );
 
-            String newThumbUrl = fileStorageService.upload(req.getThumbnailFile(),
-            StorageCategory.IMAGE, video.getId());
-
-            video.setThumbnailUrl(displayUrl + newThumbUrl);
+                video.setThumbnailUrl(displayUrl + newThumbUrl);
+            } catch (Exception e) {
+                log.error("썸네일 파일 업데이트 실패: {}", e.getMessage(), e);
+                throw new APIException(ResponseStatus.FILE_UPLOAD_FAIL);
+            }
         }
 
-        // 6) DTO 변환 후 반환
         return video.convertDTO();
     }
 
     @Override
     @Transactional
     public Boolean deleteVideo(Long id) {
-        Video video = adminVideoRepository.findByIdAndDeleted(id,false)
-                .orElseThrow(() -> new APIException(ResponseStatus.VIDEO_NOT_EXIST));
+        Video video = adminVideoRepository.findByIdAndDeleted(id, false)
+            .orElseThrow(() -> new APIException(ResponseStatus.VIDEO_NOT_EXIST));
 
-        fileStorageService.delete(video.getThumbnailUrl().substring(displayUrl.length()));
+        try {
+            // 썸네일 및 비디오 파일 삭제
+            if (video.getThumbnailUrl() != null && !video.getThumbnailUrl().isEmpty()) {
+                fileStorageService.delete(video.getThumbnailUrl().substring(displayUrl.length()));
+            }
 
-        fileStorageService.delete(video.getVideoUrl().substring(displayUrl.length()));
+            if (video.getVideoUrl() != null && !video.getVideoUrl().isEmpty()) {
+                fileStorageService.delete(video.getVideoUrl().substring(displayUrl.length()));
+            }
 
-        video.setDeleted(true);
-
-        return true;
+            // 논리적 삭제 (soft delete)
+            video.setDeleted(true);
+            return true;
+        } catch (Exception e) {
+            log.error("비디오 삭제 실패: {}", e.getMessage(), e);
+            throw new APIException(ResponseStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

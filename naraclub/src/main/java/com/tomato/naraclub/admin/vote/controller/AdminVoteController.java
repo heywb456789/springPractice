@@ -55,7 +55,7 @@ public class AdminVoteController {
         model.addAttribute("endPage", endPage);
 
         // 페이지 제목 및 활성 메뉴 설정
-        model.addAttribute("pageTitle", "투표 관리 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "투표 관리 - 나라걱정 클럽 관리자");
         model.addAttribute("activeMenu", "board");
 
         // 사용자 정보 설정 (공통)
@@ -86,7 +86,7 @@ public class AdminVoteController {
 
     @GetMapping("/create")
     public String create(Model model, @AuthenticationPrincipal AdminUserDetails user) {
-        model.addAttribute("pageTitle", "투표 등록 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "투표 등록 - 나라걱정 클럽 관리자");
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
         return "admin/vote/voteForm";
@@ -98,7 +98,7 @@ public class AdminVoteController {
         VotePostResponse vote = adminVoteService.getVoteDetail(id);
 
         model.addAttribute("vote", vote);
-        model.addAttribute("pageTitle", "투표 수정 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "투표 수정 - 나라걱정 클럽 관리자");
 
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());

@@ -82,9 +82,9 @@ public class Member extends Audit {
     private Member inviter;    // 추천인
 
     @Comment("회원 포인트")
-    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0")
     @Builder.Default
-    private Integer points = 0;
+    private Double points = 0.0;
 
     @Comment("활동 내역")
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -150,8 +150,12 @@ public class Member extends Audit {
         this.lastAccessAt = LocalDateTime.now();
     }
 
-    public void increasePoint(int amount) {
+    public void increasePoint(double amount) {
         this.points += amount;
+    }
+
+    public void decreasePoints(double amountToTransfer) {
+        this.points -= amountToTransfer;
     }
 
     public ShareResponse covertShareDTO() {

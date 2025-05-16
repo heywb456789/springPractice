@@ -53,7 +53,7 @@ public class AdminNewsController {
         // 페이지 제목 및 활성 메뉴 설정
         model.addAttribute("categories", OriginalCategory.values());
         model.addAttribute("types", OriginalType.getNewsArticleTypes());
-        model.addAttribute("pageTitle", "Original News 관리 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "Original News 관리 - 나라걱정 클럽 관리자");
         model.addAttribute("activeMenu", "news");
         model.addAttribute("searchRequest", request);
 
@@ -86,7 +86,7 @@ public class AdminNewsController {
     public String createArticle(Model model, @AuthenticationPrincipal AdminUserDetails user) {
         model.addAttribute("categories", OriginalCategory.values());
         model.addAttribute("types", OriginalType.getNewsArticleTypes());
-        model.addAttribute("pageTitle", "Original News 등록 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "Original News 등록 - 나라걱정 클럽 관리자");
         model.addAttribute("mode", "create");
 
         // 사용자 정보 설정 (공통)
@@ -105,7 +105,7 @@ public class AdminNewsController {
         Article article = adminNewsService.getArticleById(id);
 
         model.addAttribute("news", article);
-        model.addAttribute("pageTitle", "Original News 수정 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "Original News 수정 - 나라걱정 클럽 관리자");
 
         model.addAttribute("mode", "update");
         model.addAttribute("categories", OriginalCategory.values());

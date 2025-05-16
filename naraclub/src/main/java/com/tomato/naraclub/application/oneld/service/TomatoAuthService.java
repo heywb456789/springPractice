@@ -10,10 +10,10 @@ import com.tomato.naraclub.common.util.AES256;
 import com.tomato.naraclub.common.util.WebClientLoggingFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -37,6 +37,9 @@ public class TomatoAuthService {
 
     @Value("${one-id.nation}")
     private String nationCode;
+
+    @Value("${one-id.coinInfo}")
+    private String coinInfo;
 
     private final WebClient webClient;
 
@@ -65,11 +68,11 @@ public class TomatoAuthService {
             .retrieve()
             // 4xx 응답 오면 BadRequestException 던지기
             .onStatus(
-                status -> status.is4xxClientError(),
+                HttpStatusCode::is4xxClientError,
                 clientResp -> Mono.error(new APIException(ResponseStatus.UNAUTHORIZED_ONE_ID)))
             // 5xx 응답 오면 APIException (서버 에러) 던지기
             .onStatus(
-                status -> status.is5xxServerError(),
+                HttpStatusCode::is5xxServerError,
                 clientResp -> Mono.error(
                     new APIException("One-ID 서버 오류", ResponseStatus.INTERNAL_SERVER_ERROR)))
             .bodyToMono(OneIdResponse.class);
@@ -96,11 +99,11 @@ public class TomatoAuthService {
             .retrieve()
             // 4xx 응답 오면 BadRequestException 던지기
             .onStatus(
-                status -> status.is4xxClientError(),
+                HttpStatusCode::is4xxClientError,
                 clientResp -> Mono.error(new BadRequestException("One-ID 인증 실패")))
             // 5xx 응답 오면 APIException (서버 에러) 던지기
             .onStatus(
-                status -> status.is5xxServerError(),
+                HttpStatusCode::is5xxServerError,
                 clientResp -> Mono.error(
                     new APIException("One-ID 서버 오류", ResponseStatus.INTERNAL_SERVER_ERROR)))
             .bodyToMono(OneIdResponse.class);
@@ -130,11 +133,11 @@ public class TomatoAuthService {
             .retrieve()
             // 4xx 응답 오면 BadRequestException 던지기
             .onStatus(
-                status -> status.is4xxClientError(),
+                HttpStatusCode::is4xxClientError,
                 clientResp -> Mono.error(new BadRequestException("One-ID 인증 실패")))
             // 5xx 응답 오면 APIException (서버 에러) 던지기
             .onStatus(
-                status -> status.is5xxServerError(),
+                HttpStatusCode::is5xxServerError,
                 clientResp -> Mono.error(
                     new APIException("One-ID 서버 오류", ResponseStatus.INTERNAL_SERVER_ERROR)))
             .bodyToMono(OneIdVerifyResponse.class);
@@ -162,9 +165,9 @@ public class TomatoAuthService {
                 .with("name", req.getName())
             )
             .retrieve()
-            .onStatus(status -> status.is4xxClientError(),
+            .onStatus(HttpStatusCode::is4xxClientError,
                 resp -> Mono.error(new BadRequestException("One-ID 인증 실패")))
-            .onStatus(status -> status.is5xxServerError(),
+            .onStatus(HttpStatusCode::is5xxServerError,
                 resp -> Mono.error(
                     new APIException("One-ID 서버 오류", ResponseStatus.INTERNAL_SERVER_ERROR)))
             .bodyToMono(OneIdResponse.class);
@@ -172,4 +175,32 @@ public class TomatoAuthService {
         // 블록해서 OneIdResponse 객체를 동기적으로 리턴
         return mono.block();
     }
+
+    public OneIdResponse getWalletInfo(AuthRequestDTO req) {
+    if (req.getUserKey() == null || req.getPhoneNumber() == null) {
+        throw new BadRequestException("userKey 또는 전화번호 누락");
+    }
+
+    String timestamp = Long.toString(System.currentTimeMillis() / 1000);
+    String encodedPhone = AES256.encrypt(req.getPhoneNumber(), timestamp); // 암호화 버전 사용
+    String resolvedPath = coinInfo.replace("{apptype}", appType);
+
+    return webClient.get()
+        .uri(uriBuilder -> uriBuilder
+            .path(resolvedPath)
+            .queryParam("userkey", req.getUserKey())
+            .queryParam("phone", encodedPhone)
+            .queryParam("nation", nationCode)
+            .queryParam("timestamp", timestamp)
+            .build())
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError,
+            res -> Mono.error(new BadRequestException("One-ID 지갑 조회 실패")))
+        .onStatus(HttpStatusCode::is5xxServerError,
+            res -> Mono.error(new APIException("One-ID 서버 오류", ResponseStatus.INTERNAL_SERVER_ERROR)))
+        .bodyToMono(OneIdResponse.class)
+        .doOnNext(res -> log.info("지갑 조회 응답: {}", res))
+        .block(); // 동기 응답
+}
+
 }

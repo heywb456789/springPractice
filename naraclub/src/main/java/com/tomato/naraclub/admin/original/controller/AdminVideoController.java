@@ -55,7 +55,7 @@ public class AdminVideoController {
         // 페이지 제목 및 활성 메뉴 설정
         model.addAttribute("categories", OriginalCategory.values());
         model.addAttribute("types", OriginalType.getVideoTypes());
-        model.addAttribute("pageTitle", "Original Video 관리 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "Original Video 관리 - 나라걱정 클럽 관리자");
         model.addAttribute("activeMenu", "board");
         model.addAttribute("request", request);
 
@@ -90,7 +90,7 @@ public class AdminVideoController {
     public String createVideo(Model model, @AuthenticationPrincipal AdminUserDetails user) {
         model.addAttribute("categories", OriginalCategory.values());
         model.addAttribute("types", OriginalType.getVideoTypes());
-        model.addAttribute("pageTitle", "Original Video 등록 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "Original Video 등록 - 나라걱정 클럽 관리자");
 
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
@@ -108,7 +108,7 @@ public class AdminVideoController {
         Video video = adminVideoService.getVideoById(id);
 
         model.addAttribute("video", video);
-        model.addAttribute("pageTitle", "Original Video 수정 - 나라사랑 클럽 관리자");
+        model.addAttribute("pageTitle", "Original Video 수정 - 나라걱정 클럽 관리자");
 
         model.addAttribute("categories", OriginalCategory.values());
         model.addAttribute("types", OriginalType.getVideoTypes());

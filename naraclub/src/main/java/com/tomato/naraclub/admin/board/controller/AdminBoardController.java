@@ -96,7 +96,7 @@ public class AdminBoardController {
 //        model.addAttribute("board", new BoardDto());
 //
 //        // 페이지 제목 및 활성 메뉴 설정
-//        model.addAttribute("pageTitle", "게시글 등록 - 나라사랑 관리자");
+//        model.addAttribute("pageTitle", "게시글 등록 - 나라걱정 관리자");
 //        model.addAttribute("activeMenu", "board");
 //
 //        // 사용자 정보 설정 (공통)
@@ -126,7 +126,7 @@ public class AdminBoardController {
 //        model.addAttribute("board", board);
 //
 //        // 페이지 제목 및 활성 메뉴 설정
-//        model.addAttribute("pageTitle", "게시글 수정 - 나라사랑 관리자");
+//        model.addAttribute("pageTitle", "게시글 수정 - 나라걱정 관리자");
 //        model.addAttribute("activeMenu", "board");
 //
 //        // 사용자 정보 설정 (공통)

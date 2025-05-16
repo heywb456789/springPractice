@@ -1,5 +1,6 @@
 package com.tomato.naraclub.application.point.controller;
 
+import com.tomato.naraclub.application.member.dto.MemberDTO;
 import com.tomato.naraclub.application.point.dto.UserPointResponse;
 import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
@@ -31,7 +32,7 @@ public class PointController {
     }
 
     @PostMapping("/points/exchange")
-    public ResponseDTO<UserPointResponse> exchange(
+    public ResponseDTO<MemberDTO> exchange(
             @AuthenticationPrincipal MemberUserDetails userDetails
     ) {
         return ResponseDTO.ok(pointService.exchangePoints(userDetails));

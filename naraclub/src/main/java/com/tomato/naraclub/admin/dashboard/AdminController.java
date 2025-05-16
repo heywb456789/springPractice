@@ -20,7 +20,7 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String dashboard(Model model, @AuthenticationPrincipal AdminUserDetails user) {
         // 페이지 제목 설정
-        model.addAttribute("pageTitle", "대시보드 - 나라사랑 관리자");
+        model.addAttribute("pageTitle", "대시보드 - 나라걱정 관리자");
 
         // 사용자 정보 설정
         model.addAttribute("userName", user.getUsername());
