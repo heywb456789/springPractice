@@ -18,6 +18,71 @@
   <link th:href="@{/assets/admin/css/common.css}" rel="stylesheet">
   <link th:href="@{/assets/admin/css/notification.css}" rel="stylesheet">
 
+  <!-- 모바일 사이드바 스타일 추가 -->
+  <style>
+    /* 모바일 사이드바 관련 추가 CSS */
+    @media (max-width: 768px) {
+      /* 모바일 활성화 상태 */
+      .sidebar.mobile-active {
+        margin-left: 0 !important;
+        z-index: 1050;
+      }
+
+      /* 사이드바 오버레이 */
+      .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+      }
+
+      /* 사이드바 위치 고정 */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        overflow-y: auto;
+        transition: margin-left 0.3s ease;
+      }
+
+      /* 기본 상태는 화면 밖으로 숨김 */
+      .sidebar.collapsed {
+        margin-left: -240px;
+      }
+
+      /* 모바일에서 컨텐츠 영역을 항상 전체 너비로 */
+      #content {
+        margin-left: 0 !important;
+        width: 100%;
+      }
+
+      /* 검색바 모바일에서 숨김 */
+      .search-bar {
+        display: none;
+      }
+
+      /* 사이드바 높이 조정 (iOS Safari에서 100vh 이슈 대응) */
+      .sidebar {
+        height: 100%;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* 사이드바 스크롤 최적화 */
+      .sidebar::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+    }
+  </style>
+
   <!-- Page specific CSS -->
   <th:block th:replace="${customCSS} ?: ~{}"></th:block>
 </head>
@@ -92,6 +157,24 @@
           </ul>
         </li>
 
+        <!--포인트 관리-->
+        <li class="nav-item" sec:authorize="hasAnyRole('SUPER_ADMIN', 'OPERATOR')">
+          <a class="nav-link" th:classappend="${activeMenu == 'points'} ? 'active'"
+             href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#pointsSubmenu"
+             aria-expanded="${activeMenu == 'points'} ? 'true' : 'false'">
+            <i class="fas fa-coins menu-icon"></i>
+            <span>포인트 관리</span>
+            <i class="fas fa-chevron-down menu-arrow"></i>
+          </a>
+          <ul class="submenu collapse" id="pointsSubmenu"
+              th:classappend="${activeMenu == 'points'} ? 'show'">
+            <li>
+              <a th:classappend="${activeSubmenu == 'list'} ? 'active'"
+                 href="/admin/points/list">포인트 내역 목록</a>
+            </li>
+          </ul>
+        </li>
+
         <!--자유 게시판 -->
         <li class="nav-item" sec:authorize="hasAnyRole('SUPER_ADMIN', 'OPERATOR')">
           <a class="nav-link" th:classappend="${activeMenu == 'board'} ? 'active'"
@@ -162,37 +245,6 @@
           </ul>
         </li>
       </ul>
-
-      <!--            <h6 class="menu-category">Elements</h6>-->
-      <!--            <ul class="nav flex-column">-->
-      <!--                <li class="nav-item">-->
-      <!--                    <a class="nav-link" th:classappend="${activeMenu == 'user-interface'} ? 'active'" href="#">-->
-      <!--                        <i class="fas fa-desktop menu-icon"></i>-->
-      <!--                        <span>User Interface</span>-->
-      <!--                        <i class="fas fa-chevron-down menu-arrow"></i>-->
-      <!--                    </a>-->
-      <!--                </li>-->
-      <!--                <li class="nav-item">-->
-      <!--                    <a class="nav-link" th:classappend="${activeMenu == 'charts'} ? 'active'" href="#">-->
-      <!--                        <i class="fas fa-chart-pie menu-icon"></i>-->
-      <!--                        <span>Charts</span>-->
-      <!--                        <span class="badge bg-primary rounded-pill ms-auto">New</span>-->
-      <!--                    </a>-->
-      <!--                </li>-->
-      <!--                <li class="nav-item">-->
-      <!--                    <a class="nav-link" th:classappend="${activeMenu == 'forms'} ? 'active'" href="#">-->
-      <!--                        <i class="fas fa-pen-to-square menu-icon"></i>-->
-      <!--                        <span>Forms</span>-->
-      <!--                        <i class="fas fa-chevron-down menu-arrow"></i>-->
-      <!--                    </a>-->
-      <!--                </li>-->
-      <!--                <li class="nav-item">-->
-      <!--                    <a class="nav-link" th:classappend="${activeMenu == 'tables'} ? 'active'" href="#">-->
-      <!--                        <i class="fas fa-table menu-icon"></i>-->
-      <!--                        <span>Tables</span>-->
-      <!--                    </a>-->
-      <!--                </li>-->
-      <!--            </ul>-->
     </div>
   </nav>
 
@@ -218,23 +270,6 @@
               <i class="fas fa-sign-out-alt"></i>
             </a>
           </li>
-          <!--                    <li class="nav-item dropdown">-->
-          <!--                        <a class="nav-link" href="#" role="button">-->
-          <!--                            <i class="fas fa-envelope"></i>-->
-          <!--                            <span class="badge bg-danger rounded-pill position-absolute">3</span>-->
-          <!--                        </a>-->
-          <!--                    </li>-->
-          <!--                    <li class="nav-item dropdown">-->
-          <!--                        <a class="nav-link" href="#" role="button">-->
-          <!--                            <i class="fas fa-bell"></i>-->
-          <!--                            <span class="badge bg-danger rounded-pill position-absolute">5</span>-->
-          <!--                        </a>-->
-          <!--                    </li>-->
-          <!--                    <li class="nav-item dropdown">-->
-          <!--                        <a class="nav-link" href="#" role="button">-->
-          <!--                            <i class="fas fa-cog"></i>-->
-          <!--                        </a>-->
-          <!--                    </li>-->
         </ul>
       </div>
     </nav>

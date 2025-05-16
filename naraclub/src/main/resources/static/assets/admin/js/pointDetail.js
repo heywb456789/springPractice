@@ -1,5 +1,5 @@
 /**
- * 포인트 내역 상세 페이지 JavaScript
+ * 회원 포인트 상세 페이지 JavaScript
  */
 import {adminAuthFetch} from '/js/commonFetch.js';
 
@@ -7,9 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
     // DOM 요소
-    const cancelPointForm = document.getElementById('cancelPointForm');
-    const btnConfirmCancel = document.getElementById('btnConfirmCancel');
-    const cancelPointModal = new bootstrap.Modal(document.getElementById('cancelPointModal'));
+    const searchForm = document.getElementById('searchForm');
+    const dateRangeInput = document.getElementById('dateRange');
+    const btnExportExcel = document.getElementById('btnExportExcel');
+    const btnRevokePoint = document.getElementById('btnRevokePoint');
+    const revokePointModal = new bootstrap.Modal(document.getElementById('revokePointModal'));
+    const btnConfirmRevoke = document.getElementById('btnConfirmRevoke');
 
     // 초기화
     initPage();
@@ -21,109 +24,127 @@ document.addEventListener('DOMContentLoaded', function () {
         // 이벤트 리스너 등록
         initEventListeners();
 
-        // 포인트 회수 모달 유효성 검사 초기화
-        initCancelPointValidation();
+        // Flatpickr 달력 초기화
+        initFlatpickrDateRange();
+
+        // 콘텐츠 셀 토글 설정
+        initContentCellToggle();
     }
 
     /**
      * 이벤트 리스너 초기화
      */
     function initEventListeners() {
-        // 포인트 회수 확인 버튼 이벤트
-        if (btnConfirmCancel) {
-            btnConfirmCancel.addEventListener('click', confirmCancelPoint);
+        // 검색 폼 제출 이벤트
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+
+            // 검색 버튼 클릭 이벤트
+            const searchButton = searchForm.querySelector('button[type="submit"]');
+            if (searchButton) {
+                searchButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    performSearch();
+                });
+            }
         }
 
-        // 금액 입력 이벤트
-        const cancelAmountInput = document.getElementById('cancelAmount');
-        if (cancelAmountInput) {
-            cancelAmountInput.addEventListener('input', function() {
-                validateCancelAmount();
+        // 엑셀 내보내기 버튼 이벤트
+        if (btnExportExcel) {
+            btnExportExcel.addEventListener('click', exportToExcel);
+        }
+
+        // 포인트 회수 버튼 이벤트
+        if (btnRevokePoint) {
+            btnRevokePoint.addEventListener('click', function() {
+                openRevokePointModal();
+            });
+        }
+
+        // 포인트 회수 확인 버튼 이벤트
+        if (btnConfirmRevoke) {
+            btnConfirmRevoke.addEventListener('click', confirmRevokePoint);
+        }
+
+        // 회수 금액 입력 이벤트 - 최대값 제한
+        const revokeAmountInput = document.getElementById('revokeAmount');
+        if (revokeAmountInput) {
+            const maxPoint = parseFloat(document.querySelector('.text-primary span').textContent.replace(/,/g, ''));
+            revokeAmountInput.max = maxPoint;
+
+            revokeAmountInput.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                if (value > maxPoint) {
+                    this.value = maxPoint;
+                } else if (value < 0.1) {
+                    this.value = 0.1;
+                }
             });
         }
     }
 
     /**
-     * 취소 금액 유효성 검사 초기화
+     * 검색 실행
      */
-    function initCancelPointValidation() {
-        const cancelAmountInput = document.getElementById('cancelAmount');
-        if (cancelAmountInput) {
-            // 최소값 설정
-            cancelAmountInput.min = 10;
-
-            // 최대값 설정
-            const maxAmount = parseInt(cancelAmountInput.getAttribute('max') || '0');
-            cancelAmountInput.max = maxAmount;
-
-            // 기본값 설정 (최대값)
-            cancelAmountInput.value = maxAmount;
+    function performSearch() {
+        if (searchForm) {
+            searchForm.submit();
         }
     }
 
     /**
-     * 취소 금액 유효성 검사
+     * 엑셀 내보내기
      */
-    function validateCancelAmount() {
-        const cancelAmountInput = document.getElementById('cancelAmount');
-        const btnConfirmCancel = document.getElementById('btnConfirmCancel');
+    function exportToExcel() {
+        const memberId = document.getElementById('memberId').value;
 
-        if (!cancelAmountInput || !btnConfirmCancel) return;
+        // 현재 검색 조건을 유지한 채로 엑셀 내보내기
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('export', 'excel');
 
-        const amount = parseInt(cancelAmountInput.value);
-        const maxAmount = parseInt(cancelAmountInput.max);
+        const downloadUrl = `/admin/users/points/${memberId}/export?${searchParams.toString()}`;
+        window.location.href = downloadUrl;
+    }
 
-        // 금액이 유효하지 않은 경우
-        if (isNaN(amount) || amount <= 0) {
-            cancelAmountInput.classList.add('is-invalid');
-            btnConfirmCancel.disabled = true;
-            return false;
-        }
+    /**
+     * 포인트 회수 모달 열기
+     */
+    function openRevokePointModal() {
+        // 포인트 회수 모달 내 입력 필드 초기화
+        document.getElementById('revokeAmount').value = '';
+        document.getElementById('revokeReason').value = '';
 
-        // 금액이 최대값을 초과하는 경우
-        if (amount > maxAmount) {
-            cancelAmountInput.value = maxAmount;
-            showToast(`최대 ${maxAmount.toLocaleString()}P까지 회수 가능합니다.`, 'warning');
-            return false;
-        }
-
-        // 금액이 최소값보다 작은 경우
-        if (amount < 10) {
-            cancelAmountInput.value = 10;
-            showToast('최소 10P 이상 회수해야 합니다.', 'warning');
-            return false;
-        }
-
-        cancelAmountInput.classList.remove('is-invalid');
-        btnConfirmCancel.disabled = false;
-        return true;
+        // 모달 표시
+        revokePointModal.show();
     }
 
     /**
      * 포인트 회수 확인
      */
-    async function confirmCancelPoint() {
-        const pointId = document.getElementById('cancelPointId').value;
-        const cancelAmountInput = document.getElementById('cancelAmount');
-        const cancelReasonInput = document.getElementById('cancelReason');
+    async function confirmRevokePoint() {
+        const memberId = document.getElementById('memberId').value;
+        const amount = parseFloat(document.getElementById('revokeAmount').value);
+        const reason = document.getElementById('revokeReason').value.trim();
 
-        if (!cancelAmountInput || !cancelReasonInput) return;
-
-        const amount = parseInt(cancelAmountInput.value);
-        const reason = cancelReasonInput.value.trim();
-
-        // 금액 유효성 검사
-        if (!validateCancelAmount()) {
+        // 입력값 검증
+        if (!amount || amount <= 0) {
+            showToast('유효한 회수 금액을 입력해주세요.', 'warning');
             return;
         }
 
-        // 사유 유효성 검사
         if (!reason) {
-            cancelReasonInput.classList.add('is-invalid');
             showToast('회수 사유를 입력해주세요.', 'warning');
             return;
-        } else {
-            cancelReasonInput.classList.remove('is-invalid');
+        }
+
+        // 최대 포인트 확인
+        const maxPoint = parseFloat(document.querySelector('.text-primary span').textContent.replace(/,/g, ''));
+        if (amount > maxPoint) {
+            showToast(`최대 ${maxPoint.toLocaleString()}P까지 회수 가능합니다.`, 'warning');
+            return;
         }
 
         // 확인 메시지
@@ -132,18 +153,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // 회수 버튼 비활성화
-        const originalButtonText = btnConfirmCancel.innerHTML;
-        btnConfirmCancel.disabled = true;
-        btnConfirmCancel.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
+        btnConfirmRevoke.disabled = true;
+        const originalButtonText = btnConfirmRevoke.innerHTML;
+        btnConfirmRevoke.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
 
         try {
-            const response = await adminAuthFetch('/admin/points/cancel', {
+            const response = await adminAuthFetch('/admin/points/member-revoke', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    pointId,
+                    memberId,
                     amount,
                     reason
                 })
@@ -157,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (result.success) {
                 showToast('포인트가 성공적으로 회수되었습니다.', 'success');
-                cancelPointModal.hide();
+                revokePointModal.hide();
 
                 // 페이지 새로고침
                 setTimeout(() => {
@@ -170,9 +191,142 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('포인트 회수 오류:', error);
             showToast(error.message, 'error');
         } finally {
-            btnConfirmCancel.disabled = false;
-            btnConfirmCancel.innerHTML = originalButtonText;
+            btnConfirmRevoke.disabled = false;
+            btnConfirmRevoke.innerHTML = originalButtonText;
         }
+    }
+
+    /**
+     * 콘텐츠 셀 토글 초기화
+     * - 콘텐츠가 길 경우 클릭 시 확장/축소되는 기능
+     */
+    function initContentCellToggle() {
+        const contentCells = document.querySelectorAll('.content-cell');
+
+        contentCells.forEach(cell => {
+            const content = cell.querySelector('span');
+            if (!content || content.textContent.trim() === '-') return;
+
+            // 콘텐츠가 길 경우 줄임표 처리
+            if (content.offsetWidth < content.scrollWidth) {
+                cell.classList.add('expandable');
+
+                cell.addEventListener('click', function() {
+                    this.classList.toggle('expanded');
+                });
+            }
+        });
+    }
+
+    /**
+     * Flatpickr 날짜 범위 선택기 초기화 함수
+     */
+    function initFlatpickrDateRange() {
+        if (!dateRangeInput || typeof flatpickr === 'undefined') {
+            console.error('Flatpickr가 로드되지 않았거나 dateRangeInput 요소가 없습니다.');
+            return;
+        }
+
+        try {
+            // 날짜 범위 값 파싱
+            const currentValue = dateRangeInput.value.trim();
+            let initialDates = null;
+
+            if (currentValue) {
+                // 날짜 범위 분리
+                const parts = currentValue.split(/\s*~\s*/);
+                if (parts.length === 2) {
+                    const startDate = parts[0].trim();
+                    const endDate = parts[1].trim();
+
+                    // 날짜 객체로 변환 시도
+                    try {
+                        initialDates = [new Date(startDate), new Date(endDate)];
+
+                        // 유효하지 않은 날짜 확인
+                        if (isNaN(initialDates[0].getTime()) || isNaN(initialDates[1].getTime())) {
+                            console.warn('유효하지 않은 날짜 형식입니다:', startDate, endDate);
+                            initialDates = null;
+                        }
+                    } catch (e) {
+                        console.warn('날짜 변환 실패:', e);
+                        initialDates = null;
+                    }
+                }
+            }
+
+            // 상위 요소에 특별한 클래스 추가
+            const wrapper = dateRangeInput.closest('.input-group');
+            if (!wrapper) return;
+
+            wrapper.classList.add('date-range-input-group');
+
+            // 클리어 버튼 생성
+            let clearBtn = wrapper.querySelector('.date-clear-btn');
+            if (!clearBtn) {
+                clearBtn = document.createElement('button');
+                clearBtn.type = 'button';
+                clearBtn.className = 'date-clear-btn';
+                clearBtn.innerHTML = '<i class="fas fa-times"></i>';
+                wrapper.appendChild(clearBtn);
+            }
+
+            // 초기 클리어 버튼 표시 여부
+            clearBtn.style.display = initialDates ? 'flex' : 'none';
+
+            // 달력 아이콘 설정
+            const calendarIcon = wrapper.querySelector('.input-group-text');
+            if (calendarIcon) {
+                calendarIcon.style.cursor = 'pointer';
+            }
+
+            // Flatpickr 설정
+            const fpInstance = flatpickr(dateRangeInput, {
+                mode: 'range',
+                dateFormat: 'Y-m-d',  // 날짜 형식을 명확하게 지정
+                locale: 'ko',
+                disableMobile: true,
+                defaultDate: initialDates,
+                onChange: function(selectedDates) {
+                    if (selectedDates.length === 2) {
+                        // 날짜가 모두 선택된 경우, 명확한 형식으로 표시
+                        const formatted = selectedDates.map(date => formatDate(date));
+                        dateRangeInput.value = formatted.join(' ~ ');
+                        clearBtn.style.display = 'flex';
+                    }
+                }
+            });
+
+            // 달력 아이콘 클릭 이벤트
+            if (calendarIcon) {
+                calendarIcon.addEventListener('click', () => fpInstance.toggle());
+            }
+
+            // 클리어 버튼 클릭 이벤트
+            if (clearBtn) {
+                clearBtn.addEventListener('click', e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fpInstance.clear();
+                    dateRangeInput.value = '';
+                    clearBtn.style.display = 'none';
+                });
+            }
+        } catch (error) {
+            console.error('Flatpickr 초기화 중 오류가 발생했습니다:', error);
+        }
+    }
+
+    /**
+     * Date 객체를 YYYY-MM-DD 형식으로 변환
+     * @param {Date} date
+     * @returns {string}
+     */
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     /**

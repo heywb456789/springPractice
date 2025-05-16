@@ -24,24 +24,6 @@
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-/* 통계 카드 */
-.card.bg-primary,
-.card.bg-success,
-.card.bg-warning,
-.card.bg-info {
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card.bg-primary:hover,
-.card.bg-success:hover,
-.card.bg-warning:hover,
-.card.bg-info:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
 /* 테이블 스타일 */
 .table-responsive {
     overflow-x: auto;
@@ -72,6 +54,7 @@
     padding: 0.75rem;
     vertical-align: middle;
     border-bottom: 1px solid #ededed;
+    text-align: center;
 }
 
 /* 줄무늬 스타일 제거 */
@@ -93,20 +76,28 @@
     background-color: rgba(0, 0, 0, 0.02);
 }
 
-/* 체크박스 스타일 */
-.form-check {
-    margin: 0;
-    display: flex;
-    justify-content: center;
+/* 텍스트 정렬 */
+.text-start {
+    text-align: left !important;
 }
 
-.form-check-input {
-    cursor: pointer;
+.text-end {
+    text-align: right !important;
 }
 
-.form-check-input:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.text-center {
+    text-align: center !important;
+}
+
+/* 포인트 사유 스타일 */
+td.text-center span {
+    display: inline-block;
+    max-width: 300px;
+    white-space: normal;
+    word-break: keep-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
 }
 
 /* 배지 스타일 */
@@ -114,6 +105,7 @@
     font-weight: 500;
     padding: 0.35em 0.65em;
     border-radius: 30px;
+    font-size: 0.75rem;
 }
 
 .badge.bg-success {
@@ -122,11 +114,6 @@
 
 .badge.bg-primary {
     background-color: #727cf5 !important;
-}
-
-.badge.bg-warning {
-    background-color: #ffbc00 !important;
-    color: #fff;
 }
 
 .badge.bg-light {
@@ -143,42 +130,11 @@
     color: #fa5c7c !important;
 }
 
-.text-warning {
-    color: #ffbc00 !important;
-}
-
 /* 포인트 금액 스타일 */
 .text-success i,
-.text-danger i,
-.text-warning i {
+.text-danger i {
     margin-right: 0.25rem;
     font-size: 0.75rem;
-}
-
-/* 액션 버튼 */
-.dropdown-toggle::after {
-    display: none;
-}
-
-.dropdown-menu {
-    min-width: 10rem;
-    padding: 0.5rem 0;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.dropdown-item {
-    padding: 0.5rem 1.25rem;
-    font-size: 0.875rem;
-}
-
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-}
-
-.dropdown-item i {
-    width: 1rem;
-    text-align: center;
 }
 
 /* 페이지네이션 */
@@ -237,73 +193,55 @@
     color: #495057;
 }
 
-/* 모달 스타일 */
-.modal-header {
-    border-bottom: 1px solid #f1f3fa;
-    padding: 1rem 1.5rem;
+/* 링크 및 버튼 스타일 */
+a {
+    color: #727cf5;
+    text-decoration: none;
 }
 
-.modal-footer {
-    border-top: 1px solid #f1f3fa;
-    padding: 1rem 1.5rem;
+a:hover {
+    color: #5a68f3;
+    text-decoration: underline;
 }
 
-.modal-body {
-    padding: 1.5rem;
+a.text-dark {
+    color: #343a40 !important;
 }
 
-.quick-reason {
-    margin-bottom: 0.5rem;
+a.text-dark:hover {
+    color: #727cf5 !important;
+    text-decoration: underline;
 }
 
-/* 애니메이션 효과 */
-.fade-out {
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.2rem;
 }
 
-/* 불활성화된 링크 및 버튼 */
-.disabled {
-    pointer-events: none;
-    opacity: 0.65;
+.btn-light {
+    color: #212529;
+    background-color: #f8f9fa;
+    border-color: #f8f9fa;
 }
 
-/* 알림 및 불일치 표시 */
-.point-mismatch {
-    position: relative;
+.btn-light:hover {
+    color: #212529;
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
 }
 
-.point-mismatch::after {
-    content: "!";
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 18px;
-    height: 18px;
-    background-color: #fa5c7c;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-/* 테이블 빈 상태 */
-.table-empty-state {
+/* 빈 테이블 상태 */
+.table tbody td.text-center.py-5 {
     padding: 3rem 0;
-    text-align: center;
 }
 
-.table-empty-state i {
-    font-size: 2.5rem;
+.table tbody td.text-center.py-5 i {
     color: #98a6ad;
     margin-bottom: 1rem;
 }
 
-.table-empty-state p {
+.table tbody td.text-center.py-5 p {
     color: #6c757d;
     margin-bottom: 0;
 }
@@ -332,19 +270,11 @@
     }
 
     .table {
-        min-width: 900px;
+        min-width: 800px;
     }
 
     .pagination .page-link {
         padding: 0.25rem 0.5rem;
         font-size: 0.875rem;
-    }
-
-    /* 통계 카드 모바일 최적화 */
-    .card.bg-primary,
-    .card.bg-success,
-    .card.bg-warning,
-    .card.bg-info {
-        margin-bottom: 1rem;
     }
 }

@@ -332,25 +332,109 @@ a:hover {
 .bg-info { background-color: var(--info-color) !important; }
 
 /* ======= Responsive ======= */
+/* 모바일 사이드바 관련 CSS 개선 */
 @media (max-width: 768px) {
+  /* 사이드바 기본 스타일 */
   .sidebar {
-    margin-left: calc(var(--sidebar-width) * -1);
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 240px;
+    overflow-y: auto;
+    z-index: 1050;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transform: translateX(-100%); /* 기본 상태: 화면 밖으로 */
+    box-shadow: none;
   }
-  
-  .sidebar.active {
-    margin-left: 0;
+
+  /* 사이드바 collapsed 클래스에 대한 명시적 처리 */
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+    box-shadow: none;
   }
-  
+
+  /* 모바일에서 사이드바 활성화 상태 */
+  .sidebar.mobile-active {
+    transform: translateX(0); /* 활성화: 화면에 표시 */
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 사이드바 오버레이 */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .sidebar-overlay.fade-out {
+    opacity: 0;
+  }
+
+  /* 모바일에서 컨텐츠 영역을 항상 전체 너비로 */
   #content {
-    margin-left: 0;
+    margin-left: 0 !important;
+    width: 100%;
   }
-  
-  #content.active {
-    margin-left: var(--sidebar-width);
+
+  /* 모바일 토글 버튼을 더 잘 보이도록 */
+  #sidebarCollapse {
+    padding: 0.7rem;
+    font-size: 1.1rem;
+    background-color: transparent;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    z-index: 1060; /* 오버레이보다 위에 표시 */
   }
-  
-  .search-bar {
-    display: none;
+
+  #sidebarCollapse:hover,
+  #sidebarCollapse:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* 사이드바 내부 스타일 */
+  .sidebar-header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .sidebar .nav-link {
+    padding: 0.8rem 1.5rem;
+  }
+
+  /* 터치 감지 개선을 위해 패딩 증가 */
+  .submenu a {
+    padding: 0.7rem 0;
+    display: block;
+  }
+
+  /* 사이드바 스크롤 최적화 */
+  .sidebar {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* iOS 스크롤 부드럽게 */
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  /* iOS Safari 100vh 이슈 대응 */
+  @supports (-webkit-touch-callout: none) {
+    .sidebar {
+      height: -webkit-fill-available;
+    }
   }
 }
 
