@@ -6,6 +6,7 @@ import com.tomato.naraclub.admin.point.dto.PointListRequest;
 import com.tomato.naraclub.admin.point.dto.PointResponse;
 import com.tomato.naraclub.admin.point.service.AdminPointService;
 import com.tomato.naraclub.admin.security.AdminUserDetails;
+import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.original.code.OriginalCategory;
 import com.tomato.naraclub.application.original.code.OriginalType;
 import com.tomato.naraclub.common.dto.ListDTO;
@@ -17,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -75,6 +77,47 @@ public class AdminPointController {
         //custom 정보
 
         return "admin/point/pointList";
+    }
+
+    @GetMapping("/user/{id}")
+    public String user(
+        PointListRequest request,
+        @PathVariable Long id,
+        @AuthenticationPrincipal AdminUserDetails user,
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size,
+        Model model) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        ListDTO<PointResponse> pointPage = adminPointService.getUserPointList(request, id, user, pageable);
+        Member member = adminPointService.getMember(id);
+
+        int totalPages = pointPage.getPagination().getTotalPages();
+        int currentPage = pointPage.getPagination().getCurrentPage();
+        int startPage = Math.max(1, currentPage);
+        int endPage = Math.min(startPage + 9, totalPages);
+
+        model.addAttribute("pointHistoryList", pointPage.getData());
+        model.addAttribute("member", member);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+        model.addAttribute("searchRequest", request);
+
+        // 페이지 제목 및 활성 메뉴 설정
+        model.addAttribute("categories", OriginalCategory.values());
+        model.addAttribute("types", OriginalType.getNewsArticleTypes());
+        model.addAttribute("pageTitle", "Original 포인트 관리 - 나라걱정 클럽 관리자");
+        model.addAttribute("activeMenu", "points");
+        model.addAttribute("activeSubmenu", "list");
+
+
+        // 사용자 정보 설정 (공통)
+        model.addAttribute("userName", user.getUsername());
+        model.addAttribute("userRole", user.getAuthorities());
+        model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
+        model.addAttribute("userAvatar", null);
+        return "admin/point/pointDetail";
     }
 
 }

@@ -33,4 +33,5 @@ public class PointResponse {
     private Long targetId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String content;
 }

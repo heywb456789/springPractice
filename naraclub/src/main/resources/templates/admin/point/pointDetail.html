@@ -43,7 +43,7 @@
                 <div class="col-md-6 mb-3 mb-md-0">
                     <div class="d-flex align-items-center">
                         <div class="member-avatar me-3">
-                            <img th:src="${member.profileImage != null ? member.profileImage : '/assets/admin/images/default-avatar.jpg'}"
+                            <img th:src="${member.profileImg != null ? member.profileImg : '/assets/admin/images/default-avatar.jpg'}"
                                  alt="회원 프로필" class="rounded-circle" width="64" height="64">
                         </div>
                         <div>
@@ -59,7 +59,7 @@
                     <div class="point-summary-card">
                         <h6 class="text-uppercase text-muted mb-2">현재 포인트</h6>
                         <h3 class="mb-0 text-primary">
-                            <span th:text="${#numbers.formatDecimal(member.point, 1, 1, 'COMMA')}">15.0</span>
+                            <span th:text="${#numbers.formatDecimal(member.points, 1, 1, 'COMMA')}">15.0</span>
                         </h3>
                     </div>
                 </div>
@@ -115,8 +115,6 @@
                                     th:selected="${searchRequest.sortType?.name() == 'LATEST' || searchRequest.sortType?.name() == null}">
                                 최신순
                             </option>
-                            <option value="AMOUNT_HIGH" th:selected="${searchRequest.sortType?.name() == 'AMOUNT_HIGH'}">금액 높은순</option>
-                            <option value="AMOUNT_LOW" th:selected="${searchRequest.sortType?.name() == 'AMOUNT_LOW'}">금액 낮은순</option>
                         </select>
                     </div>
                     <div class="col-md-3">

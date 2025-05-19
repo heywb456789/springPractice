@@ -36,7 +36,7 @@ public class AdminVideoRestController {
         @AuthenticationPrincipal AdminUserDetails user) throws IOException {
         return ResponseDTO.ok(adminVideoService.uploadVideo(req, user));
     }
-    @PutMapping(value="/update" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value="/update" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDTO<VideoResponse> updateVideo(@ModelAttribute @Valid VideoUpdateRequest req,
         @AuthenticationPrincipal AdminUserDetails user ){
         return ResponseDTO.ok(adminVideoService.updateVideo(req,user));

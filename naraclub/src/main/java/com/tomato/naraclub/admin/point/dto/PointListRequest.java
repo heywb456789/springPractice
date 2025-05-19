@@ -2,6 +2,7 @@ package com.tomato.naraclub.admin.point.dto;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.tomato.naraclub.admin.original.code.NewsSearchType;
@@ -213,4 +214,8 @@ public class PointListRequest implements SearchTypeRequest {
         return st.order(dir);
     }
 
+    @Hidden
+    public BooleanExpression isMember(Long id) {
+        return QPointHistory.pointHistory.member.id.eq(id);
+    }
 }

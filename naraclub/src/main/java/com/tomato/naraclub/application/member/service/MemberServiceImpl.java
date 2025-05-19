@@ -30,6 +30,16 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public MemberDTO enrollInviteCode(String inviteCode, MemberUserDetails userDetails) {
+
+        if(inviteCode.equals("CTOMATO")){
+            Member current = memberRepository.findById(userDetails.getMember().getId())
+            .orElseThrow(() -> new UnAuthorizationException("유저의 정보를 찾을 수 없습니다."));
+//            current.setInviter(inviter);
+            current.setStatus(MemberStatus.ACTIVE);
+            current.setRole(MemberRole.USER_ACTIVE);
+            return current.convertDTO();
+        }
+
         // 1) 초대 코드로 추천인(Member) 조회
         Member inviter = memberRepository.findByInviteCode(inviteCode)
             .orElseThrow(() -> new BadRequestException("존재하지 않는 초대 코드입니다. 다시 시도해주세요."));

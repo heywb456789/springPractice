@@ -17,6 +17,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,6 +29,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -89,6 +91,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(user, null,
                                 user.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(auth);
+                        log.info("✅ Authenticated user: {}", user.getUsername());
+                        log.info("✅ Granted Authorities: {}", user.getAuthorities());
                         refreshed = true;
                     } else {
                         throw new BadCredentialsException("리프레시 토큰이 유효하지 않습니다.");
@@ -102,6 +106,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 2) 관리자 페이지인데 토큰 검증/재발급 실패 시 → 로그인 페이지로
             if (isAdminPage) {
                 res.sendRedirect(ADMIN_AUTH_LOGOUT);
+//                SecurityContextHolder.clearContext();
                 return;
             }
             // API 에선 그냥 401 처리로 넘기기

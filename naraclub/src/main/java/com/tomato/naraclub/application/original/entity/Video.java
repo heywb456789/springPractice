@@ -55,6 +55,7 @@ public class Video extends Audit {
 
     @Comment("기사 카테고리")
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private OriginalCategory category;
 
     @Comment("썸네일")

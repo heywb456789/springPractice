@@ -162,11 +162,11 @@
                     <td th:text="${point.pointId}">1</td>
                     <td>
                         <a href="#" class="text-dark" th:text="${point.memberId}"
-                           th:href="@{/admin/users/detail/{id}(id=${point.memberId})}">user123</a>
+                           th:href="@{/admin/users/app/user/{id}(id=${point.memberId})}">user123</a>
                     </td>
                     <td>
                         <a href="#" class="text-dark" th:text="${point.memberName}"
-                           th:href="@{/admin/users/detail/{id}(id=${point.memberId})}">홍길동</a>
+                           th:href="@{/admin/users/app/user/{id}(id=${point.memberId})}">홍길동</a>
                     </td>
                     <td>
                         <span class="badge"
@@ -192,7 +192,7 @@
                         <span th:if="${point.createdAt != null}" th:text="${#temporals.format(point.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</span>
                     </td>
                     <td>
-                        <a th:href="@{/admin/users/points/{id}(id=${point.memberId})}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="회원 포인트 상세보기">
+                        <a th:href="@{/admin/points/user/{id}(id=${point.memberId})}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="회원 포인트 상세보기">
                             <i class="fas fa-eye"></i>
                         </a>
                     </td>

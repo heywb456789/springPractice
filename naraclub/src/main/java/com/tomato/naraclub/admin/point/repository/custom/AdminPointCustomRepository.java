@@ -17,4 +17,6 @@ import org.springframework.data.domain.Pageable;
 public interface AdminPointCustomRepository {
 
     ListDTO<PointResponse> getPointList(PointListRequest request, AdminUserDetails user, Pageable pageable);
+
+    ListDTO<PointResponse> getUserPointList(PointListRequest request, Long id, AdminUserDetails user, Pageable pageable);
 }

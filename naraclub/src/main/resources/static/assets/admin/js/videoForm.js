@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 수정 모드인지 확인하여 URL 및 메서드 결정
     const endpoint = isEditing
-        ? {url: '/admin/original/video/update', method: 'PUT'}
+        ? {url: '/admin/original/video/update', method: 'POST'}
         : {url: '/admin/original/video/upload', method: 'POST'};
 
     // 체크박스 상태 수동 추가 (선택되지 않은 경우 false로 전송)

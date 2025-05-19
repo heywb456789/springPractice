@@ -4,6 +4,7 @@ public enum OriginalCategory {
     ECONOMY("경제"),
     BUSINESS("비즈니스"),
     SOCIETY("사회"),
+    POLITIC("정치"),
     FUN("엔터테인먼트");
 
     private final String displayName;
