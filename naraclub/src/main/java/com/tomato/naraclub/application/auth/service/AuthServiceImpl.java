@@ -7,10 +7,19 @@ import com.tomato.naraclub.application.auth.entity.MemberLoginHistory;
 import com.tomato.naraclub.application.auth.entity.RefreshToken;
 import com.tomato.naraclub.application.auth.repository.MemberLoginHistoryRepository;
 import com.tomato.naraclub.application.auth.repository.RefreshTokenRepository;
+import com.tomato.naraclub.application.board.repository.BoardPostRepository;
+import com.tomato.naraclub.application.comment.repository.ArticleCommentsRepository;
+import com.tomato.naraclub.application.comment.repository.BoardCommentsRepository;
+import com.tomato.naraclub.application.comment.repository.VideoCommentRepository;
+import com.tomato.naraclub.application.comment.repository.VoteCommentsRepository;
 import com.tomato.naraclub.application.member.dto.MemberDTO;
 import com.tomato.naraclub.application.oneld.dto.OneIdResponse;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
+import com.tomato.naraclub.application.point.code.PointStatus;
+import com.tomato.naraclub.application.point.code.PointType;
+import com.tomato.naraclub.application.point.entity.PointHistory;
+import com.tomato.naraclub.application.point.repository.PointRepository;
 import com.tomato.naraclub.common.exception.BadRequestException;
 import com.tomato.naraclub.common.security.JwtTokenProvider;
 import com.tomato.naraclub.application.security.MemberUserDetails;
@@ -47,12 +56,29 @@ public class AuthServiceImpl implements AuthService {
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final MemberLoginHistoryRepository loginHistoryRepository;
+    private final BoardPostRepository boardPostRepository;
+    private final BoardCommentsRepository boardCommentsRepository;
+    private final VoteCommentsRepository voteCommentsRepository;
+    private final VideoCommentRepository videoCommentsRepository;
+    private final ArticleCommentsRepository articleCommentsRepository;
+    private final PointRepository pointRepository;
 
     @Override
     @Transactional
     public AuthResponseDTO createToken(OneIdResponse resp, AuthRequestDTO authRequest,
         HttpServletRequest servletRequest) {
         String userKey = resp.getValue().getUserKey();
+
+        // 프로필 이미지 URL 가공: 특정 호스트/포트 부분이 포함된 경우 잘라내기
+        String rawProfileImg = resp.getValue().getProfileImg();
+        String profileImg;
+
+        if (rawProfileImg != null && rawProfileImg.startsWith("http://api.otongtong.net:28080")) {
+            // host+port 길이만큼 부분 문자열을 제거
+            profileImg = rawProfileImg.substring("http://api.otongtong.net:28080".length());
+        } else {
+            profileImg = rawProfileImg;
+        }
 
         //userKey 있으면 일단은 생성 + 초대코드 + 신원 인증 관련 처리 미상태로 저장
         Member member = memberRepository.findByUserKey(userKey)
@@ -67,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
                     .email(resp.getValue().getEmail())
                     .name(resp.getValue().getName())
                     .verified(false)
-                    .profileImg(resp.getValue().getProfileImg())
+                    .profileImg(profileImg)
                     .build();
                 return memberRepository.save(m);
             });
@@ -171,5 +197,44 @@ public class AuthServiceImpl implements AuthService {
             .orElseThrow(() -> new BadRequestException("존재하지 않는 회원입니다."));
 
         return member.convertDTO();
+    }
+
+    /**
+     * 포인트 회수 활동내역 모두 삭제 데이터 모두 삭제
+     */
+    @Override
+    @Transactional
+    public void delete(MemberUserDetails user, HttpServletRequest request) {
+        Member member = memberRepository.findById(user.getMember().getId())
+            .orElseThrow(() -> new BadRequestException("존재하지 않는 회원입니다."));
+
+        //1 게시물 소프트 딜리트
+        boardPostRepository.markAllDeletePost(member.getId());
+
+        //2. 댓글 삭제
+        boardCommentsRepository.markAllDeleteComment(member.getId());
+        voteCommentsRepository.markAllDeleteComment(member.getId());
+        articleCommentsRepository.markAllDeleteComment(member.getId());
+        videoCommentsRepository.markAllDeleteComment(member.getId());
+
+        //3. 포인트 삭제
+        PointHistory history = PointHistory.builder()
+            .member(member)
+            .amount(member.getPoints())
+            .reason("회원탈퇴포인트회수")
+            .status(PointStatus.POINT_REVOKE)
+            .type(PointType.REVOKE_POINT)
+            .targetId(member.getId())
+            .build();
+
+        pointRepository.save(history);
+
+        member.decreasePoints(member.getPoints());
+
+        member.disconnectTwitterAccount();
+
+        member.deleteMemInfo();
+
+
     }
 }

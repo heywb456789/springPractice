@@ -85,7 +85,7 @@ public class AdminPointController {
         @PathVariable Long id,
         @AuthenticationPrincipal AdminUserDetails user,
         @RequestParam(name = "page", defaultValue = "0") int page,
-        @RequestParam(name = "size", defaultValue = "10") int size,
+        @RequestParam(name = "size", defaultValue = "50") int size,
         Model model) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         ListDTO<PointResponse> pointPage = adminPointService.getUserPointList(request, id, user, pageable);
@@ -103,6 +103,7 @@ public class AdminPointController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
         model.addAttribute("searchRequest", request);
+        model.addAttribute("size", size);
 
         // 페이지 제목 및 활성 메뉴 설정
         model.addAttribute("categories", OriginalCategory.values());

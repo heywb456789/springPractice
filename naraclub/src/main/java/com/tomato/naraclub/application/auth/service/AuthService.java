@@ -24,4 +24,6 @@ public interface AuthService {
     void logout(MemberUserDetails userDetails, HttpServletRequest request);
 
     MemberDTO me(MemberUserDetails user);
+
+    void delete(MemberUserDetails userDetails, HttpServletRequest request);
 }

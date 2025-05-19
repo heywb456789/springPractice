@@ -170,13 +170,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
             });
 
-            if (!response.ok) {
+            const result = await response.json();
+            if (!result.response) {
                 throw new Error('포인트 회수 중 오류가 발생했습니다.');
             }
 
-            const result = await response.json();
 
-            if (result.success) {
+            if (result.response) {
                 showToast('포인트가 성공적으로 회수되었습니다.', 'success');
                 revokePointModal.hide();
 

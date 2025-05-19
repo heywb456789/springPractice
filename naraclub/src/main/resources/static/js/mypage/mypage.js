@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
   initLogout();
   // 계정 연동 기능
   initAccountLinking();
+  // 회원 탈퇴 기능
+  initAccountDeletion();
 });
 
 // 로그인 상태 확인
@@ -278,7 +280,7 @@ async function updateUserName(newName) {
     const inputField = document.getElementById('userNameInput');
     inputField.disabled = true;
 
-    const response = await authFetch('/api/user/update-name', {
+    const response = await authFetch('/api/members/update-name', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: newName })
@@ -440,6 +442,71 @@ function initLogout() {
   });
 }
 
+// 회원 탈퇴 초기화
+function initAccountDeletion() {
+  const deleteBtn = document.getElementById('deleteBtn');
+  if (!deleteBtn) {
+    console.error("회원 탈퇴 버튼을 찾을 수 없습니다.");
+    return;
+  }
+
+  deleteBtn.addEventListener('click', async function() {
+    // 첫 번째 확인
+    if (!confirm('정말로 회원 탈퇴를 진행하시겠습니까?')) return;
+
+    // 두 번째 확인 (중요성 강조)
+    if (!confirm('탈퇴 시 적립한 포인트 및 모든 개인정보 와 활동 내역이 삭제됩니다. <br/> 계속 진행하시겠습니까?')) return;
+
+    try {
+      // 버튼 비활성화 및 로딩 상태 표시
+      const originalText = deleteBtn.innerHTML;
+      deleteBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+      deleteBtn.style.pointerEvents = 'none';
+
+      // 회원 탈퇴 API 호출
+      await deleteAccount();
+
+      // 성공 메시지
+      alert('회원 탈퇴가 완료되었습니다. 그동안 서비스를 이용해 주셔서 감사합니다.');
+
+      // 로컬 스토리지 토큰 삭제
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+
+      // 메인 페이지로 이동
+      window.location.href = '/main/main.html';
+    } catch (err) {
+      // 버튼 상태 복원
+      deleteBtn.innerHTML = originalText;
+      deleteBtn.style.pointerEvents = 'auto';
+
+      // 오류 처리
+      if (err instanceof FetchError && err.httpStatus === 401) {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/login/login.html';
+      } else {
+        handleFetchError(err);
+        alert('회원 탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      }
+    }
+  });
+}
+
+// 회원 탈퇴 API 호출
+async function deleteAccount() {
+  const res = await authFetch('/api/auth/delete', {
+    method: 'POST'
+  });
+
+  // 응답 데이터 확인 (필요 시)
+  const data = await res.json();
+  if (!data.status || data.status.code !== 'OK_0000') {
+    throw new Error('회원 탈퇴 처리 실패: ' + (data.status?.message || '알 수 없는 오류'));
+  }
+
+  return data;
+}
+
 // 로그아웃 API 호출
 async function logoutAPI() {
   // DELETE /api/auth/logout 이 204나 200을 반환한다고 가정
@@ -576,4 +643,3 @@ async function unlinkAccount(accountType) {
     alert('계정 연동 해제에 실패했습니다.');
   }
 }
-

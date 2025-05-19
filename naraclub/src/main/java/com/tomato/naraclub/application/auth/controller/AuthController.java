@@ -117,4 +117,12 @@ public class AuthController {
     public ResponseDTO<AuthResponseDTO> refreshToken(@RequestBody Map<String, String> request, HttpServletRequest servletRequest) {
         return ResponseDTO.ok(authService.refreshToken(request.get("refreshToken"), servletRequest));
     }
+
+    @PostMapping("/delete")
+    public ResponseDTO<?> delete(@AuthenticationPrincipal MemberUserDetails userDetails,
+        HttpServletRequest request) {
+        authService.delete(userDetails, request);
+
+        return ResponseDTO.ok();
+    }
 }

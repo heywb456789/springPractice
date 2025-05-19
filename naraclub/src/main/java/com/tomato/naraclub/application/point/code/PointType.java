@@ -28,7 +28,8 @@ public enum PointType {
     WRITE_VIDEO_SHORT_COMMENT("오리지날 숏폼 댓글",1.0),
     WRITE_VOTE_COMMENT("투표 댓글",1.0),
     APPLY_VOTE("투표 참여", 1.0),
-    USE_POINT("포인트사용", 0.0)
+    USE_POINT("포인트사용", 0.0),
+    REVOKE_POINT("포인트회수", 0.0),
     ;
 
     private final String displayName;

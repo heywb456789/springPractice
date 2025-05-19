@@ -33,7 +33,7 @@ public class VideoCommentsCustomRepositoryImpl implements VideoCommentsCustomRep
 
         Long userId = user == null ? 0L : user.getMember().getId();
 
-        BooleanExpression condition = qVideoComments.video.id.eq(videoId);
+        BooleanExpression condition = qVideoComments.video.id.eq(videoId).and(qVideoComments.deleted.eq(false));
 
         // count 쿼리
         JPAQuery<Long> countQuery = query

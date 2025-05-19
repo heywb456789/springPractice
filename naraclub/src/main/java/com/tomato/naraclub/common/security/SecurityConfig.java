@@ -81,13 +81,13 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasAnyRole("SUPER_ADMIN", "OPERATOR", "UPLOADER")
 
 
-                .requestMatchers("/api/auth/validate").authenticated()
+                .requestMatchers("/api/auth/validate", "/api/auth/delete").authenticated()
                 .requestMatchers(HttpMethod.POST,"/api/board/posts" ,"/api/vote/posts/*/options/*").authenticated()
                 // 2) 로그인·리프레시는 누구나 (토큰 없어도) 허용
                 .requestMatchers(
                     "/api/auth/login", "/api/auth/refresh", "/api/board/**",
                     "/api/vote/**", "/api/videos/**", "/api/news/**",
-                    "/share/**", "twitter/callback"
+                    "/share/**", "twitter/callback", "/file/profile/**"
                 ).permitAll()
 
                 // 3) swagger, 정적 리소스 등

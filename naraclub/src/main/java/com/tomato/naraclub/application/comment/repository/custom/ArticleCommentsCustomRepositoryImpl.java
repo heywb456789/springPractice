@@ -33,7 +33,7 @@ public class ArticleCommentsCustomRepositoryImpl implements ArticleCommentsCusto
 
         Long userId = user != null ? user.getMember().getId() : 0L;
 
-        BooleanExpression condition = articleComments.article.id.eq(newsId);
+        BooleanExpression condition = articleComments.article.id.eq(newsId).and(articleComments.deleted.eq(false));
 
         // count 쿼리
         JPAQuery<Long> countQuery = query

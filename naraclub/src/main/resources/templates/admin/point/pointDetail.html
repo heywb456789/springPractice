@@ -30,9 +30,9 @@
             <h4 class="page-title mb-0">회원 포인트 상세</h4>
         </div>
         <div class="page-actions">
-            <button type="button" class="btn btn-success me-2" id="btnExportExcel">
-                <i class="fas fa-download me-1"></i> Excel 내보내기
-            </button>
+<!--            <button type="button" class="btn btn-success me-2" id="btnExportExcel">-->
+<!--                <i class="fas fa-download me-1"></i> Excel 내보내기-->
+<!--            </button>-->
         </div>
     </div>
 
@@ -59,7 +59,7 @@
                     <div class="point-summary-card">
                         <h6 class="text-uppercase text-muted mb-2">현재 포인트</h6>
                         <h3 class="mb-0 text-primary">
-                            <span th:text="${#numbers.formatDecimal(member.points, 1, 1, 'COMMA')}">15.0</span>
+                            <span th:text="${#numbers.formatDecimal(member.points, 1, 3, 'COMMA')}">15.0</span>
                         </h3>
                     </div>
                 </div>
@@ -75,29 +75,36 @@
     <!-- Filter Card -->
     <div class="card mb-4">
         <div class="card-body">
-            <form id="searchForm" method="get" th:action="@{/admin/users/points/{id}(id=${member.id})}">
+            <form id="searchForm" method="get" th:action="@{/admin/points/user/{id}(id=${member.id})}">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label for="status" class="form-label">포인트 상태</label>
                         <select class="form-select" id="status" name="status">
                             <option value="" th:selected="${searchRequest.status == null}">전체</option>
-                            <option value="POINT_EARN" th:selected="${searchRequest.status == 'POINT_EARN'}">적립</option>
-                            <option value="POINT_USE" th:selected="${searchRequest.status == 'POINT_USE'}">사용</option>
+                            <option value="POINT_EARN" th:selected="${searchRequest.status?.name() == 'POINT_EARN'}">적립</option>
+                            <option value="POINT_USE" th:selected="${searchRequest.status?.name() == 'POINT_USE'}">사용</option>
+                            <option value="POINT_REVOKE" th:selected="${searchRequest.status?.name() == 'POINT_REVOKE'}">회수</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label for="type" class="form-label">포인트 유형</label>
                         <select class="form-select" id="type" name="type">
                             <option value="" th:selected="${searchRequest.type == null}">전체</option>
-                            <option value="SHARE_VOTE" th:selected="${searchRequest.type == 'SHARE_VOTE'}">투표 공유</option>
-                            <option value="SHARE_BOARD" th:selected="${searchRequest.type == 'SHARE_BOARD'}">게시판 공유</option>
-                            <option value="SHARE_NEWS" th:selected="${searchRequest.type == 'SHARE_NEWS'}">뉴스 공유</option>
-                            <option value="REFERRAL_CODE_ENTRY" th:selected="${searchRequest.type == 'REFERRAL_CODE_ENTRY'}">초대코드 입력</option>
-                            <option value="REFERRAL_INVITER_BONUS" th:selected="${searchRequest.type == 'REFERRAL_INVITER_BONUS'}">초대코드 제공</option>
-                            <option value="WRITE_BOARD" th:selected="${searchRequest.type == 'WRITE_BOARD'}">게시판 작성</option>
-                            <option value="WRITE_COMMENT" th:selected="${searchRequest.type == 'WRITE_BOARD_COMMENT'}">댓글 작성</option>
-                            <option value="APPLY_VOTE" th:selected="${searchRequest.type == 'APPLY_VOTE'}">투표 참여</option>
-                            <option value="USE_POINT" th:selected="${searchRequest.type == 'USE_POINT'}">포인트 사용</option>
+                            <option value="SHARE_VOTE" th:selected="${searchRequest.type?.name() == 'SHARE_VOTE'}">투표 공유</option>
+                            <option value="SHARE_BOARD" th:selected="${searchRequest.type?.name() == 'SHARE_BOARD'}">게시판 공유</option>
+                            <option value="SHARE_NEWS" th:selected="${searchRequest.type?.name() == 'SHARE_NEWS'}">뉴스 공유</option>
+                            <option value="SHARE_VIDEO_LONG" th:selected="${searchRequest.type?.name() == 'SHARE_VIDEO_LONG'}">롱폼 공유</option>
+                            <option value="SHARE_VIDEO_SHORT" th:selected="${searchRequest.type?.name() == 'SHARE_VIDEO_SHORT'}">숏폼 공유</option>
+                            <option value="REFERRAL_CODE_ENTRY" th:selected="${searchRequest.type?.name() == 'REFERRAL_CODE_ENTRY'}">초대코드 입력 보상</option>
+                            <option value="REFERRAL_INVITER_BONUS" th:selected="${searchRequest.type?.name() == 'REFERRAL_INVITER_BONUS'}">초대코드 제공 보상</option>
+                            <option value="WRITE_BOARD" th:selected="${searchRequest.type?.name() == 'WRITE_BOARD'}">자유게시판 작성</option>
+                            <option value="WRITE_BOARD_COMMENT" th:selected="${searchRequest.type?.name() == 'WRITE_BOARD_COMMENT'}">자유게시판 댓글</option>
+                            <option value="WRITE_NEWS_COMMENT" th:selected="${searchRequest.type?.name() == 'WRITE_NEWS_COMMENT'}">뉴스 댓글</option>
+                            <option value="WRITE_VIDEO_LONG_COMMENT" th:selected="${searchRequest.type?.name() == 'WRITE_VIDEO_LONG_COMMENT'}">오리지날 롱폼 댓글</option>
+                            <option value="WRITE_VIDEO_SHORT_COMMENT" th:selected="${searchRequest.type?.name() == 'WRITE_VIDEO_SHORT_COMMENT'}">오리지날 숏폼 댓글</option>
+                            <option value="WRITE_VOTE_COMMENT" th:selected="${searchRequest.type?.name() == 'WRITE_VOTE_COMMENT'}">투표 댓글</option>
+                            <option value="APPLY_VOTE" th:selected="${searchRequest.type?.name() == 'APPLY_VOTE'}">투표 참여</option>
+                            <option value="USE_POINT" th:selected="${searchRequest.type?.name() == 'USE_POINT'}">포인트 사용</option>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -120,9 +127,9 @@
                     <div class="col-md-3">
                         <label for="size" class="form-label">표시 개수</label>
                         <select class="form-select" id="size" name="size">
-                            <option value="50" th:selected="${searchRequest.size == 50 || searchRequest.size == null}">50개</option>
-                            <option value="100" th:selected="${searchRequest.size == 100}">100개</option>
-                            <option value="200" th:selected="${searchRequest.size == 200}">200개</option>
+                            <option value="50" th:selected="${size == 50 || size == null}">50개</option>
+                            <option value="100" th:selected="${size == 100}">100개</option>
+                            <option value="200" th:selected="${size == 200}">200개</option>
                         </select>
                     </div>
                     <div class="col-md-6 d-flex align-items-end">
@@ -174,9 +181,9 @@
                     <td th:text="${point.pointId}">1</td>
                     <td>
                         <span class="badge"
-                              th:classappend="${point.status == 'POINT_EARN' ? 'bg-success' : 'bg-primary'}"
+                              th:classappend="${point.status.name() == 'POINT_EARN' ? 'bg-success' : 'bg-primary'}"
                               th:text="${point.type != null ? point.type.getDisplayName() : '기타'}">투표 공유</span>
-                        <span th:if="${point.status == 'POINT_USE'}" class="badge bg-light text-dark ms-1">
+                        <span th:if="${point.status.name() == 'POINT_USE'}" class="badge bg-light text-dark ms-1">
                             <i class="fas fa-check-circle text-primary"></i> 사용
                         </span>
                     </td>
@@ -188,13 +195,13 @@
                         <span th:unless="${point.content != null}" class="text-muted">-</span>
                     </td>
                     <td>
-                        <span th:class="${point.status == 'POINT_EARN' ? 'text-success' : 'text-danger'}">
-                          <i th:class="${point.status == 'POINT_EARN' ? 'fas fa-plus' : 'fas fa-minus'}" th:if="${point.status != 'POINT_REVOKE'}"></i>
-                          <span th:text="${#numbers.formatDecimal(point.point, 1, 1, 'COMMA')}">5.0</span>
+                        <span th:class="${point.status.name() == 'POINT_EARN' ? 'text-success' : 'text-danger'}">
+                          <i th:class="${point.status.name() == 'POINT_EARN' ? 'fas fa-plus' : 'fas fa-minus'}" th:if="${point.status.name() != 'POINT_REVOKE'}"></i>
+                          <span th:text="${#numbers.formatDecimal(point.point, 1, 3, 'COMMA')}">5.0</span>
                         </span>
                     </td>
                     <td>
-                        <span th:text="${#numbers.formatDecimal(point.memberPoint, 1, 1, 'COMMA')}">15.0</span>
+                        <span th:text="${#numbers.formatDecimal(point.memberPoint, 1, 3, 'COMMA')}">15.0</span>
                     </td>
                     <td>
                         <span th:if="${point.createdAt != null}" th:text="${#temporals.format(point.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</span>
@@ -211,7 +218,7 @@
                     <!-- First Page -->
                     <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
                         <a class="page-link"
-                           th:href="@{/admin/users/points/{id}(id=${member.id}, page=0, size=${searchRequest.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           th:href="@{/admin/points/user/{id}(id=${member.id}, page=0, size=${pointHistoryList.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
                            aria-label="First">
                             <span aria-hidden="true">&laquo;&laquo;</span>
                         </a>
@@ -220,7 +227,7 @@
                     <!-- Previous Page -->
                     <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
                         <a class="page-link"
-                           th:href="@{/admin/users/points/{id}(id=${member.id}, page=${currentPage - 2}, size=${searchRequest.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           th:href="@{/admin/points/user/{id}(id=${member.id}, page=${currentPage - 2}, size=${pointHistoryList.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
                            aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
@@ -231,14 +238,14 @@
                         th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
                         th:classappend="${pageNumber == currentPage ? 'active' : ''}">
                         <a class="page-link"
-                           th:href="@{/admin/users/points/{id}(id=${member.id}, page=${pageNumber - 1}, size=${searchRequest.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           th:href="@{/admin/points/user/{id}(id=${member.id}, page=${pageNumber - 1}, size=${pointHistoryList.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
                            th:text="${pageNumber}">1</a>
                     </li>
 
                     <!-- Next Page -->
                     <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
                         <a class="page-link"
-                           th:href="@{/admin/users/points/{id}(id=${member.id}, page=${currentPage}, size=${searchRequest.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           th:href="@{/admin/points/user/{id}(id=${member.id}, page=${currentPage}, size=${pointHistoryList.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
                            aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
@@ -247,7 +254,7 @@
                     <!-- Last Page -->
                     <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
                         <a class="page-link"
-                           th:href="@{/admin/users/points/{id}(id=${member.id}, page=${totalPages - 1}, size=${searchRequest.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
+                           th:href="@{/admin/points/user/{id}(id=${member.id}, page=${totalPages - 1}, size=${pointHistoryList.size}, status=${searchRequest.status}, type=${searchRequest.type}, sortType=${searchRequest.sortType}, dateRange=${searchRequest.dateRange})}"
                            aria-label="Last">
                             <span aria-hidden="true">&raquo;&raquo;</span>
                         </a>
@@ -270,7 +277,7 @@
                         <div class="d-flex">
                             <i class="fas fa-info-circle me-2 mt-1"></i>
                             <div>
-                                <p class="mb-1">회원 <strong th:text="${member.name}">홍길동</strong>님의 현재 포인트는 <strong th:text="${#numbers.formatDecimal(member.point, 1, 1, 'COMMA')}">15.0</strong>P 입니다.</p>
+                                <p class="mb-1">회원 <strong th:text="${member.name}">홍길동</strong>님의 현재 포인트는 <strong th:text="${#numbers.formatDecimal(member.points, 1, 1, 'COMMA')}">15.0</strong>P 입니다.</p>
                                 <p class="mb-0 small">회수할 포인트는 현재 보유 포인트보다 작아야 합니다.</p>
                             </div>
                         </div>
@@ -280,7 +287,7 @@
                         <div class="mb-3">
                             <label for="revokeAmount" class="form-label">회수 금액</label>
                             <div class="input-group">
-                                <input type="number" class="form-control" id="revokeAmount" min="0.1" step="0.1" max="${member.point}">
+                                <input type="number" class="form-control" id="revokeAmount" min="0.01" step="0.01" max="${member.point}">
                                 <span class="input-group-text">P</span>
                             </div>
                         </div>

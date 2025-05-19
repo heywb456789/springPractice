@@ -23,7 +23,7 @@ public class VoteCommentsCustomRepositoryImpl implements VoteCommentsCustomRepos
     public ListDTO<CommentResponse> getBoardPostsComments(Long votePostId, MemberUserDetails user, Pageable pageable) {
         QVoteComments qVote = QVoteComments.voteComments;
         Long userId = user==null ? 0L : user.getMember().getId();
-        BooleanExpression condition = qVote.votePost.id.eq(votePostId);
+        BooleanExpression condition = qVote.votePost.id.eq(votePostId).and(qVote.deleted.eq(false));
 
         // count 쿼리
         JPAQuery<Long> countQuery = queryFactory

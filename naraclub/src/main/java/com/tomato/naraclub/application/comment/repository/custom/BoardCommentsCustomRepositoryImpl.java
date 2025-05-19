@@ -34,7 +34,7 @@ public class BoardCommentsCustomRepositoryImpl implements BoardCommentsCustomRep
     public ListDTO<CommentResponse> getBoardPostsComments(Long postId, MemberUserDetails user, Pageable pageable) {
         QBoardComments comment = QBoardComments.boardComments;
         Long userId = user==null ? 0L : user.getMember().getId();
-        BooleanExpression condition = comment.boardPost.id.eq(postId);
+        BooleanExpression condition = comment.boardPost.id.eq(postId).and(comment.deleted.eq(false));
 
         // count 쿼리
         JPAQuery<Long> countQuery = query

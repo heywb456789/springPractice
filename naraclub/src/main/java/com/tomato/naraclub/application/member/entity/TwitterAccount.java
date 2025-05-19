@@ -43,4 +43,7 @@ public class TwitterAccount extends CreatedAndModifiedAudit {
     @Column(nullable = false, length = 100)
     private String screenName;
 
+    public void setMember(Member member) {
+        this.member = member;
+    }
 }

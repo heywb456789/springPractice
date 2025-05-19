@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
@@ -160,10 +161,29 @@ public class Member extends Audit {
 
     public ShareResponse covertShareDTO() {
         return ShareResponse.builder()
-                .id(id)
-                .title("나라걱정.kr 지금 가입하세요! 초대 코드로 가입하면 10TTR 지급!")
-                .summary("나라걱정.kr 지금 가입하세요! 초대 코드로 가입하면 10TTR 지급!")
-                .thumbnailUrl("")
-                .build();
+            .id(id)
+            .title("나라걱정.kr 지금 가입하세요! 초대 코드로 가입하면 10TTR 지급!")
+            .summary("나라걱정.kr 지금 가입하세요! 초대 코드로 가입하면 10TTR 지급!")
+            .thumbnailUrl("")
+            .build();
+    }
+
+    public void deleteMemInfo() {
+        this.name = "";
+        this.phoneNumber = "";
+        this.userKey = UUID.randomUUID().toString();
+        this.status = MemberStatus.DELETED;
+        this.role = MemberRole.USER_INACTIVE;
+    }
+
+    public void disconnectTwitterAccount() {
+        if (this.twitterAccount != null) {
+            this.twitterAccount.setMember(null); // 양방향 관계 정리
+            this.twitterAccount = null;
+        }
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

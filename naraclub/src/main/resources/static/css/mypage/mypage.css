@@ -179,6 +179,11 @@
   font-size: 15px;
 }
 
+.menu-item .delete {
+  color: #b01e2e;
+  font-size: 15px;
+}
+
 .menu-item i {
   color: #adb5bd;
   font-size: 12px;

@@ -31,4 +31,8 @@ public interface BoardPostRepository extends QuerydslSearchableRepository<BoardP
     Optional<BoardPost> findWithImagesByIdAndDeletedFalse(Long postId);
 
     Optional<BoardPost> findByIdAndDeletedFalse(Long id);
+
+    @Modifying
+    @Query("UPDATE BoardPost a SET a.deleted = true WHERE a.author.id = :authorId")
+    int markAllDeletePost(@Param("authorId") Long id);
 }

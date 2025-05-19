@@ -2,6 +2,7 @@ package com.tomato.naraclub.application.member.service;
 
 import com.tomato.naraclub.application.board.dto.ShareResponse;
 import com.tomato.naraclub.application.member.dto.MemberDTO;
+import com.tomato.naraclub.application.member.dto.MemberUpdateRequest;
 import com.tomato.naraclub.application.member.repository.MemberRepository;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.point.code.PointType;
@@ -9,6 +10,8 @@ import com.tomato.naraclub.application.point.service.PointService;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.MemberRole;
 import com.tomato.naraclub.common.code.MemberStatus;
+import com.tomato.naraclub.common.code.ResponseStatus;
+import com.tomato.naraclub.common.exception.APIException;
 import com.tomato.naraclub.common.exception.BadRequestException;
 import com.tomato.naraclub.common.exception.UnAuthorizationException;
 import lombok.extern.slf4j.Slf4j;
@@ -78,5 +81,14 @@ public class MemberServiceImpl implements MemberService {
             .orElse(new Member());
 
         return member.covertShareDTO();
+    }
+
+    @Override
+    @Transactional
+    public MemberDTO updateName(MemberUpdateRequest request, MemberUserDetails userDetails) {
+        Member member = memberRepository.findById(userDetails.getMember().getId()).orElseThrow(()->new APIException(ResponseStatus.USER_NOT_EXIST));
+
+        member.setName(request.getName());
+        return member.convertDTO();
     }
 }
