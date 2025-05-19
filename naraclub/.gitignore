@@ -1,50 +1,25 @@
-# ========================
-# Gradle
-# ========================
-.gradle/                   # Gradle 캐시 디렉터리
-build/                     # 빌드 산출물
-!gradle/wrapper/gradle-wrapper.jar  # wrapper jar 은 버전 관리
+# ──────────────────────────────────────────
+# Gradle 캐시
+**/.gradle/
 
-# 모든 모듈의 build 산출물
+# 빌드 산출물 (모든 build/ 폴더)
 **/build/
-**/out/
 
-# 로그
+# 애플리케이션 로그
 **/logs/
 *.log
 
-# ========================
-# IDE 설정
-# ========================
-# IntelliJ IDEA
-.idea/
-*.iml
-*.iws
-*.ipr
-out/                       # IntelliJ의 빌드 출력
+# IDE 출력
+**/out/
 
-# Spring Tool Suite / Eclipse
-.classpath
-.project
-.settings/
-.apt_generated/
-.factorypath
-.springBeans
-.sts4-cache/
-bin/
+# wrapper jar 은 버전 관리
+!gradle/wrapper/gradle-wrapper.jar
 
-# NetBeans
-nbproject/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
+# 기타 IDE 설정
+/.idea/
+/*.iml
+/.vscode/
 
-# VS Code
-.vscode/
-
-# ========================
-# 운영체제
-# ========================
+# OS 메타파일
 .DS_Store
 Thumbs.db
