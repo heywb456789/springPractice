@@ -197,7 +197,7 @@ function initShareFeatures() {
 // 통통 앱 공유 함수
 function shareTongtongApp() {
   const voteId = getVoteIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/vote/${voteId}`;
+  const shareUrl = `https://club1.newstomato.com/share/vote/${voteId}`;
 
   // 모바일 기기 확인
   const userAgent = navigator.userAgent.toLowerCase();
@@ -261,7 +261,7 @@ async function setupKakaoShare() {
   const userId = await getUserId();
   const title = document.getElementById('voteQuestion').textContent;
   const description = '토마토 뉴스 투표광장에서 참여해 보세요!';
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/vote/${id}`;
+  const shareUrl = `https://club1.newstomato.com/share/vote/${id}`;
   const imageUrl = 'https://image.newstomato.com/newstomato/club/share/voting.png';
 
   const container = document.getElementById('kakaotalk-sharing-btn');
@@ -293,7 +293,7 @@ async function setupKakaoShare() {
 
 function copyCurrentUrl() {
   const voteId = getVoteIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/vote/${voteId}`;
+  const shareUrl = `https://club1.newstomato.com/share/vote/${voteId}`;
   navigator.clipboard.writeText(shareUrl)
   .then(() => {
     alert('URL이 복사되었습니다.');
@@ -311,7 +311,7 @@ function copyCurrentUrl() {
 async function shareToX() {
   const title = document.querySelector('.post-title')?.textContent.trim() || '';
   const postId = getVoteIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/vote/${postId}`;
+  const shareUrl = `https://club1.newstomato.com/share/vote/${postId}`;
 
   try {
     const res = await authFetch('/twitter/share', {

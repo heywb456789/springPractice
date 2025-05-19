@@ -47,7 +47,7 @@ google:
     firebase: "/firebase/dev-bread-4908a-firebase-adminsdk-cp247-2bc9dd1010.json"
 
 x:
-  redirect-url: "https://xn--w69at2fhshwrs.kr/twitter/callback"
+  redirect-url: "https://club1.newstomato.com/twitter/callback"
 
 ttr:
   base-url: http://127.0.0.1:9000

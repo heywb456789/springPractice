@@ -574,7 +574,7 @@ function initShareFeatures() {
  */
 function shareTongtongApp() {
   const videoId = getVideoIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/original/${videoId}`;
+  const shareUrl = `https://club1.newstomato.com/share/original/${videoId}`;
 
   // 모바일 기기 확인
   const userAgent = navigator.userAgent.toLowerCase();
@@ -639,7 +639,7 @@ async function setupKakaoShare() {
   const userId = await getUserId();
   const title = document.getElementById('videoTitle')?.textContent || '동영상 공유';
   const description = document.getElementById('videoDescription')?.textContent?.slice(0, 100) || '';
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/original/${id}`;
+  const shareUrl = `https://club1.newstomato.com/share/original/${id}`;
   const imageUrl = document.getElementById('videoThumbnail')?.src || '';
 
   const container = document.getElementById('kakaotalk-sharing-btn');
@@ -665,7 +665,7 @@ async function setupKakaoShare() {
       }
     });
   } else {
-    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
+    Kakao.init('277f475e199d62bca2ac85a09b0d3045');
     Kakao.Share.createDefaultButton({
       container: '#kakaotalk-sharing-btn',
       objectType: 'feed',
@@ -690,7 +690,7 @@ async function setupKakaoShare() {
 async function shareToX() {
   const title = document.querySelector('.post-title')?.textContent.trim() || '';
   const postId = getVideoIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/original/${postId}`;
+  const shareUrl = `https://club1.newstomato.com/share/original/${postId}`;
 
   try {
     const res = await authFetch('/twitter/share', {
@@ -721,7 +721,7 @@ async function shareToX() {
 // URL 복사 후 모달 닫기
 function copyCurrentUrl() {
   const videoId = getVideoIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/original/${videoId}`;
+  const shareUrl = `https://club1.newstomato.com/share/original/${videoId}`;
   navigator.clipboard.writeText(shareUrl)
     .then(() => {
       alert('URL이 클립보드에 복사되었습니다.');

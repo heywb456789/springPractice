@@ -166,7 +166,7 @@ function updateInviteCodeUI(data) {
 
   if (urlElement) {
     // inviteUrl이 있으면 사용, 없으면 초대 코드로 URL 생성
-    urlElement.textContent = `https://www.xn--w69at2fhshwrs.kr/share/invite?code=${data.inviteCode}`;
+    urlElement.textContent = `https://club1.newstomato.com/share/invite?code=${data.inviteCode}`;
   }
 }
 

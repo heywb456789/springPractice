@@ -326,7 +326,7 @@ function initShareFeatures() {
  */
 function shareTongtongApp() {
   const newsId = getNewsIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/news/${newsId}`;
+  const shareUrl = `https://club1.newstomato.com/share/news/${newsId}`;
 
   // 모바일 기기 확인
   const userAgent = navigator.userAgent.toLowerCase();
@@ -393,7 +393,7 @@ async function setupKakaoShare() {
   const userId = await getUserId();
   const title = document.getElementById('newsTitle')?.textContent || '뉴스 공유';
   const description = '';
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/news/${id}`;
+  const shareUrl = `https://club1.newstomato.com/share/news/${id}`;
   const imageUrl = document.querySelector('.news-thumbnail img')?.src || 'https://image.newstomato.com/newstomato/club/share/news.png';
 
   const container = document.getElementById('kakaotalk-sharing-btn');
@@ -419,7 +419,7 @@ async function setupKakaoShare() {
       }
     });
   } else {
-    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a');
+    Kakao.init('277f475e199d62bca2ac85a09b0d3045');
     Kakao.Share.createDefaultButton({
       container: '#kakaotalk-sharing-btn',
       objectType: 'feed',
@@ -443,7 +443,7 @@ async function setupKakaoShare() {
  */
 function copyCurrentUrl() {
   const newsId = getNewsIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/news/${newsId}`;
+  const shareUrl = `https://club1.newstomato.com/share/news/${newsId}`;
   navigator.clipboard.writeText(shareUrl)
   .then(() => {
     alert('URL이 클립보드에 복사되었습니다.');
@@ -461,7 +461,7 @@ function copyCurrentUrl() {
 async function shareToX() {
   const title = document.querySelector('.post-title')?.textContent.trim() || '';
   const postId = getNewsIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/news/${postId}`;
+  const shareUrl = `https://club1.newstomato.com/share/news/${postId}`;
 
   try {
     const res = await authFetch('/twitter/share', {

@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: local
+    active: prod
   application:
     name: narasarang
   output:
@@ -67,7 +67,7 @@ one-id:
   appType : newstong
 
 kakao:
-  admin-key: c96a3dcf1bd646ad68f5d46d5318a748
+  admin-key: ab46dcf9b0c383a88281cbf8264794d6
 
 x:
   api-key: d5Xop7XGuEMqMRzzgl3R5Cekn

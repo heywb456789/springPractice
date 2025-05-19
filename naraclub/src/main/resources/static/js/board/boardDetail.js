@@ -79,7 +79,7 @@ function initShareFeatures() {
 // 통통 앱 공유 함수
 function shareTongtongApp() {
   const postId = getPostIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
+  const shareUrl = `https://club1.newstomato.com/share/board/${postId}`;
 
   // 모바일 기기 확인
   const userAgent = navigator.userAgent.toLowerCase();
@@ -142,7 +142,7 @@ function shareTongtongApp() {
 async function setupKakaoShare() {
   const postId = getPostIdFromUrl();
   const userId = await getUserId();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
+  const shareUrl = `https://club1.newstomato.com/share/board/${postId}`;
   const title = document.querySelector('.post-title')?.textContent || '게시글 공유';
   const description = document.querySelector('.post-content p')?.textContent || '';
   const imageUrl = 'https://image.newstomato.com/newstomato/club/share/freeboard.png';
@@ -170,7 +170,7 @@ async function setupKakaoShare() {
       }
     });
   } else {
-    Kakao.init('a1c1145bbd0ca5e22d5b2c996a8aa32a'); // voteDetail과 동일한 앱 키
+    Kakao.init('277f475e199d62bca2ac85a09b0d3045'); // voteDetail과 동일한 앱 키
     Kakao.Share.createDefaultButton({
       container: '#kakaotalk-sharing-btn',
       objectType: 'feed',
@@ -192,7 +192,7 @@ async function setupKakaoShare() {
 // URL 복사 및 모달 닫기
 function copyCurrentUrl() {
   const postId = getPostIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
+  const shareUrl = `https://club1.newstomato.com/share/board/${postId}`;
   navigator.clipboard.writeText(shareUrl)
     .then(() => {
       alert('URL이 클립보드에 복사되었습니다.');
@@ -346,7 +346,7 @@ async function toggleLike(button) {
 async function shareToX() {
   const title = document.querySelector('.post-title')?.textContent.trim() || '';
   const postId = getPostIdFromUrl();
-  const shareUrl = `https://www.xn--w69at2fhshwrs.kr/share/board/${postId}`;
+  const shareUrl = `https://club1.newstomato.com/share/board/${postId}`;
 
   try {
     const res = await authFetch('/twitter/share', {
