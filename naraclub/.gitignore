@@ -1,40 +1,50 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+# ========================
+# Gradle
+# ========================
+.gradle/                   # Gradle 캐시 디렉터리
+build/                     # 빌드 산출물
+!gradle/wrapper/gradle-wrapper.jar  # wrapper jar 은 버전 관리
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# 모든 모듈의 build 산출물
+**/build/
+**/out/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# 로그
+**/logs/
+*.log
+
+# ========================
+# IDE 설정
+# ========================
+# IntelliJ IDEA
+.idea/
 *.iml
+*.iws
 *.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+out/                       # IntelliJ의 빌드 출력
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Spring Tool Suite / Eclipse
+.classpath
+.project
+.settings/
+.apt_generated/
+.factorypath
+.springBeans
+.sts4-cache/
+bin/
 
-### VS Code ###
+# NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
 .vscode/
 
-##log
-/logs
+# ========================
+# 운영체제
+# ========================
+.DS_Store
+Thumbs.db

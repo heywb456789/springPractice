@@ -1,0 +1,84 @@
+spring:
+  profiles:
+    active: prod
+  application:
+    name: narasarang
+  output:
+    ansi:
+      enabled: always
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+  mvc:
+    format:
+      date: yyyy-MM-dd
+      date-time: yyyy-MM-dd HH:mm:ss
+      time: HH:mm:ss
+    thymeleaf:
+      prefix: classpath:/templates/
+      suffix: .html
+  security:
+    jwt:
+      secret: MDEyMzQ1Njc4OWNiZmFnZDEyMzQ1Njc4OWNiZmFnZA==
+      access-token-expiration: 3600000       # 액세스 토큰 1시간 (밀리초 단위)
+#      access-token-expiration: 10000       # 만료 테스트 10초
+      refresh-token-expiration: 1209600000   # 리프레시 토큰 2주
+      auto-login-expiration: 31536000000      # 자동 로그인 (1년)
+  web:
+    resources:
+      cache:
+        period: 0
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false  # 개발 중엔 false, 운영에선 true 권장
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+server:
+  port: ${SERVER_PORT:8032}
+
+# Springdoc ?? (???)
+
+springdoc:
+  packages-to-scan: com.tomato.naraclub
+  paths-to-match: /**
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+inbound-logging: ${INBOUND_LOGGING:true}
+
+one-id:
+  base-url: https://api.otongtong.net
+  login : /v1/api/external/PASSTONG/plain/login
+  sendSmsCert: /v1/api/external/{apptype}/join/certi
+  verifySmsCert : /v1/api/external/{apptype}/join/certicheck
+  register: /v1/api/external/{apptype}/join
+  coinInfo: /v1/api/external/{apptype}/coin-info
+  nation : KR
+  appType : newstong
+
+kakao:
+  admin-key: ab46dcf9b0c383a88281cbf8264794d6
+
+x:
+  api-key: d5Xop7XGuEMqMRzzgl3R5Cekn
+  api-secret-key: IqZSrUs5tK208W4iwToaItGsIJO654hbQ1eMA2wTCsIL5yn0Nm
+  bearer-token: AAAAAAAAAAAAAAAAAAAAAJsX1QEAAAAAujYT9cCShmMKNknkG3pXs6PZZbU%3DInppwQda2HRPE3x6lZueZCRYpv3WTSvDyQVgQMZbVDC1oMFEJL
+  access-token: 1456126042825891843-8alouKqKHOMHdAOAC741Nyt1aHoNCe
+  access-token-secret: 7FmnHCwj0d98XoP7K9sueb4EiPkQ1kDdEfQjaKB1KxDqR
+  client-id: dVlEeEVrSWRFWFFtenJFZFl6cDY6MTpjaQ
+  client-secret: XMKid9fHXB_UfX6__mhktlz_Tm7eIa8LbZsStN-mwKMLXkunHF
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client.ExchangeFilterFunctions: DEBUG
+    reactor.netty.http.client.HttpClient: DEBUG
