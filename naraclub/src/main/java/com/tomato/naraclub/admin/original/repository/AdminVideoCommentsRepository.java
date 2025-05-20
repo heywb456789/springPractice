@@ -18,4 +18,6 @@ public interface AdminVideoCommentsRepository extends JpaRepository<VideoComment
     List<VideoComments> findAllByVideoId(Long id);
 
     List<VideoComments> findTop20ByVideoIdOrderByCreatedAtDesc(Long id);
+
+    List<VideoComments> findByAuthorId(Long id);
 }

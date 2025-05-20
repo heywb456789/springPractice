@@ -49,6 +49,9 @@ public enum ResponseStatus {
   THUMBNAIL_IS_NECESSARY("ER_6002","썸네일은 필수 입니다.", HttpStatus.BAD_REQUEST ),
 
   ACTIVITY_NOT_EXIST("ER_7001","활동내역이 존재하지 않습니다.", HttpStatus.BAD_REQUEST ),
+  ACTIVITY_IDS_NOT_EXIST("ER_7002","승인할 활동 ID 목록이 비어있습니다.", HttpStatus.BAD_REQUEST ),
+  ACTIVITY_POINT_TYPE_NOT_EXIST("ER_7003","잘못 된 포인트 타입", HttpStatus.BAD_REQUEST ),
+  ACTIVITY_PROCESS_LIST_NOT_EXIST("ER_7004","처리 가능한 활동이 없습니다.", HttpStatus.BAD_REQUEST ),
 
   TWITTER_NOT_FOUND("ER_8001","X(구 트위터) 계정 연동을 진행해주세요!", HttpStatus.INTERNAL_SERVER_ERROR ),
   DUPLICATE_POST("ER_8002","중복된 내용의 트윗은 공유할 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),

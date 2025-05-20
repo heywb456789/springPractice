@@ -1,6 +1,7 @@
 package com.tomato.naraclub.application.oneld.service;
 
 import com.tomato.naraclub.application.auth.dto.AuthRequestDTO;
+import com.tomato.naraclub.application.oneld.dto.OneIdImageResponse;
 import com.tomato.naraclub.application.oneld.dto.OneIdResponse;
 import com.tomato.naraclub.application.oneld.dto.OneIdVerifyResponse;
 import com.tomato.naraclub.common.code.ResponseStatus;
@@ -12,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -29,6 +32,7 @@ public class TomatoAuthService {
 
     @Value("${one-id.verifySmsCert}")
     private String verifySmsCert;
+
     @Value("${one-id.register}")
     private String register;
 
@@ -40,6 +44,9 @@ public class TomatoAuthService {
 
     @Value("${one-id.coinInfo}")
     private String coinInfo;
+
+    @Value("${one-id.profileImg}")
+    private String profileImg;
 
     private final WebClient webClient;
 
@@ -177,30 +184,62 @@ public class TomatoAuthService {
     }
 
     public OneIdResponse getWalletInfo(AuthRequestDTO req) {
-    if (req.getUserKey() == null || req.getPhoneNumber() == null) {
-        throw new BadRequestException("userKey 또는 전화번호 누락");
+        if (req.getUserKey() == null || req.getPhoneNumber() == null) {
+            throw new BadRequestException("userKey 또는 전화번호 누락");
+        }
+
+        String timestamp = Long.toString(System.currentTimeMillis() / 1000);
+        String encodedPhone = AES256.encrypt(req.getPhoneNumber(), timestamp); // 암호화 버전 사용
+        String resolvedPath = coinInfo.replace("{apptype}", appType);
+
+        return webClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(resolvedPath)
+                .queryParam("userkey", req.getUserKey())
+                .queryParam("phone", encodedPhone)
+                .queryParam("nation", nationCode)
+                .queryParam("timestamp", timestamp)
+                .build())
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError,
+                res -> Mono.error(new BadRequestException("One-ID 지갑 조회 실패")))
+            .onStatus(HttpStatusCode::is5xxServerError,
+                res -> Mono.error(
+                    new APIException("One-ID 서버 오류", ResponseStatus.INTERNAL_SERVER_ERROR)))
+            .bodyToMono(OneIdResponse.class)
+            .doOnNext(res -> log.info("지갑 조회 응답: {}", res))
+            .block(); // 동기 응답
     }
 
-    String timestamp = Long.toString(System.currentTimeMillis() / 1000);
-    String encodedPhone = AES256.encrypt(req.getPhoneNumber(), timestamp); // 암호화 버전 사용
-    String resolvedPath = coinInfo.replace("{apptype}", appType);
+    public OneIdImageResponse uploadProfileImageExternal(String userKey, MultipartFile file) {
+        // 1) 멀티파트 바디 빌더에 “file” 파트 추가
+        MultipartBodyBuilder mpBuilder = new MultipartBodyBuilder();
+        mpBuilder.part("cType", 2);
+        mpBuilder.part("fType", 0);
+        mpBuilder.part("file", file.getResource())
+            // 실제 전송 시 filename 헤더가 필요하면 Content-Disposition 을 수동으로도 추가할 수 있습니다
+            .header("Content-Disposition",
+                "form-data; name=file; filename=\"" + file.getOriginalFilename() + "\"");
 
-    return webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path(resolvedPath)
-            .queryParam("userkey", req.getUserKey())
-            .queryParam("phone", encodedPhone)
-            .queryParam("nation", nationCode)
-            .queryParam("timestamp", timestamp)
-            .build())
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError,
-            res -> Mono.error(new BadRequestException("One-ID 지갑 조회 실패")))
-        .onStatus(HttpStatusCode::is5xxServerError,
-            res -> Mono.error(new APIException("One-ID 서버 오류", ResponseStatus.INTERNAL_SERVER_ERROR)))
-        .bodyToMono(OneIdResponse.class)
-        .doOnNext(res -> log.info("지갑 조회 응답: {}", res))
-        .block(); // 동기 응답
-}
+        return webClient.post()
+            .uri(uriBuilder -> uriBuilder
+                .path(profileImg)
+                .build(appType, userKey)
+            )
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .body(BodyInserters.fromMultipartData(mpBuilder.build()))
+            .retrieve()
+            // 4xx → 인증 오류라면 BadRequestException
+            .onStatus(HttpStatusCode::is4xxClientError,
+                resp -> Mono.error(new BadRequestException("프로필 이미지 업로드 실패 (클라이언트 오류)")))
+            // 5xx → 외부 서버 오류라면 APIException
+            .onStatus(HttpStatusCode::is5xxServerError,
+                resp -> Mono.error(
+                    new APIException("외부 프로필 이미지 서버 오류", ResponseStatus.INTERNAL_SERVER_ERROR)))
+            // 성공 시 리턴 바디를 별도로 쓰지 않는다면 Mono<Void>
+            .bodyToMono(OneIdImageResponse.class)
+            // 블록해서 동기 호출로 전환
+            .block();
+    }
 
 }

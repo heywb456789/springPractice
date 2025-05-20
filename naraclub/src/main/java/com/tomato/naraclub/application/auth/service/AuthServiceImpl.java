@@ -98,6 +98,10 @@ public class AuthServiceImpl implements AuthService {
                 return memberRepository.save(m);
             });
 
+        if(!member.getProfileImg().equals(profileImg)){
+            member.setProfileImg(profileImg);
+        }
+
         //마지막 접속시간 증가
         member.setLastAccessAt();
 

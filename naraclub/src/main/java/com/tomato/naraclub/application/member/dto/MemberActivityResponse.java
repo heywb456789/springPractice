@@ -28,5 +28,6 @@ public class MemberActivityResponse {
     private ActivityReviewStage stage;
     private boolean isDeleted;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 }

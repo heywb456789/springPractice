@@ -24,6 +24,7 @@ spring:
       access-token-expiration: 3600000       # 액세스 토큰 1시간 (밀리초 단위)
 #      access-token-expiration: 10000       # 만료 테스트 10초
       refresh-token-expiration: 1209600000   # 리프레시 토큰 2주
+#      refresh-token-expiration: 10000   # 리프레시 토큰 2주
       auto-login-expiration: 31536000000      # 자동 로그인 (1년)
   web:
     resources:
@@ -63,6 +64,7 @@ one-id:
   verifySmsCert : /v1/api/external/{apptype}/join/certicheck
   register: /v1/api/external/{apptype}/join
   coinInfo: /v1/api/external/{apptype}/coin-info
+  profileImg: /v1/api/external/{apptype}/profile/img/upload/{userkey}
   nation : KR
   appType : newstong
 

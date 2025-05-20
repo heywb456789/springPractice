@@ -2,6 +2,7 @@ package com.tomato.naraclub.common.security;
 
 import com.tomato.naraclub.admin.security.AdminUserDetailsService;
 import com.tomato.naraclub.application.security.MemberUserDetailsService;
+import com.tomato.naraclub.common.config.CorsConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class SecurityConfig {
     private final MemberUserDetailsService userDetailsService;
     private final AdminUserDetailsService adminUserDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CorsConfig corsConfig;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -36,8 +40,7 @@ public class SecurityConfig {
     }
 
     /**
-     * 회원·관리자용 UserDetailsService 를 각각 등록한
-     * ProviderManager(=AuthenticationManager) 생성
+     * 회원·관리자용 UserDetailsService 를 각각 등록한 ProviderManager(=AuthenticationManager) 생성
      */
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -62,27 +65,32 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtFilter() {
-        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, adminUserDetailsService);
+        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService,
+            adminUserDetailsService);
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors
-                .configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())
-            )
-            .csrf(AbstractHttpConfigurer::disable)
+//            .cors(cors -> cors
+//                .configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())
+//            )
+//            .csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(corsConfig.corsFilter(), UsernamePasswordAuthenticationFilter.class)
+            .cors(cors -> cors.disable())
+            .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationManager(authenticationManager())
             .authorizeHttpRequests(auth -> auth
                 //1) 회원만 가능 리스트
-                .requestMatchers("/admin","/admin/auth/login", "/admin/auth/logout",  "/admin/auth/check/username", "/admin/auth/register").permitAll()
+                .requestMatchers("/admin", "/admin/auth/login", "/admin/auth/logout",
+                    "/admin/auth/check/username", "/admin/auth/register").permitAll()
 
                 .requestMatchers("/admin/**").hasAnyRole("SUPER_ADMIN", "OPERATOR", "UPLOADER")
 
-
                 .requestMatchers("/api/auth/validate", "/api/auth/delete").authenticated()
-                .requestMatchers(HttpMethod.POST,"/api/board/posts" ,"/api/vote/posts/*/options/*").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/board/posts", "/api/vote/posts/*/options/*")
+                .authenticated()
                 // 2) 로그인·리프레시는 누구나 (토큰 없어도) 허용
                 .requestMatchers(
                     "/api/auth/login", "/api/auth/refresh", "/api/board/**",
@@ -91,12 +99,12 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // 3) swagger, 정적 리소스 등
-                .requestMatchers("/","/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(
                     "/login/**", "/main/**", "/board/**", "/components/**",
                     "/bootstrap/**", "/css/**", "/js/**", "/images/**",
                     "/favicon.ico", "/uploads/**", "/vote/**", "/original/**",
-                        "/assets/**", "/side/**", "/mypage/**"
+                    "/assets/**", "/side/**", "/mypage/**"
                 ).permitAll()
 
                 // 4) 그 외 모든 요청은 인증 필요

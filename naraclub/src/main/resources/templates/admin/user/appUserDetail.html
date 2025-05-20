@@ -163,41 +163,43 @@
                       <option value="COMMENT">댓글</option>
                       <option value="VOTE">투표</option>
                       <option value="LIKE">좋아요</option>
+                      <option value="VIEW">조회</option>
                     </select>
                   </div>
                 </div>
               </div>
 
               <div class="activity-timeline">
-                <div th:if="${#lists.isEmpty(userActivities)}" class="text-center py-5">
-                  <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-                  <p class="mb-0">활동 내역이 없습니다.</p>
-                </div>
+<!--                <div th:if="${#lists.isEmpty(userActivities)}" class="text-center py-5">-->
+<!--                  <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>-->
+<!--                  <p class="mb-0">활동 내역이 없습니다.</p>-->
+<!--                </div>-->
 
-                <div th:unless="${#lists.isEmpty(userActivities)}" class="timeline-item" th:each="activity : ${userActivities}">
-                  <div class="timeline-icon" th:classappend="${
-                    activity.type == 'POST' ? 'icon-post' :
-                    (activity.type == 'COMMENT' ? 'icon-comment' :
-                    (activity.type == 'VOTE' ? 'icon-vote' : 'icon-like'))
-                  }">
-                    <i th:class="${
-                      activity.type == 'POST' ? 'fas fa-file-alt' :
-                      (activity.type == 'COMMENT' ? 'fas fa-comment' :
-                      (activity.type == 'VOTE' ? 'fas fa-vote-yea' : 'fas fa-heart'))
-                    }"></i>
-                  </div>
-                  <div class="timeline-content">
-                    <h6 class="mb-1" th:text="${activity.title}">활동 제목</h6>
-                    <p class="text-muted mb-1" th:text="${activity.description}">활동 내용</p>
-                    <small class="text-muted">
-                      <i class="fas fa-clock"></i> <span th:text="${#temporals.format(activity.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 12:00</span>
-                      <a th:if="${activity.link}" th:href="${activity.link}" class="ms-2"><i class="fas fa-external-link-alt"></i> 바로가기</a>
-                    </small>
-                  </div>
-                </div>
+<!--                <div th:unless="${#lists.isEmpty(userActivities)}" class="timeline-item" th:each="activity : ${userActivities}">-->
+<!--                  <div class="timeline-icon" th:classappend="${-->
+<!--                    activity.type == 'POST' ? 'icon-post' :-->
+<!--                    (activity.type == 'COMMENT' ? 'icon-comment' :-->
+<!--                    (activity.type == 'VOTE' ? 'icon-vote' : 'icon-like'))-->
+<!--                  }">-->
+<!--                    <i th:class="${-->
+<!--                      activity.type == 'POST' ? 'fas fa-file-alt' :-->
+<!--                      (activity.type == 'COMMENT' ? 'fas fa-comment' :-->
+<!--                      (activity.type == 'VOTE' ? 'fas fa-vote-yea' : 'fas fa-heart'))-->
+<!--                    }"></i>-->
+<!--                  </div>-->
+<!--                  <div class="timeline-content">-->
+<!--                    <h6 class="mb-1" th:text="${activity.title}">활동 제목</h6>-->
+<!--                    <p class="text-muted mb-1" th:text="${activity.description}">활동 내용</p>-->
+<!--                    <small class="text-muted">-->
+<!--                      <i class="fas fa-clock"></i> <span th:text="${#temporals.format(activity.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 12:00</span>-->
+<!--                      <a th:if="${activity.link}" th:href="${activity.link}" class="ms-2"><i class="fas fa-external-link-alt"></i> 바로가기</a>-->
+<!--                    </small>-->
+<!--                  </div>-->
+<!--                </div>-->
               </div>
 
-              <div th:if="${!#lists.isEmpty(userActivities)}" class="text-center mt-3">
+<!--              <div th:if="${!#lists.isEmpty(userActivities)}" class="text-center mt-3">-->
+              <div class="text-center mt-3">
                 <button id="loadMoreActivities" class="btn btn-outline-primary btn-sm">더 보기</button>
               </div>
             </div>

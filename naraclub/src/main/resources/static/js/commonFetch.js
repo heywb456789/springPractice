@@ -40,7 +40,12 @@ export async function handleTokenRefresh() {
   if (!res.ok) {
     localStorage.clear();
     window.location.href = '../login/login.html';
-    throw new Error('세션이 만료되었습니다. 다시 로그인 해주세요.');
+    throw new FetchError(
+      res.status,              // httpStatus
+      null,                    // statusCode
+      '세션이 만료되었습니다. 다시 로그인 해주세요.', // statusMessage
+      null                     // responseBody
+    );
   }
 
   const data = await res.json();
@@ -232,7 +237,12 @@ export async function adminHandleTokenRefresh() {
   if (!res.ok) {
     localStorage.clear();
     window.location.href = '/admin/auth/login';
-    throw new Error('세션이 만료되었습니다. 다시 로그인 해주세요.');
+    throw new FetchError(
+      res.status,              // httpStatus
+      null,                    // statusCode
+      '세션이 만료되었습니다. 다시 로그인 해주세요.', // statusMessage
+      null                     // responseBody
+    );
   }
 
   const data = await res.json();

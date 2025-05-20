@@ -4,6 +4,7 @@ import com.tomato.naraclub.admin.security.AdminUserDetails;
 import com.tomato.naraclub.admin.user.dto.AdminAuthorityRequest;
 import com.tomato.naraclub.admin.user.dto.AdminUserResponse;
 import com.tomato.naraclub.admin.user.dto.AppUserResponse;
+import com.tomato.naraclub.admin.user.dto.UserActivityListResponse;
 import com.tomato.naraclub.admin.user.dto.UserLoginHistoryResponse;
 import com.tomato.naraclub.admin.user.dto.UserUpdateRequest;
 import com.tomato.naraclub.admin.user.service.AdminUserService;
@@ -75,12 +76,13 @@ public class AdminUserRestController {
     }
 
     @GetMapping("/app/user/{id}/login-history")
-    public ResponseDTO<Map<String,Object>> getLoginHistory(
+    public ResponseDTO<Map<String, Object>> getLoginHistory(
         @PathVariable long id,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size) {
 
-        Page<MemberLoginHistory> loginHistory = appUserService.getAppUserLoginHistory(id, page, size);
+        Page<MemberLoginHistory> loginHistory = appUserService.getAppUserLoginHistory(id, page,
+            size);
         boolean hasMore = loginHistory.getTotalElements() > (size * (page + 1));
 
         Map<String, Object> response = new HashMap<>();
@@ -90,21 +92,12 @@ public class AdminUserRestController {
         return ResponseDTO.ok(response);
     }
 
-//    @GetMapping("/app/user/{id}/activities")
-//    public ResponseEntity<Map<String, Object>> getUserActivities(
-//        @PathVariable long id,
-//        @RequestParam(defaultValue = "0") int page,
-//        @RequestParam(defaultValue = "10") int size,
-//        @RequestParam(required = false) String type) {
-//
-//        List<UserActivityResponse> activities = appUserService.getUserActivities(id, page, size,
-//            type);
-//        boolean hasMore = activities.size() >= size;
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("activities", activities);
-//        response.put("hasMore", hasMore);
-//
-//        return ResponseEntity.ok(response);
-//    }
+    @GetMapping("/app/user/{id}/activities")
+    public ResponseDTO<UserActivityListResponse> getActivities(
+        @PathVariable Long id,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String type) {
+        return ResponseDTO.ok(appUserService.getUserActivities(id, page, size, type));
+    }
 }

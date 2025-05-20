@@ -177,7 +177,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     try {
-      const response = await adminAuthFetch(`/admin/users/app/user/${userId}/activities?page=${activitiesPage}&size=${pageSize}&type=${activityType}`);
+      const response =
+          await adminAuthFetch(`/admin/users/app/user/${userId}/activities?page=${activitiesPage}&size=${pageSize}&type=${activityType}`);
 
       if (!response.ok) {
         throw new Error('서버 응답 오류: ' + response.status);
@@ -190,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
         activityTimeline.innerHTML = '';
       }
 
-      if (!result.activities || result.activities.length === 0) {
+      if (!result.response.activities || result.response.activities.length === 0) {
         // 활동 내역이 없는 경우
         if (activitiesPage === 0) {
           activityTimeline.innerHTML = `
@@ -209,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       } else {
         // 활동 내역 표시
-        const activities = result.activities;
+        const activities = result.response.activities;
 
         activities.forEach(activity => {
           const timelineItem = document.createElement('div');

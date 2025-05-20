@@ -1,6 +1,7 @@
 package com.tomato.naraclub.admin.board.repository;
 
 import com.tomato.naraclub.application.comment.entity.BoardComments;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,4 +12,6 @@ public interface AdminBoardCommentRepository extends JpaRepository<BoardComments
     @Modifying
     @Query("update BoardComments c set c.deleted = true where c.id=:id")
     int softDeleteById(Long id);
+
+    List<BoardComments> findByAuthorId(Long id);
 }

@@ -3,6 +3,7 @@ package com.tomato.naraclub.admin.user.service;
 import com.tomato.naraclub.admin.security.AdminUserDetails;
 import com.tomato.naraclub.admin.user.dto.AppUserListRequest;
 import com.tomato.naraclub.admin.user.dto.AppUserResponse;
+import com.tomato.naraclub.admin.user.dto.UserActivityListResponse;
 import com.tomato.naraclub.admin.user.dto.UserLoginHistoryResponse;
 import com.tomato.naraclub.admin.user.dto.UserUpdateRequest;
 import com.tomato.naraclub.application.auth.entity.MemberLoginHistory;
@@ -28,4 +29,6 @@ public interface AppUserService {
     AppUserResponse getAppUserDetail(long id);
 
     Page<MemberLoginHistory> getAppUserLoginHistory(long id, int page, int size);
+
+    UserActivityListResponse getUserActivities(Long id, int page, int size, String type);
 }

@@ -87,6 +87,10 @@
   <th:block th:replace="${customCSS} ?: ~{}"></th:block>
 </head>
 <body>
+<div style="display: none">
+    <p th:text="${'activeMenu: ' + activeMenu}"></p>
+    <p th:text="${'activeSubmenu: ' + activeSubmenu}"></p>
+</div>
 <div class="wrapper">
   <!-- Sidebar -->
   <nav id="sidebar" class="sidebar">
@@ -161,7 +165,7 @@
         <li class="nav-item" sec:authorize="hasAnyRole('SUPER_ADMIN', 'OPERATOR')">
           <a class="nav-link" th:classappend="${activeMenu == 'points'} ? 'active'"
              href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#pointsSubmenu"
-             aria-expanded="${activeMenu == 'points'} ? 'true' : 'false'">
+             th:aria-expanded="${activeMenu == 'points'} ? 'true' : 'false'">
             <i class="fas fa-coins menu-icon"></i>
             <span>포인트 관리</span>
             <i class="fas fa-chevron-down menu-arrow"></i>
@@ -171,6 +175,11 @@
             <li>
               <a th:classappend="${activeSubmenu == 'list'} ? 'active'"
                  href="/admin/points/list">포인트 내역 목록</a>
+            </li>
+
+            <li>
+              <a th:classappend="${activeSubmenu == 'activity'} ? 'active'"
+                 href="/admin/activity/list">유저 활동 내역 심사</a>
             </li>
           </ul>
         </li>
@@ -257,12 +266,12 @@
           <i class="fas fa-bars"></i>
         </button>
 
-        <div class="search-bar">
-          <div class="input-group">
-            <input type="text" class="form-control" placeholder="Search projects...">
-            <span class="input-group-text"><i class="fas fa-search"></i></span>
-          </div>
-        </div>
+<!--        <div class="search-bar">-->
+<!--          <div class="input-group">-->
+<!--            <input type="text" class="form-control" placeholder="Search projects...">-->
+<!--            <span class="input-group-text"><i class="fas fa-search"></i></span>-->
+<!--          </div>-->
+<!--        </div>-->
 
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
