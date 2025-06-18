@@ -62,7 +62,7 @@ public class VideoServiceImpl implements VideoService {
                 .durationSec(req.getDurationSec())
                 .isPublic(req.getIsPublic())
                 .publishedAt(req.getPublishedAt())
-                .youtubeId(req.getYoutubeId())
+                .youtubeId(req.getYoutubeUrl())
                 .build());
 
         return null;

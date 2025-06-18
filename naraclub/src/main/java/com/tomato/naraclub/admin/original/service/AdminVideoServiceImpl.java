@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.tomato.naraclub.common.util.YouTubeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,6 +49,7 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     private final AdminVideoCommentsRepository adminVideoCommentsRepository;
     private final AdminVideoViewHistoryRepository viewHistoryRepository;
     private final VideoReplicationService videoReplicationService;
+    private final YouTubeUtils youTubeUtils;
 
     @Value("${spring.app.display}")
     private String displayUrl;
@@ -76,46 +78,105 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     @Override
     @Transactional
     public VideoResponse uploadVideo(VideoUploadRequest req, AdminUserDetails user) {
+
+        // 업로드 타입에 따른 처리 분기
+        if ("youtube".equals(req.getUploadType())) {
+            return uploadYouTubeVideo(req, user);
+        } else {
+            return uploadFileVideo(req, user);
+        }
+    }
+
+    /**
+     * 유튜브 업로드 방식 처리
+     */
+    private VideoResponse uploadYouTubeVideo(VideoUploadRequest req, AdminUserDetails user) {
+        try {
+            // 1. YouTube URL에서 비디오 ID 추출
+            String videoId = youTubeUtils.extractVideoId(req.getYoutubeUrl());
+
+            if (videoId == null) {
+                throw new APIException(ResponseStatus.INVALID_YOUTUBE_ID);
+            }
+
+            // 2. 비디오 엔티티 생성
+            Video video = adminVideoRepository.save(Video.builder()
+                    .title(req.getTitle())
+                    .description(req.getDescription())
+                    .author(user.getAdmin())
+                    .type(req.getType())
+                    .category(req.getCategory())
+                    .thumbnailUrl(youTubeUtils.getThumbnailUrl(videoId)) // YouTube 기본 썸네일
+                    .videoUrl(youTubeUtils.getWatchUrl(videoId)) // YouTube 시청 URL
+                    .durationSec(req.getDurationSec()) // 사용자가 직접 입력한 길이 사용
+                    .isPublic(req.getIsPublic())
+                    .publishedAt(req.getPublishedAt())
+                    .isHot(req.getIsHot())
+                    .youtubeId(videoId) // ✅ YouTube ID 저장
+                    .commentCount(0L)
+                    .viewCount(0L)
+                    .build());
+
+            // 3. 복제
+            if(originalReplication) {
+                videoReplicationService.replicateToOtherSchema(video);
+            }
+
+            return video.convertDTO();
+        } catch (APIException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("YouTube 비디오 업로드 실패: {}", e.getMessage(), e);
+            throw new APIException(ResponseStatus.YOUTUBE_UPLOAD_FAIL);
+        }
+    }
+
+    /**
+     * 파일 업로드 방식 처리
+     */
+    private VideoResponse uploadFileVideo(VideoUploadRequest req, AdminUserDetails user) {
         // 1. 비디오 엔티티 생성 (파일 업로드 전에 ID 확보)
         Video video = adminVideoRepository.save(Video.builder()
-            .title(req.getTitle())
-            .description(req.getDescription())
-            .author(user.getAdmin())
-            .type(req.getType())
-            .category(req.getCategory())
-            .thumbnailUrl("")  // 임시값
-            .videoUrl("")     // 임시값
-            .durationSec(req.getDurationSec())
-            .isPublic(req.getIsPublic())
-            .publishedAt(req.getPublishedAt())
-            .isHot(req.getIsHot())
-            .commentCount(0L)
-            .viewCount(0L)
-            .build());
+                .title(req.getTitle())
+                .description(req.getDescription())
+                .author(user.getAdmin())
+                .type(req.getType())
+                .category(req.getCategory())
+                .thumbnailUrl("")  // 임시값
+                .videoUrl("")     // 임시값
+                .durationSec(req.getDurationSec())
+                .isPublic(req.getIsPublic())
+                .publishedAt(req.getPublishedAt())
+                .isHot(req.getIsHot())
+                .youtubeId(null)  // 파일 업로드는 null
+                .commentCount(0L)
+                .viewCount(0L)
+                .build());
 
         try {
             // 2. 파일 저장 서비스를 통한 비디오 업로드 (변환 포함)
             String videoUrl = fileStorageService.uploadVideo(
-                req.getVideoFile(),
-                StorageCategory.VIDEO,
-                video.getId()
+                    req.getVideoFile(),
+                    StorageCategory.VIDEO,
+                    video.getId()
             );
 
             // 3. 썸네일 업로드 (일반 이미지)
             String thumbnailUrl = fileStorageService.upload(
-                req.getThumbnailFile(),
-                StorageCategory.IMAGE,
-                video.getId()
+                    req.getThumbnailFile(),
+                    StorageCategory.IMAGE,
+                    video.getId()
             );
 
             // 4. 최종 URL 설정
             video.setThumbnailUrl(displayUrl + thumbnailUrl);
             video.setVideoUrl(displayUrl + videoUrl);
 
-            //5. 복제
+            // 5. 복제
             if(originalReplication) {
                 videoReplicationService.replicateToOtherSchema(video);
             }
+
             return video.convertDTO();
         } catch (Exception e) {
             // 파일 업로드 실패 시 생성된 비디오 엔티티 삭제 (DB 롤백)

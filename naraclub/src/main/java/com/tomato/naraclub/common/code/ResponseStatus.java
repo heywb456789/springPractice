@@ -82,6 +82,11 @@ public enum ResponseStatus {
   NICE_DECRYPTION_FAIL("ER_D008","NICE 인증 실패 CODE_4008", HttpStatus.INTERNAL_SERVER_ERROR),
   NICE_PASS_RESULT_FAIL("ER_D009","NICE 인증 실패 CODE_4009", HttpStatus.INTERNAL_SERVER_ERROR),
   NICE_PASS_BIRTH_DAY_FAIL("ER_D010","만 20세 이상 39세 이하만 가입 가능합니다.", HttpStatus.BAD_REQUEST),
+
+  INVALID_YOUTUBE_ID("ER_E001","유효하지 않은 YouTube URL 또는 ID입니다.", HttpStatus.BAD_REQUEST),
+  YOUTUBE_UPLOAD_FAIL("ER_E002","YouTube 비디오 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+
   ;
   @JsonProperty("code")
   private final String code;

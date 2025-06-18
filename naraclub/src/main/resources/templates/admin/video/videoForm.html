@@ -15,6 +15,26 @@
     <customCSS>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" rel="stylesheet">
         <link th:href="@{/assets/admin/css/videoForm.css}" rel="stylesheet">
+        <style>
+            /* 유튜브 검증 스타일 추가 */
+            .form-control.is-valid {
+                border-color: #198754;
+                padding-right: calc(1.5em + 0.75rem);
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='m2.3 6.73.41-.4c.21-.2.56-.2.77 0l.72.72 1.96-1.96c.21-.2.56-.2.77 0l.41.4c.21.2.21.56 0 .77L4.11 8.31c-.21.2-.56.2-.77 0L2.3 7.5c-.21-.2-.21-.56 0-.77z'/%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right calc(0.375em + 0.1875rem) center;
+                background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+            }
+
+            .form-control.is-invalid {
+                border-color: #dc3545;
+                padding-right: calc(1.5em + 0.75rem);
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 2.4 2.4m0-2.4L5.8 7'/%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right calc(0.375em + 0.1875rem) center;
+                background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+            }
+        </style>
     </customCSS>
 </head>
 <body>
@@ -133,9 +153,9 @@
                                         <button class="nav-link active" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-content" type="button" role="tab" aria-controls="file-content" aria-selected="true">
                                             <i class="fas fa-file-video"></i> 파일 업로드
                                         </button>
-<!--                                        <button class="nav-link" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube-content" type="button" role="tab" aria-controls="youtube-content" aria-selected="false">-->
-<!--                                            <i class="fab fa-youtube"></i> 유튜브 영상-->
-<!--                                        </button>-->
+                                        <button class="nav-link" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube-content" type="button" role="tab" aria-controls="youtube-content" aria-selected="false">
+                                            <i class="fab fa-youtube"></i> 유튜브 영상
+                                        </button>
                                     </div>
                                     <div class="tab-content" id="uploadTypeContent">
                                         <!-- 파일 업로드 탭 -->
@@ -171,15 +191,19 @@
                                         <div class="tab-pane fade" id="youtube-content" role="tabpanel" aria-labelledby="youtube-tab">
                                             <div class="p-3">
                                                 <div class="mb-3">
-                                                    <label for="youtubeId" class="form-label">유튜브 영상 ID</label>
+                                                    <label for="youtubeUrl" class="form-label">유튜브 영상 URL 또는 ID</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i class="fab fa-youtube"></i></span>
-                                                        <input type="text" class="form-control" id="youtubeId" name="youtubeId"
+                                                        <input type="text" class="form-control" id="youtubeUrl" name="youtubeUrl"
                                                                th:value="${video != null ? video.youtubeId : ''}"
-                                                               placeholder="예: dQw4w9WgXcQ">
+                                                               placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ 또는 dQw4w9WgXcQ">
                                                     </div>
                                                     <div class="form-text">
-                                                        YouTube URL에서 v= 다음에 나오는 부분입니다. (https://www.youtube.com/watch?v=<strong>dQw4w9WgXcQ</strong>)
+                                                        YouTube URL 전체 또는 비디오 ID만 입력하세요.
+                                                        <br>• 전체 URL: https://www.youtube.com/watch?v=<strong>dQw4w9WgXcQ</strong>
+                                                        <br>• 짧은 URL: https://youtu.be/<strong>dQw4w9WgXcQ</strong>
+                                                        <br>• ID만: <strong>dQw4w9WgXcQ</strong>
+                                                        <br>• 입력 후 <kbd>Enter</kbd> 키를 누르면 바로 미리보기됩니다.
                                                     </div>
                                                 </div>
 
@@ -192,7 +216,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="text-center mt-2">
-                                                    <button type="button" class="btn btn-sm btn-outline-primary" id="previewYoutube">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" id="previewYoutube" disabled>
                                                         <i class="fas fa-eye"></i> 미리보기
                                                     </button>
                                                 </div>
@@ -208,7 +232,7 @@
                                 <input type="number" class="form-control" id="durationSec" name="durationSec"
                                        th:value="${video != null ? video.durationSec : ''}"
                                        placeholder="초 단위로 입력 (예: 180)" required min="1">
-                                <div class="form-text">파일 업로드 시 자동으로 계산됩니다.</div>
+                                <div class="form-text">파일 업로드 시 자동으로 계산됩니다. 유튜브 영상은 직접 입력하세요.</div>
                             </div>
                         </div>
                     </div>
@@ -245,8 +269,11 @@
                                 <div class="current-thumbnail-container">
                                     <img th:src="${video.thumbnailUrl}" alt="현재 썸네일" class="w-100">
                                 </div>
-                                <div class="form-text mt-2">
+                                <div class="form-text mt-2" th:if="${video.youtubeId == null}">
                                     썸네일을 변경하지 않으려면 비워두세요.
+                                </div>
+                                <div class="form-text mt-2 text-info" th:if="${video.youtubeId != null}">
+                                    <i class="fab fa-youtube"></i> 유튜브 영상의 썸네일입니다.
                                 </div>
                             </div>
                         </div>
@@ -257,22 +284,30 @@
 
                             <table class="table table-sm table-borderless">
                                 <tbody>
-                                    <tr>
-                                        <th style="width: 100px;">조회수</th>
-                                        <td th:text="${#numbers.formatInteger(video.viewCount, 0, 'COMMA')}">0</td>
-                                    </tr>
-                                    <tr>
-                                        <th>댓글수</th>
-                                        <td th:text="${#numbers.formatInteger(video.commentCount, 0, 'COMMA')}">0</td>
-                                    </tr>
-                                    <tr>
-                                        <th>등록일</th>
-                                        <td th:text="${#temporals.format(video.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</td>
-                                    </tr>
-                                    <tr>
-                                        <th>수정일</th>
-                                        <td th:text="${#temporals.format(video.updatedAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</td>
-                                    </tr>
+                                <tr>
+                                    <th style="width: 100px;">조회수</th>
+                                    <td th:text="${#numbers.formatInteger(video.viewCount, 0, 'COMMA')}">0</td>
+                                </tr>
+                                <tr>
+                                    <th>댓글수</th>
+                                    <td th:text="${#numbers.formatInteger(video.commentCount, 0, 'COMMA')}">0</td>
+                                </tr>
+                                <tr th:if="${video.youtubeId != null}">
+                                    <th>타입</th>
+                                    <td><i class="fab fa-youtube text-danger"></i> 유튜브 영상</td>
+                                </tr>
+                                <tr th:if="${video.youtubeId == null}">
+                                    <th>타입</th>
+                                    <td><i class="fas fa-file-video text-primary"></i> 업로드 파일</td>
+                                </tr>
+                                <tr>
+                                    <th>등록일</th>
+                                    <td th:text="${#temporals.format(video.createdAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</td>
+                                </tr>
+                                <tr>
+                                    <th>수정일</th>
+                                    <td th:text="${#temporals.format(video.updatedAt, 'yyyy-MM-dd HH:mm')}">2023-01-01 00:00</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
