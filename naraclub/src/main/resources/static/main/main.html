@@ -189,5 +189,32 @@
   </div>
 </div>
 
+<!-- 신원 인증 유도 모달 -->
+<div class="modal fade" id="identityModal" tabindex="-1" aria-labelledby="identityModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="identityModalLabel">신원 인증 필요</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+      <div class="modal-body">
+        현재 인증 상태가 임시입니다.<br>
+        본인 인증을 완료해 주세요.
+        <div class="form-check mt-3">
+          <input class="form-check-input" type="checkbox" id="identitySkipToday">
+          <label class="form-check-label" for="identitySkipToday">
+            오늘 하루 보지 않기
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="identityProceedBtn" class="btn btn-primary">인증하러 가기</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 </body>
 </html>

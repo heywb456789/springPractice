@@ -17,4 +17,6 @@ public interface AdminNewsService {
     NewsArticleResponse uploadNews(@Valid NewsArticleRequest req, AdminUserDetails user);
 
     NewsArticleResponse updateNews(Long newsId, @Valid NewsArticleRequest req, AdminUserDetails user);
+
+    Boolean deleteNews(Long id);
 }

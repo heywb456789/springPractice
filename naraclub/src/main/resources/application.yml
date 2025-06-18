@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: prod
+    active: local
   application:
     name: narasarang
   output:
@@ -24,6 +24,7 @@ spring:
       access-token-expiration: 3600000       # 액세스 토큰 1시간 (밀리초 단위)
 #      access-token-expiration: 10000       # 만료 테스트 10초
       refresh-token-expiration: 1209600000   # 리프레시 토큰 2주
+#      refresh-token-expiration: 10000   # 리프레시 토큰 2주
       auto-login-expiration: 31536000000      # 자동 로그인 (1년)
   web:
     resources:
@@ -39,20 +40,69 @@ spring:
       max-file-size: 500MB
       max-request-size: 500MB
 
-server:
-  port: ${SERVER_PORT:8032}
 
-# Springdoc ?? (???)
 
+# SpringDoc OpenAPI 설정
 springdoc:
-  packages-to-scan: com.tomato.naraclub
-  paths-to-match: /**
+  # Swagger UI 설정
   swagger-ui:
+    enabled: true
     path: /swagger-ui.html
+    # 그룹 정렬 순서
+    groups-order: ASC
+    # 태그 정렬 순서
+    tags-sorter: alpha
+    # 작업(operation) 정렬 순서
+    operations-sorter: alpha
+    # Try it out 기본 활성화
+    try-it-out-enabled: true
+    # 필터 표시
+    filter: true
+    # 요청 지속 시간 표시
+    display-request-duration: true
+    # 기본 모델 렌더링 설정
+    default-models-expand-depth: 2
+    default-model-expand-depth: 2
+    # 커스텀 CSS (Hyper 테마와 비슷하게)
+    custom-css: |
+      .swagger-ui .topbar { 
+        background-color: #6c5ce7; 
+        border-bottom: 2px solid #a29bfe;
+      }
+      .swagger-ui .topbar .download-url-wrapper { 
+        display: none; 
+      }
+      .swagger-ui .info .title { 
+        color: #2d3436; 
+        font-weight: 700;
+      }
+      .swagger-ui .scheme-container { 
+        background: #f8f9fa; 
+        padding: 15px; 
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+  # API 문서 설정
   api-docs:
+    enabled: true
     path: /v3/api-docs
+    groups:
+      enabled: true
+  # 패키지 스캔 경로
+  packages-to-scan: com.tomato.naraclub
+  # 경로 매칭
+  paths-to-match: /api/**, /admin/**
+  # 기본 필터 설정
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
+  # 모델 및 예제 설정
+  model-and-view-allowed: true
+  override-with-generic-response: false
+  remove-broken-reference-definitions: false
+  writer-with-order-by-keys: true
+  # 캐시 설정
+  cache:
+    disabled: false
 
 inbound-logging: ${INBOUND_LOGGING:true}
 
@@ -63,6 +113,7 @@ one-id:
   verifySmsCert : /v1/api/external/{apptype}/join/certicheck
   register: /v1/api/external/{apptype}/join
   coinInfo: /v1/api/external/{apptype}/coin-info
+  profileImg: /v1/api/external/{apptype}/profile/img/upload/{userkey}
   nation : KR
   appType : newstong
 
@@ -82,3 +133,26 @@ logging:
   level:
     org.springframework.web.reactive.function.client.ExchangeFilterFunctions: DEBUG
     reactor.netty.http.client.HttpClient: DEBUG
+
+tomato:
+  subscription:
+    call-back-url: https://club1.newstomato.com/api/subscription/confirm
+    pay-request-url: https://bill.tomatopay.net/payrequest
+    license-key: r1aBFD9YpxLQe8FhV4+cwNBa5hf74pgAUZ4QQGvxZd6hIPr1/0cmPP4nlrTr8RNM55KEG0gjiTtJxNo6AUL7sw==
+    mid: newstoma2m
+    payMonth: 30
+    price: 33000
+  ttco:
+    base: https://api.tomato.co.kr
+    point-earn: /api/Pay.aspx
+
+nice:
+  product-id: 2101979031
+  base: https://svc.niceapi.co.kr:22001
+  token-url: /digital/niceid/oauth/oauth/token
+  client-id: 400212bd-91f9-4e19-ab2c-49854066f50f
+  client-secret: c57a3adfa5f5b16adb7e879072dfded0
+  crypto-token-url: /digital/niceid/api/v1.0/common/crypto/token
+  request-url: https://nice.checkplus.co.kr/CheckPlusSafeModel/service.cb
+  call-back: https://club1.newstomato.com/api/auth/pass/callback
+#  call-back: http://211.192.45.144:8032/api/auth/pass/callback

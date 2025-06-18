@@ -475,8 +475,10 @@ function navigateToDetail(tab, contentId) {
 
   switch (tab) {
     case 'video':
-    case 'shorts':
       detailPage = '/original/videoDetail.html';
+      break;
+    case 'shorts':
+      detailPage = '/original/videoShortsDetail.html';
       break;
     case 'article':
       detailPage = '/original/newsDetail.html';

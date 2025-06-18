@@ -66,9 +66,13 @@ function displayUserInfo(userInfo) {
   userNameElement.setAttribute('data-original-name', userName);
 
   // 회원 등급 (role 값에 따라 표시)
-  let userLevel = '일반회원';
+  let userLevel = '비활성 회원';
   if (userInfo.role === 'USER_ACTIVE') {
-    userLevel = '일반회원';
+    if(userInfo.status==='ACTIVE'){
+      userLevel = '일반회원';
+    }else{
+      userLevel ='비활성 회원'
+    }
   } else if (userInfo.role === 'ADMIN') {
     userLevel = '관리자';
   }
@@ -138,8 +142,8 @@ async function uploadProfileImage(file) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await authFetch('/api/user/profile-image', {
-      method: 'POST',
+    const response = await authFetch('/api/members/profile-image', {
+      method: 'PUT',
       body: formData
     });
     await response.json();
@@ -280,7 +284,7 @@ async function updateUserName(newName) {
     const inputField = document.getElementById('userNameInput');
     inputField.disabled = true;
 
-    const response = await authFetch('/api/members/update-name', {
+    const response = await authFetch('/api/members/name', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: newName })

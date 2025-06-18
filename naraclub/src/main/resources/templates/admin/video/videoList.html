@@ -6,7 +6,7 @@
         ~{::customCSS},
         ~{::customJS},
         'video',
-        'list'
+        'videoList'
       )}">
 <head>
   <title>동영상 목록 - 나라걱정 관리자</title>
@@ -39,10 +39,15 @@
           <div class="col-md-3">
             <label for="searchType" class="form-label">검색 유형</label>
             <select class="form-select" id="searchType" name="searchType">
-              <option value="VIDEO_TITLE" th:selected="${request.searchType?.name() == 'VIDEO_TITLE'}">제목</option>
-              <option value="VIDEO_DESCRIPTION" th:selected="${request.searchType?.name() == 'VIDEO_DESCRIPTION'}">설명
+              <option value="VIDEO_TITLE"
+                      th:selected="${request.searchType?.name() == 'VIDEO_TITLE'}">제목
               </option>
-              <option value="VIDEO_AUTHOR" th:selected="${request.searchType?.name() == 'VIDEO_AUTHOR'}">등록자</option>
+              <option value="VIDEO_DESCRIPTION"
+                      th:selected="${request.searchType?.name() == 'VIDEO_DESCRIPTION'}">설명
+              </option>
+              <option value="VIDEO_AUTHOR"
+                      th:selected="${request.searchType?.name() == 'VIDEO_AUTHOR'}">등록자
+              </option>
             </select>
           </div>
           <div class="col-md-6">
@@ -65,8 +70,12 @@
             <label for="type" class="form-label">타입</label>
             <select class="form-select" id="type" name="type">
               <option value="" th:selected="${request.type?.name() == null}">전체</option>
-              <option value="YOUTUBE_VIDEO" th:selected="${request.type?.name() == 'YOUTUBE_VIDEO'}">롱폼</option>
-              <option value="YOUTUBE_SHORTS" th:selected="${request.type?.name() == 'YOUTUBE_SHORTS'}">숏폼</option>
+              <option value="YOUTUBE_VIDEO"
+                      th:selected="${request.type?.name() == 'YOUTUBE_VIDEO'}">롱폼
+              </option>
+              <option value="YOUTUBE_SHORTS"
+                      th:selected="${request.type?.name() == 'YOUTUBE_SHORTS'}">숏폼
+              </option>
             </select>
           </div>
           <div class="col-md-3">
@@ -89,11 +98,13 @@
             <label for="sortType" class="form-label">정렬 기준</label>
             <select class="form-select" id="sortType" name="sortType">
               <option value="PUBLISHED"
-                      th:selected="${request.sortType?.name() == 'PUBLISHED' || request.sortType?.name() == null}">공개일
+                      th:selected="${request.sortType?.name() == 'PUBLISHED' || request.sortType?.name() == null}">
+                공개일
               </option>
               <option value="LATEST" th:selected="${request.sortType?.name() == 'LATEST'}">등록일
               </option>
-              <option value="POPULAR" th:selected="${request.sortType?.name() == 'POPULAR'}">조회수</option>
+              <option value="POPULAR" th:selected="${request.sortType?.name() == 'POPULAR'}">조회수
+              </option>
               <option value="COMMENT" th:selected="${request.sortType?.name() == 'COMMENT'}">댓글수
               </option>
               <option value="TITLE" th:selected="${request.sortType?.name() == 'TITLE'}">제목</option>
@@ -106,7 +117,8 @@
                       th:selected="${request.sortDirection?.name() == 'DESC' || request.sortDirection?.name() == null}">
                 내림차순
               </option>
-              <option value="ASC" th:selected="${request.sortDirection?.name() == 'ASC'}">오름차순</option>
+              <option value="ASC" th:selected="${request.sortDirection?.name() == 'ASC'}">오름차순
+              </option>
             </select>
           </div>
           <div class="col-md-6">
@@ -133,17 +145,14 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <div>
-        <h5 class="card-title mb-0 d-inline-block">총 <span th:text="${videoList.size()}">0</span>개의
-          동영상</h5>
+        <h5 class="card-title mb-0 d-inline-block">
+          총 <span th:text="${#numbers.formatInteger(totalCount, 0, 'COMMA')}">0</span>개의 동영상
+        </h5>
         <span class="text-muted ms-2">
-                    (페이지 <span th:text="${currentPage}">1</span>/<span
-            th:text="${totalPages}">1</span>)
-                </span>
+      (페이지 <span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span>)
+    </span>
       </div>
       <div class="header-actions">
-        <!--                <button class="btn btn-sm btn-outline-primary me-2" id="btnExportCSV">-->
-        <!--                    <i class="fas fa-download"></i> CSV 내보내기-->
-        <!--                </button>-->
         <div class="btn-group">
           <button type="button" class="btn btn-sm btn-outline-secondary" id="btnViewGrid">
             <i class="fas fa-th-large"></i>
@@ -191,7 +200,8 @@
             </div>
           </td>
           <td>
-            <a th:href="@{/admin/original/video/{id}(id=${video.videoId})}" class="video-title-link" th:text="${video.title}">롱폼_1</a>
+            <a th:href="@{/admin/original/video/{id}(id=${video.videoId})}" class="video-title-link"
+               th:text="${video.title}">롱폼_1</a>
             <div class="video-meta text-muted">
               <!--                                <small th:if="${video.youtubeId != null && !video.youtubeId.isEmpty()}">-->
               <!--                                    <i class="fab fa-youtube text-danger"></i> YouTube-->
@@ -260,7 +270,8 @@
             </div>
             <div class="video-info p-3">
               <h6 class="video-grid-title">
-                <a th:href="@{/admin/original/video/{id}(id=${video.videoId})}" th:text="${video.title}">동영상
+                <a th:href="@{/admin/original/video/{id}(id=${video.videoId})}"
+                   th:text="${video.title}">동영상
                   제목</a>
               </h6>
               <div class="video-grid-meta d-flex justify-content-between align-items-center">
@@ -311,22 +322,28 @@
     <!-- Pagination -->
 
     <!-- Pagination 수정 부분 -->
-    <div class="card-footer d-flex justify-content-center" th:if="${totalPages > 0}">
+    <div class="card-footer d-flex justify-content-between align-items-center"
+         th:if="${totalPages > 0}">
+      <div class="text-muted">
+        총 <span th:text="${#numbers.formatInteger(totalCount, 0, 'COMMA')}">0</span>개
+        (<span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span> 페이지)
+      </div>
+
       <nav aria-label="Page navigation">
         <ul class="pagination mb-0">
           <!-- First Page -->
-          <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasPrevious ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/video/list(page=0, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/video/list(page=0, size=10, searchType=${request.searchType}, searchText=${request.searchText}, category=${request.category}, type=${request.type}, publishStatus=${request.publishStatus}, isHot=${request.isHot}, sortType=${request.sortType}, sortDirection=${request.sortDirection}, dateRange=${request.dateRange})}"
                aria-label="First">
               <span aria-hidden="true">&laquo;&laquo;</span>
             </a>
           </li>
 
           <!-- Previous Page -->
-          <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasPrevious ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/video/list(page=${currentPage - 2}, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/video/list(page=${currentPageZeroIndex - 1}, size=10, searchType=${request.searchType}, searchText=${request.searchText}, category=${request.category}, type=${request.type}, publishStatus=${request.publishStatus}, isHot=${request.isHot}, sortType=${request.sortType}, sortDirection=${request.sortDirection}, dateRange=${request.dateRange})}"
                aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
@@ -334,26 +351,26 @@
 
           <!-- Page Numbers -->
           <li class="page-item"
-              th:each="pageNumber : ${#numbers.sequence(currentPage - 2 <= 0 ? 1 : currentPage - 2, currentPage + 2 >= totalPages ? totalPages : currentPage + 2)}"
+              th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
               th:classappend="${pageNumber == currentPage ? 'active' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/video/list(page=${pageNumber - 1}, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/video/list(page=${pageNumber - 1}, size=10, searchType=${request.searchType}, searchText=${request.searchText}, category=${request.category}, type=${request.type}, publishStatus=${request.publishStatus}, isHot=${request.isHot}, sortType=${request.sortType}, sortDirection=${request.sortDirection}, dateRange=${request.dateRange})}"
                th:text="${pageNumber}">1</a>
           </li>
 
           <!-- Next Page -->
-          <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasNext ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/video/list(page=${currentPage}, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/video/list(page=${currentPageZeroIndex + 1}, size=10, searchType=${request.searchType}, searchText=${request.searchText}, category=${request.category}, type=${request.type}, publishStatus=${request.publishStatus}, isHot=${request.isHot}, sortType=${request.sortType}, sortDirection=${request.sortDirection}, dateRange=${request.dateRange})}"
                aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>
           </li>
 
           <!-- Last Page -->
-          <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasNext ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/video/list(page=${totalPages - 1}, size=${videoList.size}, searchType=${param.searchType}, searchKeyword=${param.searchKeyword}, category=${param.category}, type=${param.type}, publishStatus=${param.publishStatus}, isHot=${param.isHot}, sortBy=${param.sortBy}, sortDirection=${param.sortDirection}, dateRange=${param.dateRange})}"
+               th:href="@{/admin/original/video/list(page=${totalPages - 1}, size=10, searchType=${request.searchType}, searchText=${request.searchText}, category=${request.category}, type=${request.type}, publishStatus=${request.publishStatus}, isHot=${request.isHot}, sortType=${request.sortType}, sortDirection=${request.sortDirection}, dateRange=${request.dateRange})}"
                aria-label="Last">
               <span aria-hidden="true">&raquo;&raquo;</span>
             </a>
@@ -361,25 +378,25 @@
         </ul>
       </nav>
     </div>
-  </div>
 
-  <!-- Delete Confirmation Modal -->
-  <div class="modal fade" id="deleteConfirmModal" tabindex="-1"
-       aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteConfirmModalLabel">동영상 삭제</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"
-                  aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>정말로 이 동영상을 삭제하시겠습니까?</p>
-          <p class="text-danger">이 작업은 되돌릴 수 없으며, 모든 관련 데이터(댓글 포함)가 삭제됩니다.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-          <button type="button" id="btnConfirmDelete" class="btn btn-danger">삭제</button>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1"
+         aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteConfirmModalLabel">동영상 삭제</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>정말로 이 동영상을 삭제하시겠습니까?</p>
+            <p class="text-danger">이 작업은 되돌릴 수 없으며, 모든 관련 데이터(댓글 포함)가 삭제됩니다.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+            <button type="button" id="btnConfirmDelete" class="btn btn-danger">삭제</button>
+          </div>
         </div>
       </div>
     </div>

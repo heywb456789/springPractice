@@ -10,7 +10,7 @@ export default class VideoService {
    */
   static async getLatestVideo() {
     try {
-      const response = await optionalAuthFetch(`/api/videos?page=0&size=1`);
+      const response = await optionalAuthFetch(`/api/videos?page=0&size=1&type=YOUTUBE_VIDEO`);
 
       return await response.json();
     } catch (err) {

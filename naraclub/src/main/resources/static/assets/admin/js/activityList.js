@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const activityPreviewModal = new bootstrap.Modal(document.getElementById('activityPreviewModal'));
     const bulkApproveModal = new bootstrap.Modal(document.getElementById('bulkApproveModal'));
     const bulkRejectModal = new bootstrap.Modal(document.getElementById('bulkRejectModal'));
+    const singleApproveModal = new bootstrap.Modal(document.getElementById('singleApproveModal'));
 
     // 전역 변수
     let currentActivityId = null;
@@ -119,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const approveBtn = e.target.closest('.btn-approve');
             if (approveBtn) {
                 e.preventDefault();
-                approveActivity(approveBtn.dataset.id);
+                showSingleApproveModal(approveBtn.dataset.id);
             }
         });
 
@@ -135,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // 모달 내 승인 버튼 이벤트
         document.getElementById('btnApproveInModal').addEventListener('click', function() {
             if (currentActivityId) {
-                approveActivity(currentActivityId);
+                showSingleApproveModal(currentActivityId);
                 activityPreviewModal.hide();
             }
         });
@@ -165,7 +166,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 일괄 거절 확인 버튼 이벤트
         if (btnConfirmBulkReject) {
-            btnConfirmBulkReject.addEventListener('click', confirmBulkReject);
+            btnConfirmBulkReject.addEventListener('click', function() {
+                // 거절 사유
+                let reason = bulkRejectReason.value;
+                if (reason === 'OTHER' && otherRejectReason.value.trim()) {
+                    reason = otherRejectReason.value.trim();
+                }
+
+                if (!reason) {
+                    showToast('거절 사유를 선택하거나 입력해주세요.', 'warning');
+                    return;
+                }
+
+                // 체크된 항목이 있는지 확인 (일괄 거절인 경우)
+                const checkedBoxes = document.querySelectorAll('.activity-select:checked:not(:disabled)');
+                if (checkedBoxes.length > 0) {
+                    // 일괄 거절 처리
+                    confirmBulkReject();
+                } else if (currentActivityId) {
+                    // 단일 거절 처리
+                    rejectActivity(currentActivityId, reason);
+                    bulkRejectModal.hide();
+                } else {
+                    bulkRejectModal.hide();
+                }
+            });
         }
 
         // 거절 사유 선택 변경 이벤트
@@ -173,6 +198,18 @@ document.addEventListener('DOMContentLoaded', function () {
             bulkRejectReason.addEventListener('change', function() {
                 otherReasonContainer.style.display =
                     bulkRejectReason.value === 'OTHER' ? 'block' : 'none';
+            });
+        }
+
+        // 단일 승인 확인 버튼 이벤트
+        const btnConfirmSingleApprove = document.getElementById('btnConfirmSingleApprove');
+        if (btnConfirmSingleApprove) {
+            btnConfirmSingleApprove.addEventListener('click', function() {
+                if (currentActivityId) {
+                    const pointType = document.getElementById('singlePointType').value;
+                    approveActivity(currentActivityId, pointType);
+                    singleApproveModal.hide();
+                }
             });
         }
     }
@@ -309,14 +346,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * 활동 승인
+     * 단일 활동 승인 모달 표시
      * @param {string} activityId - 활동 ID
      */
-    async function approveActivity(activityId) {
-        if (!confirm('이 활동을 승인하시겠습니까?')) {
-            return;
+    function showSingleApproveModal(activityId) {
+        currentActivityId = activityId;
+
+        // 기본 포인트 유형 선택 (첫 번째 옵션)
+        const singlePointTypeSelect = document.getElementById('singlePointType');
+        if (singlePointTypeSelect) {
+            singlePointTypeSelect.selectedIndex = 0;
         }
 
+        // 승인 모달 표시
+        singleApproveModal.show();
+    }
+
+    /**
+     * 활동 승인
+     * @param {string} activityId - 활동 ID
+     * @param {string} pointType - 포인트 유형
+     */
+    async function approveActivity(activityId, pointType) {
         const btn = document.querySelector(`.btn-approve[data-id="${activityId}"]`);
         if (btn) {
             const originalText = btn.innerHTML;
@@ -325,7 +376,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             try {
                 const response = await adminAuthFetch(`/admin/activities/${activityId}/approve`, {
-                    method: 'PUT'
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pointType: pointType })
                 });
 
                 if (response.ok) {
@@ -427,6 +482,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         document.getElementById('approveSelectedCount').textContent = checkedBoxes.length;
+
+        // 포인트 유형 기본값 설정
+        const pointTypeSelect = document.getElementById('pointType');
+        if (pointTypeSelect) {
+            pointTypeSelect.selectedIndex = 0;
+        }
+
         bulkApproveModal.show();
     }
 
@@ -465,6 +527,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const activityIds = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.id);
+        const pointType = document.getElementById('pointType').value;
 
         btnConfirmBulkApprove.disabled = true;
         btnConfirmBulkApprove.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> 처리 중...';
@@ -475,7 +538,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ activityIds: activityIds })
+                body: JSON.stringify({
+                    activityIds: activityIds,
+                    pointType: pointType
+                })
             });
 
             if (response.ok) {

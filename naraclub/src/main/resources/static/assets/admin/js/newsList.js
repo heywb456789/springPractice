@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       const res = await adminAuthFetch(
-          `/admin/news/delete/${currentDeleteNewsId}`, {
+          `/admin/original/news/delete/${currentDeleteNewsId}`, {
             method: 'DELETE'
           });
 

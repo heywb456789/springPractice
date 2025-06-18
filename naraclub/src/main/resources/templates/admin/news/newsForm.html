@@ -6,7 +6,7 @@
         ~{::customCSS},
         ~{::customJS},
         'news',
-        ${mode == 'create' ? 'create' : 'update'}
+        ${mode == 'create' ? 'newsCreate' : 'newsUpdate'}
       )}">
 <head>
   <title th:text="${mode == 'create' ? '뉴스 작성' : '뉴스 수정'} + ' - 관리자'">뉴스 작성/수정 - 관리자</title>

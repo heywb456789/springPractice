@@ -61,8 +61,7 @@ async function exchangePoint(button){
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({}) // 필요 시 userId 등 전달 가능
+      }
     });
 
     const result = await res.json();

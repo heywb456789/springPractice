@@ -1,3 +1,5 @@
+server:
+  port: ${SERVER_PORT:8032}
 spring:
   main:
     banner-mode: off
@@ -15,7 +17,13 @@ spring:
       hibernate:
         format_sql: true
         use_sql_comments: true
-  #        dialect: org.hibernate.dialect.MariaDB103Dialect
+  security:
+    jwt:
+      cookie:
+        secure: true          # ← 개발환경: HTTP 허용
+        http-only: true
+        same-site: lax
+        path: /
   app:
     display: https://image.newstomato.com/newstomato/club
     upload:
@@ -41,11 +49,6 @@ spring:
       idle-timeout: 600000         # 기본 600000
       pool-name: ${spring.application.name}-pool
 
-google:
-  key-path:
-    console: "/google/pc-api-6501066511374588335-380-1ad7a0f489f4.json"
-    firebase: "/firebase/dev-bread-4908a-firebase-adminsdk-cp247-2bc9dd1010.json"
-
 x:
   redirect-url: "https://club1.newstomato.com/twitter/callback"
 
@@ -55,3 +58,9 @@ ttr:
   wallet-address: TTCJNqEHb9BU5qgQCeHvvqPbQzF6pPmn7UAX
   get-balance: /api/v1/address_balance
   transfer_points: /api/v1/wallet_transfer_to_address
+
+nice:
+  call-back: https://club1.newstomato.com/api/auth/pass/callback
+
+original:
+  replication: true

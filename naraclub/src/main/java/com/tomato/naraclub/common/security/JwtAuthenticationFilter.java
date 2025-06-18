@@ -7,7 +7,7 @@ import com.tomato.naraclub.admin.user.entity.Admin;
 import com.tomato.naraclub.application.member.entity.Member;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.application.security.MemberUserDetailsService;
-import com.tomato.naraclub.common.exception.UnAuthorizationException;
+import com.tomato.naraclub.common.util.CookieUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -16,36 +16,49 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.Duration;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 @Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final String ADMIN_AUTH_LOGIN = "/admin/auth/login";       // ← 변경: 로그인 페이지 URI
     private static final String ADMIN_AUTH_LOGOUT = "/admin/auth/logout";
+
+    private final CookieUtil cookieUtil;
     private final JwtTokenProvider tokenProvider;
     private final MemberUserDetailsService memberDetailsService;
     private final AdminUserDetailsService adminDetailsService;
+    private final AuthenticationEntryPoint entryPoint =
+        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
 
     public JwtAuthenticationFilter(
         JwtTokenProvider tokenProvider,
         MemberUserDetailsService memberDetailsService,
-        AdminUserDetailsService adminDetailsService
+        AdminUserDetailsService adminDetailsService,
+        CookieUtil cookieUtil
     ) {
         this.tokenProvider = tokenProvider;
         this.memberDetailsService = memberDetailsService;
         this.adminDetailsService = adminDetailsService;
+        this.cookieUtil = cookieUtil;
     }
 
     @Override
@@ -53,138 +66,126 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         HttpServletResponse res,
         FilterChain chain)
         throws ServletException, IOException {
-
         String uri = req.getRequestURI();
-        // /admin/auth/login 과 리소스는 예외
         boolean isAdminPage = uri.startsWith("/admin")
             && !uri.startsWith("/admin/auth/");
         String token = resolveToken(req);
 
-        // 1) 관리자 페이지인데 토큰이 없는 경우 → 바로 로그인 페이지로
+        // ← 변경: 1) 토큰이 없으면 바로 로그인 페이지로
         if (isAdminPage && token == null) {
-            res.sendRedirect(ADMIN_AUTH_LOGOUT);
+            cookieUtil.clearTokenCookies(res);
+            res.sendRedirect(ADMIN_AUTH_LOGIN);
             return;
         }
 
-        boolean refreshed = false;
-        String newAccessToken = null;
-
         try {
             if (token != null) {
-                try {
-                    // 기존 액세스 토큰 검증
-                    validateAndAuthenticate(token);
-                } catch (ExpiredJwtException ex) {
-                    // 만료된 경우 기존 Refresh 로직
-                    String refresh = resolveRefreshToken(req);
-                    if (refresh != null && tokenProvider.validateToken(refresh)) {
-                        String role = tokenProvider.getClaims(refresh).get("role").toString();
-                        UserDetails user = loadUserByRole(role, refresh);
-
-                        newAccessToken = issueNewAccessToken(user, role);
-                        String newRefresh = issueNewRefreshToken(user, role);
-
-                        addCookie(res, "ACCESS_TOKEN", newAccessToken, 60 * 60);
-                        addCookie(res, "REFRESH_TOKEN", newRefresh, 7 * 24 * 3600);
-
-                        UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(user, null,
-                                user.getAuthorities());
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                        log.info("✅ Authenticated user: {}", user.getUsername());
-                        log.info("✅ Granted Authorities: {}", user.getAuthorities());
-                        refreshed = true;
-                    } else {
-                        throw new BadCredentialsException("리프레시 토큰이 유효하지 않습니다.");
-                    }
-                } catch (UnAuthorizationException uex) {
-                    res.sendRedirect(ADMIN_AUTH_LOGOUT);
-                    return;
-                }
+                validateAndAuthenticate(token);
             }
-        } catch (BadCredentialsException | JwtException ex) {
-            // 2) 관리자 페이지인데 토큰 검증/재발급 실패 시 → 로그인 페이지로
+            chain.doFilter(req, res);
+
+        } catch (ExpiredJwtException ex) {
+            // ← 변경: 2) 토큰 만료시에도 관리자 페이지는 로그인으로
             if (isAdminPage) {
-                res.sendRedirect(ADMIN_AUTH_LOGOUT);
-//                SecurityContextHolder.clearContext();
-                return;
+                // 관리 페이지: refresh 쿠키로 재발급
+                String refresh = resolveRefreshToken(req);
+                if (refresh != null && tokenProvider.validateToken(refresh)) {
+                    String role = tokenProvider.getClaims(refresh).get("role").toString();
+                    UserDetails user = loadUserByRole(role, refresh);
+
+                    String newAccessToken = issueNewAccessToken(user, role);
+                    String newRefresh = issueNewRefreshToken(user, role);
+
+                    // 1) 쿠키에도 새 토큰 세팅
+                    cookieUtil.addTokenCookies(res, newAccessToken, newRefresh);
+
+                    // 2) 응답 헤더에도 새 액세스 토큰 세팅 → 클라이언트가 읽어서 localStorage 동기화 가능
+                    res.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + newAccessToken);
+
+                    // 인증 컨텍스트 설정 후 계속 진행
+                    UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+
+                    chain.doFilter(req, res);
+                } else {
+                    cookieUtil.clearTokenCookies(res);
+                    res.sendRedirect(ADMIN_AUTH_LOGIN);
+                }
+
+            } else {
+                // API 요청이라면 그냥 401
+                entryPoint.commence(req, res,
+                    new InsufficientAuthenticationException("Token expired", ex));
             }
-            // API 에선 그냥 401 처리로 넘기기
+
+        } catch (JwtException | IllegalArgumentException | BadCredentialsException ex) {
             SecurityContextHolder.clearContext();
+            if (isAdminPage) {
+                // 토큰 형태 오류 등도 관리자용 로그인 리다이렉트
+                cookieUtil.clearTokenCookies(res);
+                res.sendRedirect(ADMIN_AUTH_LOGIN);
+            } else {
+                cookieUtil.clearTokenCookies(res);
+                entryPoint.commence(req, res,
+                    new InsufficientAuthenticationException("Invalid token", ex));
+            }
         }
-
-        // 3) 새로 발급된 토큰이 있다면 헤더에도 추가
-        if (refreshed && newAccessToken != null) {
-            res.setHeader("Authorization", "Bearer " + newAccessToken);
-        }
-
-        chain.doFilter(req, res);
     }
 
-    /**
-     * 헤더 우선, 없으면 쿠키에서 ACCESS_TOKEN 꺼내기
-     */
     private String resolveToken(HttpServletRequest req) {
-        String h = req.getHeader("Authorization");
-        if (h != null && h.startsWith("Bearer ")) {
-            String t = h.substring(7).trim();
+        String header = req.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header != null && header.startsWith("Bearer ")) {
+            String t = header.substring(7).trim();
             return t.isEmpty() ? null : t;
         }
         if (req.getCookies() != null) {
             for (Cookie c : req.getCookies()) {
-                if ("ACCESS_TOKEN".equals(c.getName())) {
-                    String v = c.getValue();
-                    if (v != null && !v.trim().isEmpty()) {
-                        return v.trim();
-                    }
+                if ("ACCESS_TOKEN".equals(c.getName())
+                    && c.getValue() != null
+                    && !c.getValue().trim().isEmpty()) {
+                    return c.getValue().trim();
                 }
             }
         }
         return null;
     }
 
-
-    /**
-     * 쿠키에서 REFRESH_TOKEN 꺼내기
-     */
     private String resolveRefreshToken(HttpServletRequest req) {
-        if (req.getCookies() != null) {
-            for (Cookie c : req.getCookies()) {
-                if ("REFRESH_TOKEN".equals(c.getName())) {
-                    return c.getValue();
-                }
+        if (req.getCookies() == null) {
+            return null;
+        }
+        for (Cookie c : req.getCookies()) {
+            if ("REFRESH_TOKEN".equals(c.getName())) {
+                return c.getValue();
             }
         }
         return null;
     }
 
-    /**
-     * 토큰 파싱 시에는 tokenProvider.getKey() 를 사용
-     */
     private void validateAndAuthenticate(String token) {
+        // 토큰 검증
         Jwts.parserBuilder()
             .setSigningKey(tokenProvider.getKey())
             .build()
             .parseClaimsJws(token);
 
+        // 사용자 로딩
         String role = tokenProvider.getClaims(token).get("role").toString();
         UserDetails user = loadUserByRole(role, token);
 
+        // 인증정보 세팅
         UsernamePasswordAuthenticationToken auth =
             new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-    /**
-     * 역할에 따라 UserDetailsService 선택
-     */
     private UserDetails loadUserByRole(String role, String token) {
         try {
             AdminRole adminRole = AdminRole.of(role);
             String username = tokenProvider.getSubject(token);
             return adminDetailsService.loadUserByUsername(username);
         } catch (IllegalArgumentException e) {
-            // enum 에 없으면 일반회원
             Long memberId = Long.valueOf(tokenProvider.getSubject(token));
             return memberDetailsService.loadUserByUsername(memberId.toString());
         }
@@ -209,18 +210,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return tokenProvider.createRefreshToken(member, false);
         }
     }
-
-
-    private void addCookie(HttpServletResponse res, String name, String value, int maxAgeSec) {
-        ResponseCookie cookie = ResponseCookie.from(name, value)
-            .httpOnly(true)
-            .secure(true)
-            .sameSite("Strict")
-            .path("/")
-            .maxAge(Duration.ofSeconds(maxAgeSec))
-            .build();
-        res.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-    }
 }
-
-

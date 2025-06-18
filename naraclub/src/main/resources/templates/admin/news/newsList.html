@@ -6,7 +6,7 @@
         ~{::customCSS},
         ~{::customJS},
         'news',
-        'list'
+        'newsList'
       )}">
 <head>
   <title>뉴스 목록 - 관리자</title>
@@ -35,6 +35,7 @@
   <div class="card mb-4">
     <div class="card-body">
       <form id="searchForm" method="get" action="/admin/original/news/list">
+        <input type="hidden" name="size" value="10">
         <div class="row g-3">
           <div class="col-md-3">
             <label for="searchType" class="form-label">검색 유형</label>
@@ -132,16 +133,14 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <div>
-        <h5 class="card-title mb-0 d-inline-block">총 <span th:text="${newsList.size()}">0</span>개의
-          뉴스</h5>
+        <h5 class="card-title mb-0 d-inline-block">
+          총 <span th:text="${#numbers.formatInteger(totalCount, 0, 'COMMA')}">0</span>개의 뉴스
+        </h5>
         <span class="text-muted ms-2">
           (페이지 <span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span>)
         </span>
       </div>
       <div class="header-actions">
-        <!--        <button class="btn btn-sm btn-outline-primary me-2" id="btnExportCSV">-->
-        <!--          <i class="fas fa-download"></i> CSV 내보내기-->
-        <!--        </button>-->
         <div class="btn-group">
           <button type="button" class="btn btn-sm btn-outline-secondary" id="btnViewGrid">
             <i class="fas fa-th-large"></i>
@@ -283,22 +282,27 @@
     </div>
 
     <!-- Pagination -->
-    <div class="card-footer d-flex justify-content-center" th:if="${totalPages > 0}">
+    <div class="card-footer d-flex justify-content-between align-items-center" th:if="${totalPages > 0}">
+      <div class="text-muted">
+        총 <span th:text="${#numbers.formatInteger(totalCount, 0, 'COMMA')}">0</span>개
+        (<span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span> 페이지)
+      </div>
+
       <nav aria-label="Page navigation">
         <ul class="pagination mb-0">
           <!-- First Page -->
-          <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasPrevious ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/news/list(page=0, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/original/news/list(page=0, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="First">
               <span aria-hidden="true">&laquo;&laquo;</span>
             </a>
           </li>
 
           <!-- Previous Page -->
-          <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasPrevious ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/news/list(page=${currentPage - 2}, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/original/news/list(page=${currentPageZeroIndex - 1}, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
@@ -306,26 +310,26 @@
 
           <!-- Page Numbers -->
           <li class="page-item"
-              th:each="pageNumber : ${#numbers.sequence(currentPage - 2 <= 0 ? 1 : currentPage - 2, currentPage + 2 >= totalPages ? totalPages : currentPage + 2)}"
+              th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
               th:classappend="${pageNumber == currentPage ? 'active' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/news/list(page=${pageNumber - 1}, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/original/news/list(page=${pageNumber - 1}, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                th:text="${pageNumber}">1</a>
           </li>
 
           <!-- Next Page -->
-          <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasNext ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/news/list(page=${currentPage}, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/original/news/list(page=${currentPageZeroIndex + 1}, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>
           </li>
 
           <!-- Last Page -->
-          <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasNext ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/original/news/list(page=${totalPages - 1}, size=${newsList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/original/news/list(page=${totalPages - 1}, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, category=${searchRequest.category}, publishStatus=${searchRequest.publishStatus}, isHot=${searchRequest.isHot}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Last">
               <span aria-hidden="true">&raquo;&raquo;</span>
             </a>

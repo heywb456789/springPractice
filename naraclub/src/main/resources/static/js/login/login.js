@@ -1,5 +1,9 @@
 // src/main/resources/static/js/login.js
-import { checkAuthAndRedirect, handleTokenRefresh } from '../commonFetch.js'
+import {
+  authFetch,
+  checkAuthAndRedirect,
+  handleTokenRefresh
+} from '../commonFetch.js'
 
 let inviteModal;
 let isNoInviteFlow = false;
@@ -8,14 +12,15 @@ let inviteCodeToast;
 // 초기화 함수
 const initLoginPage = () => {
   console.log("Login page initializing...");
-  checkAuthAndRedirect({ redirectUrl: '../main/main.html' });
+  checkAuthAndRedirect({redirectUrl: '../main/main.html'});
 
   const elements = selectElements();
   registerEventListeners(elements);
   validateForm(elements);
 
   // 토스트 초기화
-  inviteCodeToast = new bootstrap.Toast(document.getElementById('inviteCodeToast'));
+  inviteCodeToast = new bootstrap.Toast(
+      document.getElementById('inviteCodeToast'));
 
   // URL에서 초대 코드 확인
   checkInviteCodeFromUrl();
@@ -57,12 +62,15 @@ const selectElements = () => ({
 });
 
 const registerEventListeners = (elements) => {
-  elements.phoneInput.addEventListener('input', (e) => handlePhoneInput(e, elements));
-  elements.passwordInput.addEventListener('input', () => handlePasswordInput(elements));
+  elements.phoneInput.addEventListener('input',
+      (e) => handlePhoneInput(e, elements));
+  elements.passwordInput.addEventListener('input',
+      () => handlePasswordInput(elements));
   elements.loginButton.addEventListener('click', () => handleLogin(elements));
   elements.registerButton.addEventListener('click', handleRegister);
   elements.backButton.addEventListener('click', handleBack);
-  elements.inviteSubmitBtn.addEventListener('click', () => handleInviteSubmit(elements));
+  elements.inviteSubmitBtn.addEventListener('click',
+      () => handleInviteSubmit(elements));
   elements.noInviteLink.addEventListener('click', (e) => {
     e.preventDefault();
     handleNoInvite(elements);
@@ -99,7 +107,22 @@ const handleLogin = async (elements) => {
         inviteModal.show();
         break;
       case 'TEMPORARY_PASS':
-        window.location.href = 'login.js'; // PASS 도입되면 그쪽으로
+        alert('신원 인증이 필요합니다.');
+        alert('신원 인증이 필요합니다.');
+        try {
+          const res = await authFetch('/api/auth/pass/prepare',
+              {method: 'POST'});
+          const data = await res.json();
+          const formData = {
+            enc_data: data.response.encData,
+            token_version_id: data.response.tokenVersionId,
+            integrity_value: data.response.integrityValue,
+            m: 'service'
+          }
+          submitFormToNice(data.response.requestUrl, formData);
+        } catch (err) {
+          alert('인증 요청 실패: ' + err.message);
+        }
         break;
       case 'ACTIVE':
         window.location.href = '../main/main.html';
@@ -128,11 +151,31 @@ const handleInviteSubmit = async (elements) => {
   }
   elements.inviteError.style.display = 'none';
   try {
-    await submitInviteCode(code);
+    const result = await submitInviteCode(code);
     // 초대 코드 제출 성공 시 localStorage에서 삭제
     localStorage.removeItem('pendingInviteCode');
-    alert('초대 코드 등록이 완료되었습니다. 메인 페이지로 이동합니다.');
-    window.location.href = '../main/main.html';
+    const updatedMemberStatus = result.response.status;
+
+    if (updatedMemberStatus === 'TEMPORARY_PASS') {
+      alert('신원 인증이 필요합니다.');
+      try {
+        const res = await authFetch('/api/auth/pass/prepare', {method: 'POST'});
+        const data = await res.json();
+
+        const formData = {
+          enc_data: data.response.encData,
+          token_version_id: data.response.tokenVersionId,
+          integrity_value: data.response.integrityValue,
+          m: 'service'
+        }
+        submitFormToNice(data.response.requestUrl, formData);
+      } catch (err) {
+        alert('인증 요청 실패: ' + err.message);
+      }
+    } else {
+      alert('초대 코드 등록이 완료되었습니다. 메인 페이지로 이동합니다.');
+      window.location.href = '../main/main.html';
+    }
   } catch (err) {
     elements.inviteError.textContent = err.message;
     elements.inviteError.style.display = 'block';
@@ -154,17 +197,40 @@ const handleNoInvite = (elements) => {
 };
 
 // JWT 로그인 API 호출 개선 (응답 구조 반영)
-async function jwtLogin({ phoneNumber, password, autoLogin }) {
+async function jwtLogin({phoneNumber, password, autoLogin}) {
   const res = await fetch(`/api/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phoneNumber, password, autoLogin })
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({phoneNumber, password, autoLogin})
   });
 
   let result = await res.json();
-  if (result.status.code !== 'OK_0000') throw new Error(result.status.message || '로그인 정보가 올바르지 않습니다.');
-  if (!res.ok) throw new Error('로그인 실패: ' + res.statusText);
+  if (result.status.code !== 'OK_0000') {
+    throw new Error(
+        result.status.message || '로그인 정보가 올바르지 않습니다.');
+  }
+  if (!res.ok) {
+    throw new Error('로그인 실패: ' + res.statusText);
+  }
   return result; // 서버 응답 구조 전체 반환
+}
+
+function submitFormToNice(requestUrl, encodeData) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = requestUrl;
+  form.style.display = 'none';
+
+  Object.entries(encodeData).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+  document.body.appendChild(form);
+  form.submit();
 }
 
 // 초대 코드 제출 요청 (Refresh Token 활용하여 401 대응)
@@ -176,7 +242,7 @@ async function submitInviteCode(code) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     },
-    body: JSON.stringify({ inviteCode: code })
+    body: JSON.stringify({inviteCode: code})
   });
 
   // Access Token 만료 시 Refresh Token으로 재발급 후 재요청
@@ -189,14 +255,17 @@ async function submitInviteCode(code) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${newToken}`
       },
-      body: JSON.stringify({ inviteCode: code })
+      body: JSON.stringify({inviteCode: code})
     });
   }
 
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.status?.message || '초대 코드 등록 실패: ' + res.statusText);
+    throw new Error(
+        errorData.status?.message || '초대 코드 등록 실패: ' + res.statusText);
   }
+
+  return await res.json();
 }
 
 // 기타 이벤트 처리 (변경 없음)
@@ -216,7 +285,8 @@ const validateForm = (elements) => {
   const isPasswordValid = elements.passwordInput.value.length >= 4;
   const isFormValid = isPhoneValid && isPasswordValid;
   elements.loginButton.disabled = !isFormValid;
-  elements.loginButton.style.backgroundColor = isFormValid ? '#ff9999' : '#ffcccc';
+  elements.loginButton.style.backgroundColor = isFormValid ? '#ff9999'
+      : '#ffcccc';
 };
 
 document.addEventListener('DOMContentLoaded', initLoginPage);

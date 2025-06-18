@@ -16,4 +16,5 @@ public class Pagination {
     private int totalPages;
     @Schema(description = "전체 데이터 건수")
     private long totalElements;
+
 }

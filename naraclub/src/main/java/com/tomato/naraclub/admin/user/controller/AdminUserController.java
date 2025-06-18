@@ -15,6 +15,7 @@ import com.tomato.naraclub.application.auth.entity.MemberLoginHistory;
 import com.tomato.naraclub.application.board.dto.BoardListRequest;
 import com.tomato.naraclub.application.board.dto.BoardPostResponse;
 import com.tomato.naraclub.common.dto.ListDTO;
+import com.tomato.naraclub.common.dto.Pagination;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,24 +60,40 @@ public class AdminUserController {
         ListDTO<AppUserResponse> appUserList = appUserService.getAppUserList(user, request,
             pageable);
 
-        // 페이징 정보
-        int totalPages = appUserList.getPagination().getTotalPages();
-        int currentPage = appUserList.getPagination().getCurrentPage();
-        int startPage = Math.max(1, currentPage - 4);
+        // ListDTO에서 페이징 정보 추출
+        Pagination pagination = appUserList.getPagination();
+        List<AppUserResponse> userList = appUserList.getData();
+
+        int totalPages = pagination.getTotalPages();
+        int currentPage = pagination.getCurrentPage(); // 이미 1-based
+        long totalCount = pagination.getTotalElements();
+
+        // 페이지 범위 계산 (최대 10개 페이지 표시)
+        int startPage = Math.max(1, currentPage - 5);
         int endPage = Math.min(startPage + 9, totalPages);
 
+        // startPage 재조정 (끝 페이지 기준으로)
+        if (endPage - startPage < 9 && startPage > 1) {
+            startPage = Math.max(1, endPage - 9);
+        }
+
         //모델에 데이터 추가
-        model.addAttribute("userList", appUserList.getData());
+        model.addAttribute("userList", userList);
+        model.addAttribute("totalCount", totalCount);
         model.addAttribute("totalPages", totalPages);
-        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("currentPage", currentPage); // 1-based
+        model.addAttribute("currentPageZeroIndex", page); // 0-based (URL용)
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
+        model.addAttribute("pageSize", size);
+
+        // 이전/다음 페이지 여부
+        model.addAttribute("hasPrevious", page > 0);
+        model.addAttribute("hasNext", page < totalPages - 1);
 
         // 페이지 제목 및 활성 메뉴 설정
         model.addAttribute("searchRequest", request);
         model.addAttribute("pageTitle", "앱 유저관리 - NaraSarang Admin");
-        model.addAttribute("activeMenu", "users");
-        model.addAttribute("activeSubmenu", "app");
 
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());

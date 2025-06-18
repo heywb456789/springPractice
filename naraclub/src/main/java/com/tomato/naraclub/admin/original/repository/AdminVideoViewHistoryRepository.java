@@ -27,4 +27,6 @@ public interface AdminVideoViewHistoryRepository extends JpaRepository<VideoView
         ORDER BY FUNCTION('DATE', v.createdAt)
       """)
     List<Object[]> findViewTrend(@Param("videoId") Long id, @Param("since") LocalDateTime since);
+
+    List<VideoViewHistory> findByReaderId(Long id);
 }

@@ -47,9 +47,13 @@ public class AdminVideoServiceImpl implements AdminVideoService {
     private final AdminVideoRepository adminVideoRepository;
     private final AdminVideoCommentsRepository adminVideoCommentsRepository;
     private final AdminVideoViewHistoryRepository viewHistoryRepository;
+    private final VideoReplicationService videoReplicationService;
 
     @Value("${spring.app.display}")
     private String displayUrl;
+
+    @Value("${original.replication}")
+    private boolean originalReplication;
 
     @Override
     public ListDTO<VideoResponse> getVideoList(AdminUserDetails user, VideoListRequest request,
@@ -108,6 +112,10 @@ public class AdminVideoServiceImpl implements AdminVideoService {
             video.setThumbnailUrl(displayUrl + thumbnailUrl);
             video.setVideoUrl(displayUrl + videoUrl);
 
+            //5. 복제
+            if(originalReplication) {
+                videoReplicationService.replicateToOtherSchema(video);
+            }
             return video.convertDTO();
         } catch (Exception e) {
             // 파일 업로드 실패 시 생성된 비디오 엔티티 삭제 (DB 롤백)
@@ -143,6 +151,9 @@ public class AdminVideoServiceImpl implements AdminVideoService {
             .orElseThrow(() -> new APIException(ResponseStatus.VIDEO_NOT_EXIST));
 
         video.setPublic(req.getIsPublic());
+        if(originalReplication) {
+            videoReplicationService.updateIsPublicInOtherSchema(video);
+        }
         return video.convertDTO();
     }
 
@@ -211,7 +222,9 @@ public class AdminVideoServiceImpl implements AdminVideoService {
                 throw new APIException(ResponseStatus.FILE_UPLOAD_FAIL);
             }
         }
-
+        if(originalReplication) {
+            videoReplicationService.updateToOtherSchema(video);
+        }
         return video.convertDTO();
     }
 
@@ -233,6 +246,9 @@ public class AdminVideoServiceImpl implements AdminVideoService {
 
             // 논리적 삭제 (soft delete)
             video.setDeleted(true);
+            if(originalReplication) {
+                videoReplicationService.softDeleteFromOtherSchema(id);
+            }
             return true;
         } catch (Exception e) {
             log.error("비디오 삭제 실패: {}", e.getMessage(), e);

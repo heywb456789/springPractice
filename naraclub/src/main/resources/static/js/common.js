@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   //마이페이지 클릭함수
-  myPageBtn.addEventListener('click',()=>{
+  myPageBtn.addEventListener('click', () => {
     window.location.href = '/mypage/mypage.html'
   })
 
@@ -166,8 +166,8 @@ function injectDefaultComponents() {
           <div class="side-menu-item" data-page="home">클럽 홈</div>
           <div class="side-menu-item" data-page="rewards">리워드 정책</div>
           <div class="side-menu-item" data-page="link-x">계정인증(엑스)</div>
-<!--          <div class="side-menu-item" data-page="community">계정인증(디시인사이드)</div>-->
           <div class="side-menu-item" data-page="upload">활동내역 업로드</div>
+<!--          <div class="side-menu-item" data-page="subscribe">정기 구독</div>-->
         </div>
       </div>
     `;
@@ -350,14 +350,15 @@ function initTabMenu() {
  * 페이지 이동 함수
  * @param {string} page - 이동할 페이지 키
  */
-function navigateToPage(page) {
+async function navigateToPage(page) {
   // 페이지별 URL 매핑
   const pageUrls = {
     'home': '/main/main.html',
     'rewards': '/side/rewards.html',
     'link-x': '/twitter/connect',
     'link-dc': '/side/link-dc.html',
-    'upload': '/side/activity.html'
+    'upload': '/side/activity.html',
+    'subscribe': '/side/subscriptionStatus.html',
   };
 
   if (page === 'link-x') {
@@ -365,25 +366,89 @@ function navigateToPage(page) {
     return;
   }
 
-  // 해당 페이지로 이동
-  if (pageUrls[page]) {
-    window.location.href = pageUrls[page];
+  // 인증 확인이 필요한 페이지 목록
+  const authRequiredPages = ['subscribe', 'upload'];
+
+  // 페이지가 인증이 필요하거나 명시적으로 인증 확인을 요청한 경우
+  if (authRequiredPages.includes(page)) {
+    try {
+      // 인증 확인
+      const isAuthenticated = await checkAuthentication();
+
+      if (!isAuthenticated) {
+        // 인증 실패 시 로그인 페이지로 리다이렉트
+        redirectToLogin();
+        return;
+      }
+
+      // 인증 성공 시 해당 페이지로 이동
+      if (pageUrls[page]) {
+        window.location.href = pageUrls[page];
+      }
+    } catch (error) {
+      console.error('인증 확인 중 오류 발생:', error);
+      redirectToLogin();
+    }
+  } else {
+    // 인증이 필요하지 않은 페이지는 바로 이동
+    if (pageUrls[page]) {
+      window.location.href = pageUrls[page];
+    }
   }
 }
 
-async function callTwitter(){
-    try {
-      const response = await authFetch(`/twitter/connect`);
+function redirectToLogin() {
+  // 현재 페이지 URL을 세션 스토리지에 저장 (로그인 후 돌아오기 위함)
+  // const currentPath = window.location.pathname + window.location.search;
+  // sessionStorage.setItem('redirectAfterLogin', currentPath);
 
-      const result =  await response.json();
+  // 사용자에게 알림
+  alert('로그인이 필요한 서비스입니다.');
 
-      window.location.href = result.response.connectUrl;
+  // 로그인 페이지로 이동
+  window.location.href = '/login/login.html';
+}
 
-      return result;
-    } catch (err) {
-      console.error('오류 발생:', err);
-      return null;
+/**
+ * 인증 상태 확인
+ * @returns {Promise<boolean>} 인증 성공 여부
+ */
+async function checkAuthentication() {
+  try {
+    const token = localStorage.getItem('accessToken');
+
+    // 토큰이 없으면 인증 실패로 간주
+    if (!token) {
+      return false;
     }
+
+    // 인증 상태 확인 API 호출
+    const res = await fetch('/api/auth/validate', {
+      method: 'GET',
+      headers: {'Authorization': `Bearer ${token}`}
+    });
+
+    // 204 No Content면 인증 완료 상태
+    return res.status === 204;
+  } catch (error) {
+    console.error('인증 확인 오류:', error);
+    return false;
+  }
+}
+
+async function callTwitter() {
+  try {
+    const response = await authFetch(`/twitter/connect`);
+
+    const result = await response.json();
+
+    window.location.href = result.response.connectUrl;
+
+    return result;
+  } catch (err) {
+    console.error('오류 발생:', err);
+    return null;
+  }
 }
 
 /**

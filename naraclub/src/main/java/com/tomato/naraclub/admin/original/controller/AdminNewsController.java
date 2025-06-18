@@ -10,6 +10,7 @@ import com.tomato.naraclub.application.original.code.OriginalType;
 import com.tomato.naraclub.application.original.entity.Article;
 import com.tomato.naraclub.application.original.entity.Video;
 import com.tomato.naraclub.common.dto.ListDTO;
+import com.tomato.naraclub.common.dto.Pagination;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -39,30 +40,49 @@ public class AdminNewsController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         ListDTO<NewsArticleResponse> newsPage = adminNewsService.getNewsList(request, user, pageable);
 
-        int totalPages = newsPage.getPagination().getTotalPages();
-        int currentPage = newsPage.getPagination().getCurrentPage();
-        int startPage = Math.max(1, currentPage);
+        // ListDTO에서 페이징 정보 추출
+        Pagination pagination = newsPage.getPagination();
+        List<NewsArticleResponse> newsList = newsPage.getData();
+
+        int totalPages = pagination.getTotalPages();
+        int currentPage = pagination.getCurrentPage(); // 이미 1-based
+        long totalCount = pagination.getTotalElements();
+
+        // 페이지 범위 계산 (최대 10개 페이지 표시)
+        int startPage = Math.max(1, currentPage - 5);
         int endPage = Math.min(startPage + 9, totalPages);
 
-        model.addAttribute("newsList", newsPage.getData());
+        // startPage 재조정 (끝 페이지 기준으로)
+        if (endPage - startPage < 9 && startPage > 1) {
+            startPage = Math.max(1, endPage - 9);
+        }
+
+        // 모델에 데이터 추가
+        model.addAttribute("newsList", newsList);
+        model.addAttribute("totalCount", totalCount);
         model.addAttribute("totalPages", totalPages);
-        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("currentPage", currentPage); // 1-based
+        model.addAttribute("currentPageZeroIndex", page); // 0-based (URL용)
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
+        model.addAttribute("pageSize", size);
 
-        // 페이지 제목 및 활성 메뉴 설정
+        // 이전/다음 페이지 여부
+        model.addAttribute("hasPrevious", page > 0);
+        model.addAttribute("hasNext", page < totalPages - 1);
+
+        // 기타 정보
         model.addAttribute("categories", OriginalCategory.values());
         model.addAttribute("types", OriginalType.getNewsArticleTypes());
         model.addAttribute("pageTitle", "Original News 관리 - 나라걱정 클럽 관리자");
-        model.addAttribute("activeMenu", "news");
         model.addAttribute("searchRequest", request);
-
 
         // 사용자 정보 설정 (공통)
         model.addAttribute("userName", user.getUsername());
         model.addAttribute("userRole", user.getAuthorities());
         model.addAttribute("userRoleDisplay", user.getAdmin().getRole().getDisplayName());
         model.addAttribute("userAvatar", null);
+
         return "admin/news/newsList";
     }
 

@@ -22,8 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const loginBtn = document.getElementById('loginBtn');
   const recoverBtn = document.getElementById('btnRecoverPassword');
+  const loginForm = document.getElementById('loginForm');
+
 
   loginBtn.addEventListener('click', onLoginSubmit);
+
+  loginForm.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      onLoginSubmit(e);
+    }
+  });
+
   if (recoverBtn) {
     recoverBtn.addEventListener('click', onRecoverSubmit);
   }
@@ -83,9 +92,9 @@ async function onLoginSubmit(e) {
     }
 
     // 1) 액세스 토큰 쿠키에 저장 (HttpOnly는 서버에서 Set-Cookie 헤더로 하는 게 보안상 좋습니다)
-    document.cookie = `ACCESS_TOKEN=${token}; Path=/; Secure; SameSite=Strict;`;
+    // document.cookie = `ACCESS_TOKEN=${token}; Path=/; Secure; SameSite=Strict;`;
     // 2) 리프레시 토큰 쿠키에 저장
-    document.cookie = `REFRESH_TOKEN=${refresh}; Path=/; Secure; SameSite=Strict;`;
+    // document.cookie = `REFRESH_TOKEN=${refresh}; Path=/; Secure; SameSite=Strict;`;
 
     // 3) 대시보드로 내비게이트
     window.location.href = '/admin/dashboard';

@@ -186,4 +186,8 @@ public class Member extends Audit {
     public void setName(String name) {
         this.name = name;
     }
+
+    public void setProfileImg(String profileImg) {
+        this.profileImg = profileImg;
+    }
 }

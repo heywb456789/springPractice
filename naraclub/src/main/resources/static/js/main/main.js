@@ -1,8 +1,17 @@
 // main.js
 import VideoService from '../original/video-service.js';
-import {optionalAuthFetch, handleFetchError} from '../commonFetch.js';
+import {
+  optionalAuthFetch,
+  handleFetchError,
+  authFetch,
+  FetchError
+} from '../commonFetch.js';
 
 document.addEventListener('DOMContentLoaded', async function () {
+
+  initErrorAlert();
+  await initAuthModalAndCheck();
+
   // 1) 최신 동영상
   await loadLatestVideo();
 
@@ -17,6 +26,88 @@ document.addEventListener('DOMContentLoaded', async function () {
   initPollMoreLink();     // 투표 공간
 
 });
+
+async function initAuthModalAndCheck() {
+  let memberStatus = null;
+
+  try {
+    // authFetch → 액세스 토큰이 만료되면 handleTokenRefresh() 통해 자동 리프레시
+    const response = await authFetch('/api/auth/me', {method: 'GET'});
+    const data = await response.json();
+    memberStatus = data.response?.status || null;
+  } catch (err) {
+    if (err instanceof FetchError && err.httpStatus === 401) {
+      // 리프레시 실패 혹은 권한 문제일 경우 → 토큰만 지워둠 (commonFetch.js 내부에서 처리됨)
+      memberStatus = null;
+    } else {
+      console.error('initAuthModalAndCheck: 네트워크/권한 오류', err);
+      memberStatus = null;
+    }
+  }
+
+  // 백엔드 enum값에 맞춰 “인증 미완료”에 해당하는 상태를 배열에 넣어주세요.
+  const UNVERIFIED_STATUSES = ['TEMPORARY_PASS'];
+
+  if (UNVERIFIED_STATUSES.includes(memberStatus)) {
+    const identityModalEl = document.getElementById('identityModal');
+    if (!identityModalEl) {
+      return;
+    }
+
+    const identityModal = new bootstrap.Modal(identityModalEl);
+    const skipKey = 'hideIdentityModal';
+    const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+
+    // 로컬 스토리지에 저장된 skip 날짜와 다르면 모달 띄우기
+    if (localStorage.getItem(skipKey) !== today) {
+      identityModal.show();
+    }
+
+    // “오늘 하루 보지 않기” 체크박스 처리
+    const checkbox = document.getElementById('identitySkipToday');
+    checkbox?.addEventListener('change', function () {
+      if (this.checked) {
+        localStorage.setItem(skipKey, today);
+      } else {
+        localStorage.removeItem(skipKey);
+      }
+    });
+
+    // “인증하러 가기” 버튼 클릭 시 → /api/auth/pass/prepare 호출하여 패스 인증 준비
+    const proceedBtn = document.getElementById('identityProceedBtn');
+    proceedBtn?.addEventListener('click', async function () {
+      try {
+        // 1) 인증 준비 API 호출
+        const res = await authFetch('/api/auth/pass/prepare', {method: 'POST'});
+        const data = await res.json();
+        const {
+          requestUrl,
+          encData,
+          tokenVersionId,
+          integrityValue
+        } = data.response;
+
+        // 2) Nice 인증 서버로 바로 POST할 Form 생성 및 제출
+        const formData = {
+          enc_data: encData,
+          token_version_id: tokenVersionId,
+          integrity_value: integrityValue,
+          m: 'service'
+        };
+        submitFormToNice(requestUrl, formData);
+      } catch (err) {
+        alert('인증 요청 실패: ' + (err.message || '네트워크 오류'));
+      }
+    });
+  }
+}
+
+function initErrorAlert() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('error') === 'true') {
+    alert('패스 인증이 실패하였습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
 
 /**
  * 최신 동영상을 로드하여 화면에 표시
@@ -459,4 +550,27 @@ function formatViews(count) {
   }
 
   return count.toString();
+}
+
+/**
+ * Nice 인증 서버로 POST할 form을 생성하여 제출
+ * @param {string} requestUrl - Nice 인증 서버 URL (data.response.requestUrl)
+ * @param {object} encodeData   - { enc_data, token_version_id, integrity_value, m }
+ */
+function submitFormToNice(requestUrl, encodeData) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = requestUrl;
+  form.style.display = 'none';
+
+  Object.entries(encodeData).forEach(([key, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
 }

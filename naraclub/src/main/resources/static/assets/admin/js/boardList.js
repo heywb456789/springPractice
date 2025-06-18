@@ -1,12 +1,13 @@
 // assets/admin/js/boardList.js
-import { adminAuthFetch } from '../../../js/commonFetch.js';
+import {adminAuthFetch} from '../../../js/commonFetch.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  const table       = document.getElementById('boardTable');
-  const checkAll    = document.getElementById('checkAll');
-  const deleteBtn   = document.getElementById('btnDelete');
-  const confirmModal= new bootstrap.Modal(document.getElementById('confirmModal'));
-  let selectedIds   = [];
+  const table = document.getElementById('boardTable');
+  const checkAll = document.getElementById('checkAll');
+  const deleteBtn = document.getElementById('btnDelete');
+  const confirmModal = new bootstrap.Modal(
+      document.getElementById('confirmModal'));
+  let selectedIds = [];
 
   // 1) 전체 선택 / 해제
   checkAll?.addEventListener('change', e => {
@@ -54,34 +55,40 @@ document.addEventListener('DOMContentLoaded', () => {
   table?.querySelectorAll('tbody tr').forEach(tr => {
     tr.addEventListener('dblclick', () => {
       const id = tr.getAttribute('data-id');
-      if (id) window.location.href = `/admin/board/${id}`;
+      if (id) {
+        window.location.href = `/admin/board/${id}`;
+      }
     });
   });
 
   // 5) 삭제 버튼 클릭 → 모달 띄우기
   deleteBtn?.addEventListener('click', () => {
     selectedIds = Array.from(
-      document.querySelectorAll('.row-check:checked'),
-      cb => cb.value
+        document.querySelectorAll('.row-check:checked'),
+        cb => cb.value
     );
-    if (selectedIds.length) confirmModal.show();
-  });
-
-  // 6) 모달에서 확인 클릭 → 삭제 API 호출 후 새로고침
-  document.getElementById('btnConfirmDelete')?.addEventListener('click', async () => {
-    try {
-      await adminAuthFetch(`/admin/board/${selectedIds}`, {
-        method: 'DELETE',
-        headers: {'Content-Type':'application/json'},
-      });
-      location.reload();
-    } catch (err) {
-      console.error(err);
-      alert('삭제 중 오류가 발생했습니다.');
+    if (selectedIds.length) {
+      confirmModal.show();
     }
   });
 
-  // 7) 검색 기능
+  // 6) 모달에서 확인 클릭 → 삭제 API 호출 후 새로고침
+  document.getElementById('btnConfirmDelete')?.addEventListener('click',
+      async () => {
+        try {
+          await adminAuthFetch(`/admin/board/${selectedIds}`, {
+            method: 'DELETE',
+            headers: {'Content-Type': 'application/json'},
+          });
+          location.reload();
+        } catch (err) {
+          console.error(err);
+          alert('삭제 중 오류가 발생했습니다.');
+        }
+      });
+
+  // 7) 검색 기능 - 수정된 부분
+  const searchForm = document.getElementById('searchForm');
   const searchTypeSelect = document.getElementById('searchType');
   const searchTextInput = document.getElementById('searchText');
   const searchButton = document.getElementById('btnSearch');
@@ -100,6 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
     searchTextInput.value = keyword;
   }
 
+  // 폼 제출 이벤트 (HTML에서 form으로 변경된 경우)
+  searchForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    performSearch();
+  });
+
   // 검색 버튼 클릭 이벤트
   searchButton?.addEventListener('click', () => {
     performSearch();
@@ -115,7 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Helper: 행 강조
   function toggleRowHighlight(tr, on) {
-    if (tr) tr.classList.toggle('table-active', on);
+    if (tr) {
+      tr.classList.toggle('table-active', on);
+    }
   }
 
   // Helper: 삭제 버튼 활성화
@@ -134,15 +149,23 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAll.indeterminate = anyChecked && !allChecked;
   }
 
-  // Helper: 검색 실행
+  // Helper: 검색 실행 - 수정된 부분 (size=10 파라미터 추가)
   function performSearch() {
-    const type = searchTypeSelect ? searchTypeSelect.value : 'title';
+    const type = searchTypeSelect ? searchTypeSelect.value : 'BOARD_TITLE';
     const keyword = searchTextInput ? searchTextInput.value.trim() : '';
 
+    // URLSearchParams를 사용하여 파라미터 구성
+    const params = new URLSearchParams();
+    params.append('size', '10'); // size 고정
+
     if (keyword) {
-      window.location.href = `/admin/board/list?searchType=${type}&searchText=${encodeURIComponent(keyword)}`;
-    } else {
-      window.location.href = '/admin/board/list';
+      params.append('searchType', type);
+      params.append('searchText', keyword);
     }
+
+    // 검색 시 첫 페이지로 이동
+    params.append('page', '0');
+
+    window.location.href = `/admin/board/list?${params.toString()}`;
   }
 });

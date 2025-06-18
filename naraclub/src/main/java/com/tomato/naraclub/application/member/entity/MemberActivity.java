@@ -60,6 +60,9 @@ public class MemberActivity extends Audit {
     @Column(nullable = false, length = 20)
     private ActivityReviewStage stage;
 
+    @Comment("거절시 등록하는 사유")
+    private String reason;
+
     @Comment("삭제여부")
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
@@ -79,5 +82,13 @@ public class MemberActivity extends Audit {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void setStage(ActivityReviewStage activityReviewStage) {
+        this.stage = activityReviewStage;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 }

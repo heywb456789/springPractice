@@ -9,6 +9,7 @@ import com.tomato.naraclub.admin.activity.code.ActivitySortType;
 import com.tomato.naraclub.admin.point.code.PointSearchType;
 import com.tomato.naraclub.admin.point.code.PointSortType;
 import com.tomato.naraclub.application.member.code.ActivityReviewStage;
+import com.tomato.naraclub.application.member.entity.QMemberActivity;
 import com.tomato.naraclub.application.point.code.PointStatus;
 import com.tomato.naraclub.application.point.code.PointType;
 import com.tomato.naraclub.application.point.entity.QPointHistory;
@@ -165,19 +166,11 @@ public class ActivityListRequest implements SearchTypeRequest {
     }
 
     @Hidden
-    public BooleanExpression getPointTypeCondition(QPointHistory pointHistory) {
-        if (this.type == null) {
+    public BooleanExpression getActivityStage(QMemberActivity memberActivity) {
+        if (this.stage == null) {
             return null;
         }
-        return pointHistory.type.eq(this.type);
-    }
-
-    @Hidden
-    public BooleanExpression getOriginalCategoryCondition(QPointHistory pointHistory) {
-        if (this.status == null) {
-            return null;
-        }
-        return pointHistory.status.eq(this.status);
+        return memberActivity.stage.eq(this.stage);
     }
 
     /**
@@ -194,8 +187,8 @@ public class ActivityListRequest implements SearchTypeRequest {
 
     @Hidden
     public OrderSpecifier<?> getSortOrder() {
-        PointSortType st = (this.sortType != null ? this.sortType
-                : PointSortType.LATEST);
+        ActivitySortType st = (this.sortType != null ? this.sortType
+                : ActivitySortType.LATEST);
         Order dir = (this.sortDirection != null ? this.sortDirection
                 : Order.DESC);
         return st.order(dir);
@@ -203,6 +196,6 @@ public class ActivityListRequest implements SearchTypeRequest {
 
     @Hidden
     public BooleanExpression isMember(Long id) {
-        return QPointHistory.pointHistory.member.id.eq(id);
+        return QMemberActivity.memberActivity.author.id.eq(id);
     }
 }

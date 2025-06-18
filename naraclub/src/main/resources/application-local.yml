@@ -1,3 +1,5 @@
+server:
+  port: ${SERVER_PORT:8032}
 spring:
   main:
     banner-mode: off
@@ -15,6 +17,14 @@ spring:
         format_sql: true
         use_sql_comments: true
   #        dialect: org.hibernate.dialect.MariaDB103Dialect
+  security:
+    jwt:
+      cookie:
+        secure: false          # ← 개발환경: HTTP 허용
+        http-only: true
+        same-site: lax
+        path: /
+
   app:
     display: https://image.newstomato.com/newstomato/club
     upload:
@@ -53,3 +63,6 @@ ttr:
   wallet-address: "TTCJNqEHb9BU5qgQCeHvvqPbQzF6pPmn7UAX"
   get-balance: /api/v1/address_balance
   transfer_points: /api/v1/wallet_transfer_to_address
+
+original:
+  replication: true

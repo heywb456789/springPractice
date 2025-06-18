@@ -166,6 +166,12 @@ public class PointServiceImpl implements PointService {
         Member member = memberRepository.findByIdAndStatus(userDetails.getMember().getId(),
                 MemberStatus.ACTIVE)
             .orElseThrow(() -> new APIException(ResponseStatus.USER_NOT_EXIST));
+
+        log.info("memberPoint : {}", member.getPoints());
+        if(member.getPoints() <= 0){
+            throw new APIException(ResponseStatus.TTR_EXCHANGE_ZERO_VALUE);
+        }
+
         //1-1) 회원 지갑 정보 조회
         OneIdResponse userWallet = tomato.getWalletInfo(AuthRequestDTO.builder()
             .phoneNumber(member.getPhoneNumber())
@@ -180,7 +186,6 @@ public class PointServiceImpl implements PointService {
             throw new APIException(ResponseStatus.CANNOT_FIND_WALLET);
         }
 
-        log.info("memberPoint : {}", member.getPoints());
         // 2-1). 지금 계좌 (법인) 잔액 조회
         Double balance = getBalance(ttrWalletAddress);
         if (balance < member.getPoints()) {

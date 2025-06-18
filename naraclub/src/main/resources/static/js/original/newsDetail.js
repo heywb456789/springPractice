@@ -115,7 +115,7 @@ async function loadRelatedNews(newsId) {
 
   try {
     const response = await optionalAuthFetch(
-        `/api/news/${newsId}/related?limit=5`);  // 🚀 수정됨
+        `/api/news/${newsId}/related?limit=5`);
     if (response.status === 204) {
       relatedNewsSection.style.display = 'none';
       return;

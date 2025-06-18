@@ -34,9 +34,13 @@ public class AdminNewsServiceImpl implements AdminNewsService {
     private final AdminNewsRepository adminNewsRepository;
     private final AdminNewsImageRepository adminNewsImageRepository;
     private final FileStorageService fileStorageService;
+    private final NewsReplicationService newsReplicationService;
 
     @Value("${spring.app.display}")
     private String displayUrl;
+
+    @Value("${original.replication}")
+    private boolean originalReplication;
 
     @Override
     public ListDTO<NewsArticleResponse> getNewsList(NewsListRequest request, AdminUserDetails user,
@@ -53,6 +57,7 @@ public class AdminNewsServiceImpl implements AdminNewsService {
     @Override
     @Transactional
     public NewsArticleResponse uploadNews(NewsArticleRequest request, AdminUserDetails user) {
+        List<ArticleImage> savedImages = new ArrayList<>();
         Admin admin = user.getAdmin();
 
         // 5. 기사 엔티티 생성 및 저장
@@ -89,7 +94,8 @@ public class AdminNewsServiceImpl implements AdminNewsService {
                 .imageUrl(displayUrl + imageUrl)
                 .build();
 
-            adminNewsImageRepository.save(articleImage);
+            ArticleImage savedImage = adminNewsImageRepository.save(articleImage);
+            savedImages.add(savedImage);
         }
 
         // 3. HTML 내용의 Base64 이미지를 URL로 교체
@@ -109,6 +115,9 @@ public class AdminNewsServiceImpl implements AdminNewsService {
         savedArticle.setThumbnailUrl(displayUrl + thumbnailUrl);
         savedArticle.setContent(request.getContent());
 
+        if(originalReplication) {
+            newsReplicationService.replicateToOtherSchema(savedArticle, savedImages);
+        }
         // 7. 응답 반환
         return savedArticle.convertDTO();
     }
@@ -138,6 +147,7 @@ public class AdminNewsServiceImpl implements AdminNewsService {
 
         // 3. Base64 이미지 추출
         List<Base64ImageData> base64Images = request.extractBase64Images();
+        List<ArticleImage> newImages = new ArrayList<>();
 
         // 4. 이미지 파일로 저장 및 URL 설정
         for (Base64ImageData imageData : base64Images) {
@@ -152,7 +162,8 @@ public class AdminNewsServiceImpl implements AdminNewsService {
                 .imageUrl(displayUrl + imageUrl)
                 .build();
 
-            adminNewsImageRepository.save(articleImage);
+            ArticleImage saved = adminNewsImageRepository.save(articleImage);
+            newImages.add(saved);
         }
 
         // 5. HTML 내용의 Base64 이미지를 URL로 교체
@@ -171,7 +182,24 @@ public class AdminNewsServiceImpl implements AdminNewsService {
 
             article.setThumbnailUrl(displayUrl + thumbnailUrl);
         }
-
+        if(originalReplication) {
+            newsReplicationService.updateToOtherSchema(article, newImages);
+        }
         return article.convertDTO();
+    }
+
+    @Override
+    @Transactional
+    public Boolean deleteNews(Long id) {
+
+        Article article = adminNewsRepository.findByIdAndDeleted(id, false)
+            .orElseThrow(() -> new APIException(ResponseStatus.ARTICLE_NOT_EXIST));
+
+        article.setDeleted(true);
+
+        if(originalReplication) {
+            newsReplicationService.deleteToOtherSchema(article);
+        }
+        return true;
     }
 }

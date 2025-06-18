@@ -1,7 +1,9 @@
 package com.tomato.naraclub.application.auth.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tomato.naraclub.application.auth.dto.AuthRequestDTO;
 import com.tomato.naraclub.application.auth.dto.AuthResponseDTO;
+import com.tomato.naraclub.application.auth.dto.PassResponse;
 import com.tomato.naraclub.application.member.dto.MemberDTO;
 import com.tomato.naraclub.application.oneld.dto.OneIdResponse;
 import com.tomato.naraclub.application.security.MemberUserDetails;
@@ -26,4 +28,8 @@ public interface AuthService {
     MemberDTO me(MemberUserDetails user);
 
     void delete(MemberUserDetails userDetails, HttpServletRequest request);
+
+    PassResponse preParePassAuth(MemberUserDetails userDetails) throws JsonProcessingException;
+
+    String handleCallback(String tokenVersionId, String encData, String integrityValue);
 }

@@ -1,11 +1,18 @@
 package com.tomato.naraclub.application.auth.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tomato.naraclub.application.auth.code.LoginType;
 import com.tomato.naraclub.application.auth.dto.AuthRequestDTO;
 import com.tomato.naraclub.application.auth.dto.AuthResponseDTO;
+import com.tomato.naraclub.application.auth.dto.CallbackResult;
+import com.tomato.naraclub.application.auth.dto.CryptoTokenInfo;
+import com.tomato.naraclub.application.auth.dto.PassResponse;
 import com.tomato.naraclub.application.auth.entity.MemberLoginHistory;
+import com.tomato.naraclub.application.auth.entity.NiceCryptoRequest;
 import com.tomato.naraclub.application.auth.entity.RefreshToken;
 import com.tomato.naraclub.application.auth.repository.MemberLoginHistoryRepository;
+import com.tomato.naraclub.application.auth.repository.NiceCryptoRepository;
 import com.tomato.naraclub.application.auth.repository.RefreshTokenRepository;
 import com.tomato.naraclub.application.board.repository.BoardPostRepository;
 import com.tomato.naraclub.application.comment.repository.ArticleCommentsRepository;
@@ -20,17 +27,24 @@ import com.tomato.naraclub.application.point.code.PointStatus;
 import com.tomato.naraclub.application.point.code.PointType;
 import com.tomato.naraclub.application.point.entity.PointHistory;
 import com.tomato.naraclub.application.point.repository.PointRepository;
+import com.tomato.naraclub.common.code.ResponseStatus;
+import com.tomato.naraclub.common.exception.APIException;
 import com.tomato.naraclub.common.exception.BadRequestException;
 import com.tomato.naraclub.common.security.JwtTokenProvider;
 import com.tomato.naraclub.application.security.MemberUserDetails;
 import com.tomato.naraclub.common.code.MemberRole;
 import com.tomato.naraclub.common.code.MemberStatus;
 import com.tomato.naraclub.common.exception.UnAuthorizationException;
+import com.tomato.naraclub.common.util.AgeValidator;
+import com.tomato.naraclub.common.util.CryptoKeyGenerator;
+import com.tomato.naraclub.common.util.CryptoKeyGenerator.SymmetricKeys;
 import com.tomato.naraclub.common.util.InviteCodeGenerator;
 import com.tomato.naraclub.common.util.UserDeviceInfoUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +76,16 @@ public class AuthServiceImpl implements AuthService {
     private final VideoCommentRepository videoCommentsRepository;
     private final ArticleCommentsRepository articleCommentsRepository;
     private final PointRepository pointRepository;
+    private final NiceCryptoRepository niceCryptoRepository;
+
+    private final NiceInstitutionTokenService niceCompanyTokenService;
+    private final NiceIdService niceIdService;
+
+    @Value("${nice.request-url}")
+    private String passRequestUrl;
+
+    @Value("${nice.call-back}")
+    private String callbackUrl;
 
     @Override
     @Transactional
@@ -97,6 +121,10 @@ public class AuthServiceImpl implements AuthService {
                     .build();
                 return memberRepository.save(m);
             });
+
+        if (!member.getProfileImg().equals(profileImg)) {
+            member.setProfileImg(profileImg);
+        }
 
         //마지막 접속시간 증가
         member.setLastAccessAt();
@@ -234,7 +262,103 @@ public class AuthServiceImpl implements AuthService {
         member.disconnectTwitterAccount();
 
         member.deleteMemInfo();
+    }
 
+    @Override
+    @Transactional
+    public PassResponse preParePassAuth(MemberUserDetails userDetails)
+        throws JsonProcessingException {
 
+        // 1) 기관용 토큰 확보
+        String accessToken = niceCompanyTokenService.getValidToken();
+
+        // 2) 암호화된 인증용 데이터 생성
+        CryptoTokenInfo cryptoResp = niceIdService.requestEncryptedToken(accessToken,
+            userDetails.getMember());
+
+        // 3) 대칭키 · IV · HMAC키 생성
+        SymmetricKeys sk = CryptoKeyGenerator.derive(cryptoResp.getReqDtim(), cryptoResp.getReqNo(),
+            cryptoResp.getTokenVal());
+
+        // 4) 서비스 호출용 요청 JSON 구성 (문서 5-1 참조)
+        Map<String, Object> servicePayload = Map.of(
+            "requestno", cryptoResp.getReqNo(),
+            "returnurl", callbackUrl,
+            "sitecode", cryptoResp.getSiteCode(),
+            "popupyn", "N",
+            "receivedata", userDetails.getMember().getId().toString()
+        );
+        String payloadJson = new ObjectMapper().writeValueAsString(servicePayload);
+
+        // 5) AES 암호화 → enc_data
+        String encData = CryptoKeyGenerator.encryptAes(payloadJson, sk);
+
+        // 6) HMAC 무결성 체크값 → integrity_value
+        String integrityValue = CryptoKeyGenerator.calcHmac(encData, sk);
+
+        // 7) 저장 후 return
+        NiceCryptoRequest saved = niceCryptoRepository.save(NiceCryptoRequest.builder()
+            .memberId(userDetails.getMember().getId())
+            .passRequestUrl(passRequestUrl)
+            .tokenVersionId(cryptoResp.getTokenVersionId())
+            .reqNo(cryptoResp.getReqNo())
+            .reqDtim(cryptoResp.getReqDtim())
+            .tokenVal(cryptoResp.getTokenVal())
+            .siteCode(cryptoResp.getSiteCode())
+            .encData(encData)
+            .integrityValue(integrityValue)
+            .build());
+
+        return saved.convertDTO();
+    }
+
+    @Override
+    @Transactional
+    public String handleCallback(String tokenVersionId, String encData, String integrityValue) {
+        // 1) 요청정보 조회
+        NiceCryptoRequest req = niceCryptoRepository
+            .findByTokenVersionId(tokenVersionId)
+            .orElseThrow(() -> new APIException(ResponseStatus.NICE_CRYPTO_TOKEN_INFO_NOT_FOUND));
+
+        // 2) 대칭키·IV·HMAC키 파생
+        SymmetricKeys sk = CryptoKeyGenerator.derive(
+            req.getReqDtim(),
+            req.getReqNo(),
+            req.getTokenVal()
+        );
+
+        // 3) 무결성 체크
+        String expectedHmac = CryptoKeyGenerator.calcHmac(encData, sk);
+        if (!expectedHmac.equals(integrityValue)) {
+            throw new APIException(ResponseStatus.NICE_INTEGRITY_CHECK_FAIL);
+        }
+
+        try {
+            // 4) 암호문 복호화 (AES/CBC/PKCS5Padding)
+            String plainJson = CryptoKeyGenerator.decryptAes(encData, sk);
+
+            // 5) JSON → PassResult DTO
+            CallbackResult result = new ObjectMapper().readValue(plainJson, CallbackResult.class);
+
+            // 6) 인증 결과 검사
+            if (!"0000".equals(result.getResultcode())) {
+                throw new APIException(ResponseStatus.NICE_PASS_RESULT_FAIL);
+            }
+
+            // 7) 회원정보 업데이트 (CI/DI 저장 안함 )
+            if (!AgeValidator.isAgeBetween19And39(result.getBirthdate())) {
+                throw new APIException(ResponseStatus.NICE_PASS_BIRTH_DAY_FAIL);
+            }
+            Member member = memberRepository.findById(req.getMemberId())
+                .orElseThrow(() -> new APIException(ResponseStatus.USER_NOT_EXIST));
+
+            member.setRole(MemberRole.USER_ACTIVE);
+            member.setStatus(MemberStatus.ACTIVE);
+
+            return "redirect:/main/main.html";
+        } catch (Exception e) {
+            log.error("NICE 인증 결과 파싱 오류", e);
+            return "redirect:/main/main.html?error=true";
+        }
     }
 }

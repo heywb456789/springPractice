@@ -6,7 +6,7 @@
         ~{::customCSS},
         ~{::customJS},
         'users',
-        'list'
+        'app'
       )}">
 <head>
   <title>회원 관리 - 관리자</title>
@@ -24,21 +24,22 @@
   <!-- Page Title & Actions -->
   <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <h4 class="page-title">회원 관리</h4>
-<!--    <div class="page-actions">-->
-<!--      <a href="/admin/users/admin/user-list" class="btn btn-secondary me-2"-->
-<!--         sec:authorize="hasRole('SUPER_ADMIN')">-->
-<!--        <i class="fas fa-user-shield"></i> 관리자 목록-->
-<!--      </a>-->
-<!--      <a href="/admin/users/create" class="btn btn-primary" sec:authorize="hasRole('SUPER_ADMIN')">-->
-<!--        <i class="fas fa-plus"></i> 관리자 추가-->
-<!--      </a>-->
-<!--    </div>-->
+    <!--    <div class="page-actions">-->
+    <!--      <a href="/admin/users/admin/user-list" class="btn btn-secondary me-2"-->
+    <!--         sec:authorize="hasRole('SUPER_ADMIN')">-->
+    <!--        <i class="fas fa-user-shield"></i> 관리자 목록-->
+    <!--      </a>-->
+    <!--      <a href="/admin/users/create" class="btn btn-primary" sec:authorize="hasRole('SUPER_ADMIN')">-->
+    <!--        <i class="fas fa-plus"></i> 관리자 추가-->
+    <!--      </a>-->
+    <!--    </div>-->
   </div>
 
   <!-- Filter Card -->
   <div class="card mb-4">
     <div class="card-body">
       <form id="searchForm" method="get" action="/admin/users/app/user-list">
+        <input type="hidden" name="size" value="10">
         <div class="row g-3">
           <div class="col-md-3">
             <label for="searchType" class="form-label">검색 유형</label>
@@ -63,17 +64,22 @@
             <label for="memberStatus" class="form-label">회원 상태</label>
             <select class="form-select" id="memberStatus" name="memberStatus">
               <option value="">전체</option>
-              <option value="ACTIVE" th:selected="${searchRequest.memberStatus?.name() == 'ACTIVE'}">활성
+              <option value="ACTIVE"
+                      th:selected="${searchRequest.memberStatus?.name() == 'ACTIVE'}">활성
               </option>
-              <option value="BLOCKED" th:selected="${searchRequest.memberStatus?.name() == 'BLOCKED'}">비활성
+              <option value="BLOCKED"
+                      th:selected="${searchRequest.memberStatus?.name() == 'BLOCKED'}">비활성
               </option>
               <option value="TEMPORARY_INVITE"
-                      th:selected="${searchRequest.memberStatus?.name() == 'TEMPORARY_INVITE'}">초대코드 대기
+                      th:selected="${searchRequest.memberStatus?.name() == 'TEMPORARY_INVITE'}">초대코드
+                대기
               </option>
               <option value="TEMPORARY_PASS"
-                      th:selected="${searchRequest.memberStatus?.name() == 'TEMPORARY_PASS'}">PASS 인증 대기
+                      th:selected="${searchRequest.memberStatus?.name() == 'TEMPORARY_PASS'}">PASS
+                인증 대기
               </option>
-              <option value="DELETED" th:selected="${searchRequest.memberStatus?.name() == 'DELETED'}">탈퇴
+              <option value="DELETED"
+                      th:selected="${searchRequest.memberStatus?.name() == 'DELETED'}">탈퇴
               </option>
             </select>
           </div>
@@ -93,8 +99,10 @@
                       th:selected="${searchRequest.sortType?.name() == 'LATEST' || searchRequest.sortType == null}">
                 가입일
               </option>
-              <option value="NAME" th:selected="${searchRequest.sortType?.name() == 'NAME'}">이름</option>
-              <option value="LOGIN" th:selected="${searchRequest.sortType?.name() == 'LOGIN'}">최근 로그인
+              <option value="NAME" th:selected="${searchRequest.sortType?.name() == 'NAME'}">이름
+              </option>
+              <option value="LOGIN" th:selected="${searchRequest.sortType?.name() == 'LOGIN'}">최근
+                로그인
               </option>
             </select>
           </div>
@@ -133,11 +141,12 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <div>
-        <h5 class="card-title mb-0 d-inline-block">총 <span th:text="${userList.size()}">0</span>명의
-          회원</h5>
+        <h5 class="card-title mb-0 d-inline-block">
+          총 <span th:text="${#numbers.formatInteger(totalCount, 0, 'COMMA')}">0</span>명의 회원
+        </h5>
         <span class="text-muted ms-2">
-          (페이지 <span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span>)
-        </span>
+        (페이지 <span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span>)
+      </span>
       </div>
       <div class="header-actions">
         <div class="btn-group">
@@ -177,8 +186,9 @@
           <td th:text="${user.userId}">1</td>
           <td>
             <div class="user-avatar">
-              <img th:src="@{${#strings.isEmpty(user.profileImageUrl) ? '/assets/admin/images/user_default.png' : user.profileImageUrl}}"
-                 alt="프로필 이미지" class="avatar-img">
+              <img
+                  th:src="@{${#strings.isEmpty(user.profileImageUrl) ? '/assets/admin/images/user_default.png' : user.profileImageUrl}}"
+                  alt="프로필 이미지" class="avatar-img">
             </div>
           </td>
           <td>
@@ -245,7 +255,8 @@
                      alt="프로필 이미지" class="avatar-img">
               </div>
               <h6 class="user-card-name">
-                <a th:href="@{/admin/users/app/user/{id}(id=${user.userId})}" th:text="${user.userName}">사용자
+                <a th:href="@{/admin/users/app/user/{id}(id=${user.userId})}"
+                   th:text="${user.userName}">사용자
                   이름</a>
               </h6>
               <div class="user-card-email" th:text="${user.email}">user@example.com</div>
@@ -308,22 +319,28 @@
     </div>
 
     <!-- Pagination -->
-    <div class="card-footer d-flex justify-content-center" th:if="${totalPages > 0}">
+    <div class="card-footer d-flex justify-content-between align-items-center"
+         th:if="${totalPages > 0}">
+      <div class="text-muted">
+        총 <span th:text="${#numbers.formatInteger(totalCount, 0, 'COMMA')}">0</span>명
+        (<span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span> 페이지)
+      </div>
+
       <nav aria-label="Page navigation">
         <ul class="pagination mb-0">
           <!-- First Page -->
-          <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasPrevious ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/users/app/user-list(page=0, size=${userList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/users/app/user-list(page=0, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="First">
               <span aria-hidden="true">&laquo;&laquo;</span>
             </a>
           </li>
 
           <!-- Previous Page -->
-          <li class="page-item" th:classappend="${currentPage == 1 ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasPrevious ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/users/app/user-list(page=${currentPage - 2}, size=${userList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/users/app/user-list(page=${currentPageZeroIndex - 1}, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
@@ -331,26 +348,26 @@
 
           <!-- Page Numbers -->
           <li class="page-item"
-              th:each="pageNumber : ${#numbers.sequence(currentPage - 2 <= 0 ? 1 : currentPage - 2, currentPage + 2 >= totalPages ? totalPages : currentPage + 2)}"
+              th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
               th:classappend="${pageNumber == currentPage ? 'active' : ''}">
             <a class="page-link"
-               th:href="@{/admin/users/app/user-list(page=${pageNumber - 1}, size=${userList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/users/app/user-list(page=${pageNumber - 1}, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                th:text="${pageNumber}">1</a>
           </li>
 
           <!-- Next Page -->
-          <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasNext ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/users/app/user-list(page=${currentPage}, size=${userList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/users/app/user-list(page=${currentPageZeroIndex + 1}, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>
           </li>
 
           <!-- Last Page -->
-          <li class="page-item" th:classappend="${currentPage == totalPages ? 'disabled' : ''}">
+          <li class="page-item" th:classappend="${!hasNext ? 'disabled' : ''}">
             <a class="page-link"
-               th:href="@{/admin/users/app/user-list(page=${totalPages - 1}, size=${userList.size}, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
+               th:href="@{/admin/users/app/user-list(page=${totalPages - 1}, size=10, searchType=${searchRequest.searchType}, searchText=${searchRequest.searchText}, memberStatus=${searchRequest.memberStatus}, sortType=${searchRequest.sortType}, sortDirection=${searchRequest.sortDirection}, dateRange=${searchRequest.dateRange})}"
                aria-label="Last">
               <span aria-hidden="true">&raquo;&raquo;</span>
             </a>
@@ -361,42 +378,44 @@
   </div>
 
   <!-- Status Change Modal -->
-<div class="modal fade" id="statusChangeModal" tabindex="-1"
-     aria-labelledby="statusChangeModalLabel">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="statusChangeModalLabel">회원 상태 변경</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>회원 상태를 변경하시겠습니까?</p>
-        <p class="mb-3">현재 상태: <span id="currentStatusText" class="badge rounded-pill bg-secondary">상태</span></p>
-
-        <div class="form-group mb-3">
-          <label for="newStatus" class="form-label">새 상태</label>
-          <select id="newStatus" class="form-select">
-            <option value="ACTIVE">활성</option>
-            <option value="BLOCKED">차단</option>
-            <option value="TEMPORARY_INVITE">초대 대기</option>
-            <option value="TEMPORARY_PASS">인증 대기</option>
-            <option value="DELETED">탈퇴</option>
-          </select>
+  <div class="modal fade" id="statusChangeModal" tabindex="-1"
+       aria-labelledby="statusChangeModalLabel">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="statusChangeModalLabel">회원 상태 변경</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"
+                  aria-label="Close"></button>
         </div>
+        <div class="modal-body">
+          <p>회원 상태를 변경하시겠습니까?</p>
+          <p class="mb-3">현재 상태: <span id="currentStatusText"
+                                       class="badge rounded-pill bg-secondary">상태</span></p>
 
-        <div class="form-group">
-          <label for="statusChangeReason" class="form-label">사유 (선택사항)</label>
-          <textarea id="statusChangeReason" class="form-control" rows="3" placeholder="상태 변경 사유를 입력하세요."></textarea>
+          <div class="form-group mb-3">
+            <label for="newStatus" class="form-label">새 상태</label>
+            <select id="newStatus" class="form-select">
+              <option value="ACTIVE">활성</option>
+              <option value="BLOCKED">차단</option>
+              <option value="TEMPORARY_INVITE">초대 대기</option>
+              <option value="TEMPORARY_PASS">인증 대기</option>
+              <option value="DELETED">탈퇴</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="statusChangeReason" class="form-label">사유 (선택사항)</label>
+            <textarea id="statusChangeReason" class="form-control" rows="3"
+                      placeholder="상태 변경 사유를 입력하세요."></textarea>
+          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-        <button type="button" id="btnConfirmStatusChange" class="btn btn-primary">변경</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" id="btnConfirmStatusChange" class="btn btn-primary">변경</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </section>
 
 <!-- Custom JS -->

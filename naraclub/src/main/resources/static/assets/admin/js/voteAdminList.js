@@ -107,7 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 7) 검색 기능
+  // 7) 검색 기능 - 수정된 부분
+  const searchForm = document.getElementById('searchForm');
   const searchTypeSelect = document.getElementById('searchType');
   const searchTextInput = document.getElementById('searchText');
   const searchButton = document.getElementById('btnSearch');
@@ -126,8 +127,15 @@ document.addEventListener('DOMContentLoaded', () => {
     searchTextInput.value = keyword;
   }
 
+  // 폼 제출 이벤트 (HTML에서 form으로 변경된 경우)
+  searchForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    performSearch();
+  });
+
   // 검색 버튼 클릭 이벤트
-  searchButton?.addEventListener('click', () => {
+  searchButton?.addEventListener('click', (e) => {
+    e.preventDefault();
     performSearch();
   });
 
@@ -160,31 +168,39 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAll.indeterminate = anyChecked && !allChecked;
   }
 
-  // Helper: 검색 실행
+  // Helper: 검색 실행 - 수정된 부분 (size=10 파라미터 추가)
   function performSearch() {
-    const type = searchTypeSelect ? searchTypeSelect.value : 'title';
+    const type = searchTypeSelect ? searchTypeSelect.value : 'VOTE_QUESTION';
     const keyword = searchTextInput ? searchTextInput.value.trim() : '';
 
+    // URLSearchParams를 사용하여 파라미터 구성
+    const params = new URLSearchParams();
+    params.append('size', '10'); // size 고정
+
     if (keyword) {
-      window.location.href = `/admin/vote/list?searchType=${type}&searchText=${encodeURIComponent(keyword)}`;
-    } else {
-      window.location.href = '/admin/vote/list';
+      params.append('searchType', type);
+      params.append('searchText', keyword);
     }
+
+    // 검색 시 첫 페이지로 이동
+    params.append('page', '0');
+
+    window.location.href = `/admin/vote/list?${params.toString()}`;
   }
 });
 
 /**
-   * 알림 표시 함수
-   * @param {string} message - 알림 메시지
-   * @param {string} type - 알림 타입 (success, danger, warning, info)
-   */
-  function showAlert(message, type = 'info') {
-    // 커스텀 알림 시스템 사용
-    if (window.CustomNotification) {
-      window.CustomNotification.show(message, type);
-      return;
-    }
-
-    // 기본 alert 사용
-    alert(message);
+ * 알림 표시 함수
+ * @param {string} message - 알림 메시지
+ * @param {string} type - 알림 타입 (success, danger, warning, info)
+ */
+function showAlert(message, type = 'info') {
+  // 커스텀 알림 시스템 사용
+  if (window.CustomNotification) {
+    window.CustomNotification.show(message, type);
+    return;
   }
+
+  // 기본 alert 사용
+  alert(message);
+}

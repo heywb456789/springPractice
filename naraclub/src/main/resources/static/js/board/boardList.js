@@ -33,7 +33,9 @@ async function loadBoardList(page = 0, size = 10, keyword = '') {
   </div>`;
 
   const apiUrl = `/api/board/posts?page=${page}&size=${size}` +
-    (keyword ? `&searchType=BOARD_TITLE_CONTENT&searchText=${encodeURIComponent(keyword)}` : '');
+      (keyword
+          ? `&searchType=BOARD_TITLE_CONTENT&searchText=${encodeURIComponent(
+              keyword)}` : '');
 
   try {
     const res = await optionalAuthFetch(apiUrl);
@@ -57,13 +59,21 @@ async function loadBoardList(page = 0, size = 10, keyword = '') {
           </div>
           <p class="empty-title">게시글이 없습니다</p>
           <p class="empty-message">첫 번째 게시글을 작성해 보세요</p>
-          <button class="write-post-button" onclick="window.location.href='boardWrite.html'">
+          <button class="write-post-button" id="emptyWriteButton">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="white"/>
             </svg>
             새 글 작성하기
           </button>
         </div>`;
+
+      // 이벤트 리스너 추가 (동적으로 생성된 버튼에 이벤트 연결)
+      const emptyWriteButton = boardListContainer.querySelector(
+          '#emptyWriteButton');
+      if (emptyWriteButton) {
+        emptyWriteButton.addEventListener('click', loadBoardWrite);
+      }
+
       return;
     }
 
@@ -105,7 +115,7 @@ async function loadBoardList(page = 0, size = 10, keyword = '') {
     const retryButton = boardListContainer.querySelector('.retry-button');
     if (retryButton) {
       retryButton.addEventListener('click',
-        () => loadBoardList(page, size, keyword));        // 🚀 수정됨: 파라미터 이름統一(page, size, keyword)
+          () => loadBoardList(page, size, keyword));
     }
   }
 }
@@ -227,7 +237,7 @@ function updatePagination(pagination) {
  */
 function initPaginationClick() {
   const paginationItems = document.querySelectorAll(
-    '.pagination-item:not(.dots):not(.disabled)');
+      '.pagination-item:not(.dots):not(.disabled)');
 
   paginationItems.forEach(item => {
     item.addEventListener('click', function () {
@@ -292,7 +302,7 @@ function initSearch() {
   }
 }
 
-async function loadBoardWrite(){
+async function loadBoardWrite() {
   try {
     // 인증 상태 확인 API 호출 (authFetch 사용)
     await authFetch('/api/auth/validate', {method: 'GET'});

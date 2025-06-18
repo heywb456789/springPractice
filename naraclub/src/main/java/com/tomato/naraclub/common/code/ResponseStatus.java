@@ -49,6 +49,9 @@ public enum ResponseStatus {
   THUMBNAIL_IS_NECESSARY("ER_6002","썸네일은 필수 입니다.", HttpStatus.BAD_REQUEST ),
 
   ACTIVITY_NOT_EXIST("ER_7001","활동내역이 존재하지 않습니다.", HttpStatus.BAD_REQUEST ),
+  ACTIVITY_IDS_NOT_EXIST("ER_7002","승인할 활동 ID 목록이 비어있습니다.", HttpStatus.BAD_REQUEST ),
+  ACTIVITY_POINT_TYPE_NOT_EXIST("ER_7003","잘못 된 포인트 타입", HttpStatus.BAD_REQUEST ),
+  ACTIVITY_PROCESS_LIST_NOT_EXIST("ER_7004","처리 가능한 활동이 없습니다.", HttpStatus.BAD_REQUEST ),
 
   TWITTER_NOT_FOUND("ER_8001","X(구 트위터) 계정 연동을 진행해주세요!", HttpStatus.INTERNAL_SERVER_ERROR ),
   DUPLICATE_POST("ER_8002","중복된 내용의 트윗은 공유할 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
@@ -63,9 +66,22 @@ public enum ResponseStatus {
   TTR_BAD_REQUEST("ER_A004","현재 교환이 불가 합니다. 관리자에게 문의해 주세요. CODE_3471", HttpStatus.BAD_REQUEST ),
   TTR_CONNECTION_FAIL("ER_A005","현재 교환이 불가 합니다. 관리자에게 문의해 주세요. CODE_3472", HttpStatus.INTERNAL_SERVER_ERROR ),
   TTR_EXCHANGE_FAIL("ER_A006","현재 교환이 불가 합니다. 관리자에게 문의해 주세요. CODE_3473", HttpStatus.INTERNAL_SERVER_ERROR ),
-  
+  TTR_EXCHANGE_ZERO_VALUE("ER_A007","교환가능한 TTR이 없습니다. CODE_3474", HttpStatus.INTERNAL_SERVER_ERROR ),
+
   FILE_UPLOAD_FAIL("ER_B001","파일 업로드 실패", HttpStatus.INTERNAL_SERVER_ERROR ),
 
+  SUBSCRIPTION_NOT_EXIST("ER_C001","구독 정보가 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR ),
+
+  NICE_CRYPTO_TOKEN_FAIL("ER_D001","NICE 인증 실패 CODE_4001", HttpStatus.INTERNAL_SERVER_ERROR ),
+  NICE_CRYPTO_TOKEN_REQUEST_FAIL("ER_D002","NICE 인증 실패 CODE_4002", HttpStatus.INTERNAL_SERVER_ERROR ),
+  NICE_CRYPTO_TOKEN_REQUEST_RESPONSE_FAIL("ER_D003","NICE 인증 실패 CODE_4003", HttpStatus.INTERNAL_SERVER_ERROR ),
+  NICE_ACCESS_TOKEN_REQUEST_FAIL("ER_D004","NICE 인증 실패 CODE_4004", HttpStatus.INTERNAL_SERVER_ERROR ),
+  NICE_ACCESS_TOKEN_REQUEST_RESPONSE_FAIL("ER_D005","NICE 인증 실패 CODE_4005", HttpStatus.INTERNAL_SERVER_ERROR ),
+  NICE_CRYPTO_TOKEN_INFO_NOT_FOUND("ER_D006","NICE 인증 실패 CODE_4006", HttpStatus.BAD_REQUEST),
+  NICE_INTEGRITY_CHECK_FAIL("ER_D007","NICE 인증 실패 CODE_4007", HttpStatus.BAD_REQUEST),
+  NICE_DECRYPTION_FAIL("ER_D008","NICE 인증 실패 CODE_4008", HttpStatus.INTERNAL_SERVER_ERROR),
+  NICE_PASS_RESULT_FAIL("ER_D009","NICE 인증 실패 CODE_4009", HttpStatus.INTERNAL_SERVER_ERROR),
+  NICE_PASS_BIRTH_DAY_FAIL("ER_D010","만 20세 이상 39세 이하만 가입 가능합니다.", HttpStatus.BAD_REQUEST),
   ;
   @JsonProperty("code")
   private final String code;
@@ -73,7 +89,7 @@ public enum ResponseStatus {
   @JsonProperty("message")
   private final String message;
 
-  private final HttpStatus httpStatus; // ⭐ 추가된 필드
+  private final HttpStatus httpStatus;
 
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public static ResponseStatus forValues(

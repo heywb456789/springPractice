@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('수정을 위해 로그인 후 이용해주세요.');
             return window.location.href = '/login/login.html';
           }
-          handleFetchError(err); // 🚀 공통 에러 핸들러 호출
+          handleFetchError(err);
         }
       } else {
         p.contentEditable = true;
