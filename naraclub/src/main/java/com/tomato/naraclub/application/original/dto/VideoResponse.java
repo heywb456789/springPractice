@@ -31,6 +31,7 @@ public class VideoResponse {
     private boolean isHot;
     private boolean isNew;
     private String authorName;
+    private String youtubeId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -119,6 +119,7 @@ public class Video extends Audit {
             .isPublic(isPublic)
             .isHot(isHot)
             .authorName(author.getName())
+            .youtubeId(youtubeId)
             .build();
     }
 

@@ -502,6 +502,154 @@ body {
   }
 }
 
+/* YouTube Shorts 전용 최적화 스타일 */
+.video-wrapper.youtube-shorts-mode {
+  width: 100%;
+  height: 100vh;
+  max-width: calc(100vh * 9 / 16); /* 9:16 비율 최대 너비 */
+  margin: 0 auto;
+}
+
+.video-wrapper.youtube-video-mode {
+  width: 100%;
+  height: 100vh;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* YouTube Shorts iframe 최적화 */
+.youtube-player.youtube-shorts {
+  object-fit: cover !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.youtube-player.youtube-video {
+  object-fit: contain !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* YouTube 표시기 개선 */
+/*.youtube-indicator {*/
+/*  position: absolute;*/
+/*  top: 15px;*/
+/*  left: 15px;*/
+/*  background-color: #ff0000;*/
+/*  color: white;*/
+/*  font-size: 10px;*/
+/*  padding: 3px 6px;*/
+/*  border-radius: 3px;*/
+/*  font-weight: bold;*/
+/*  z-index: 1001;*/
+/*  font-family: -apple-system, BlinkMacSystemFont, sans-serif;*/
+/*  box-shadow: 0 2px 4px rgba(0,0,0,0.3);*/
+/*}*/
+
+/* YouTube 모드일 때 음소거 버튼 완전 숨김 */
+.video-wrapper.youtube-shorts-mode .mute-toggle-button,
+.video-wrapper.youtube-video-mode .mute-toggle-button {
+  display: none !important;
+}
+
+/* YouTube 자동재생 최적화 */
+.youtube-player {
+  /* 자동재생 시 부드러운 전환 */
+  transition: opacity 0.3s ease-in-out;
+}
+
+.youtube-player[style*="display: block"] {
+  opacity: 1;
+}
+
+.youtube-player[style*="display: none"] {
+  opacity: 0;
+}
+
+.thumbnail-container.auto-playing {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.thumbnail-container:not(.auto-playing) {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* 로딩 중 표시 최적화 */
+.video-wrapper.loading {
+  position: relative;
+}
+
+.video-wrapper.loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 999;
+}
+
+.loading-spinner.hidden,
+.loading-spinner[style*="display: none"] {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 자동재생 실패 시 시각적 피드백 */
+.play-overlay.autoplay-failed {
+  animation: pulse-attention 2s ease-in-out;
+}
+
+@keyframes pulse-attention {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* 자동재생 상태 표시 */
+.video-wrapper.auto-playing .play-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.video-wrapper.auto-playing .thumbnail-container {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 유튜브 플레이어 스타일 */
+.youtube-player {
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* 세로형 비디오 최적화 (9:16 비율) */
+.shorts-container .video-wrapper {
+  width: 100%;
+  height: 100vh;
+  max-width: calc(100vh * 9 / 16); /* 9:16 비율 최대 너비 */
+  margin: 0 auto;
+}
+
+/* 유튜브 쇼츠 최적화 */
+.youtube-player {
+  /* 세로형 비디오에 맞게 조정 */
+  object-fit: cover; /* contain에서 cover로 변경하여 화면 가득 채움 */
+}
+
 /* 반응형 */
 @media (max-width: 480px) {
   .top-header {
@@ -574,6 +722,26 @@ body {
     height: 44px;
     font-size: 16px;
   }
+
+  /* 모바일에서 YouTube Shorts 최적화 */
+  .video-wrapper.youtube-shorts-mode {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .youtube-indicator {
+    font-size: 9px;
+    padding: 2px 4px;
+    top: 12px;
+    left: 12px;
+  }
+
+  /* 모바일에서 자동재생 최적화 */
+  .youtube-player {
+    /* 모바일에서 터치 시작 시 재생 */
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }
 
 /* 가로 모드 대응 */
@@ -613,6 +781,17 @@ body {
 
   .unmute-button {
     bottom: 90px;
+  }
+
+  /* 가로 모드에서도 Shorts 비율 유지 */
+  .video-wrapper.youtube-shorts-mode {
+    max-width: calc(100vh * 9 / 16);
+    height: 100vh;
+  }
+
+  .video-wrapper.youtube-video-mode {
+    width: 100%;
+    height: 100vh;
   }
 }
 

@@ -48,6 +48,7 @@ public class VideoUpdateRequest {
     private Boolean isHot;
 
     // youtubeId 는 빈 허용
+    private String youtubeUrl;
     private String youtubeId;
 
     @NotNull(message = "공개일시를 입력해주세요.")
@@ -57,5 +58,27 @@ public class VideoUpdateRequest {
     // 파일은 수정 시 선택적
     private MultipartFile videoFile;
     private MultipartFile thumbnailFile;
+
+    private String uploadType;
+
+    // 유효성 검사 메서드
+    public boolean isYouTubeUpload() {
+        return "youtube".equals(uploadType);
+    }
+
+    public boolean isFileUpload() {
+        return "file".equals(uploadType);
+    }
+
+    // YouTube URL이 유효한지 확인
+    public boolean hasValidYouTubeUrl() {
+        return youtubeUrl != null && !youtubeUrl.trim().isEmpty();
+    }
+
+    // 파일 업로드가 유효한지 확인
+    public boolean hasValidFiles() {
+        return videoFile != null && !videoFile.isEmpty() &&
+               thumbnailFile != null && !thumbnailFile.isEmpty();
+    }
 
 }

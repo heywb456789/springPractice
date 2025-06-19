@@ -1,5 +1,5 @@
 /**
- * 동영상 업로드/수정 페이지 JavaScript (완전 수정 버전)
+ * 동영상 업로드/수정 페이지 JavaScript (수정 버전)
  */
 import {adminAuthFetch} from '../../../js/commonFetch.js';
 
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const thumbnailFileSize = document.getElementById('thumbnailFileSize');
     const removeThumbnail = document.getElementById('removeThumbnail');
 
-    // 유튜브 관련 요소 (HTML과 일치하게 수정)
+    // 유튜브 관련 요소
     const youtubeUrl = document.getElementById('youtubeUrl');
     const previewYoutube = document.getElementById('previewYoutube');
     const youtubePreviewContainer = document.getElementById('youtubePreviewContainer');
@@ -271,6 +271,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 const value = this.value.trim();
                 const videoId = extractYouTubeId(value);
 
+                // URL 타입 힌트 업데이트
+                updateUrlTypeHint(value);
+
                 // 입력 필드 스타일 업데이트
                 if (value === '') {
                     // 빈 값
@@ -307,6 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (videoId) {
                     youtubeUrl.classList.add('is-valid');
                     previewYoutube.disabled = false;
+                    updateUrlTypeHint(youtubeUrl.value.trim());
                 } else {
                     previewYoutube.disabled = true;
                 }
@@ -317,36 +321,47 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
+     * URL 타입 힌트 표시
+     */
+    function updateUrlTypeHint(url) {
+        const hintElement = document.getElementById('urlTypeHint');
+
+        if (!hintElement) return;
+
+        if (!url) {
+            hintElement.textContent = '';
+            hintElement.className = '';
+            return;
+        }
+
+        if (url.includes('youtube.com/shorts/') || url.includes('youtu.be/shorts/')) {
+            hintElement.textContent = '🩳 YouTube Shorts로 감지됨';
+            hintElement.className = 'url-hint shorts text-warning';
+        } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            hintElement.textContent = '🎬 YouTube 동영상으로 감지됨';
+            hintElement.className = 'url-hint video text-info';
+        } else if (extractYouTubeId(url)) {
+            hintElement.textContent = '🆔 YouTube ID로 인식됨';
+            hintElement.className = 'url-hint id text-success';
+        } else {
+            hintElement.textContent = '❌ 올바른 YouTube URL 또는 ID를 입력하세요';
+            hintElement.className = 'url-hint invalid text-danger';
+        }
+    }
+
+    /**
      * 동영상 파일 선택 처리
-     * @param {File} file - 선택된 동영상 파일
      */
     function handleVideoFileSelect(file) {
-        // 파일 유형 검증 - 확장된 비디오 형식 지원
+        // 파일 유형 검증
         const validTypes = [
-            'video/mp4',            // MP4
-            'video/quicktime',      // MOV
-            'video/x-msvideo',      // AVI
-            'video/x-ms-wmv',       // WMV
-            'video/x-matroska',     // MKV
-            'video/webm',           // WEBM
-            'video/x-flv',          // FLV
-            'video/mpeg',           // MPG
-            'video/x-m4v'           // M4V
+            'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv',
+            'video/x-matroska', 'video/webm', 'video/x-flv', 'video/mpeg', 'video/x-m4v'
         ];
 
-        // 파일 확장자로도 체크 (MIME 타입이 제대로 인식되지 않는 경우를 위해)
         const fileName = file.name.toLowerCase();
-        const isValidExtension =
-            fileName.endsWith('.mp4') ||
-            fileName.endsWith('.mov') ||
-            fileName.endsWith('.avi') ||
-            fileName.endsWith('.wmv') ||
-            fileName.endsWith('.mkv') ||
-            fileName.endsWith('.webm') ||
-            fileName.endsWith('.flv') ||
-            fileName.endsWith('.mpg') ||
-            fileName.endsWith('.mpeg') ||
-            fileName.endsWith('.m4v');
+        const isValidExtension = ['.mp4', '.mov', '.avi', '.wmv', '.mkv', '.webm', '.flv', '.mpg', '.mpeg', '.m4v']
+            .some(ext => fileName.endsWith(ext));
 
         if (!validTypes.includes(file.type) && !isValidExtension) {
             showAlert('지원하지 않는 파일 형식입니다. MP4, MOV, AVI, WMV, MKV, WEBM, FLV, MPG, M4V 파일만 허용됩니다.', 'danger');
@@ -354,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // 파일 크기 검증 (500MB)
-        const maxSize = 500 * 1024 * 1024; // 500MB
+        const maxSize = 500 * 1024 * 1024;
         if (file.size > maxSize) {
             showAlert('파일 크기가 너무 큽니다. 최대 500MB까지 허용됩니다.', 'danger');
             return;
@@ -368,25 +383,25 @@ document.addEventListener('DOMContentLoaded', function () {
         const videoURL = URL.createObjectURL(file);
         videoPreview.src = videoURL;
 
-        // 비디오 로드 이벤트 추가 (길이 계산용)
+        // 비디오 로드 이벤트 추가
         videoPreview.onloadedmetadata = function () {
             const duration = Math.round(videoPreview.duration);
             durationSec.value = duration;
         };
 
-        // 비디오 로드 에러 처리 (MSG 등 브라우저에서 재생 불가능한 형식)
+        // 비디오 로드 에러 처리
         videoPreview.onerror = function () {
-            // 미리보기 불가능한 형식이지만 업로드는 허용
             videoPreview.style.display = 'none';
             const placeholderMsg = document.createElement('div');
-            placeholderMsg.className = 'video-format-notice';
-            placeholderMsg.innerHTML = `<p><i class="fas fa-exclamation-circle"></i> 미리보기를 지원하지 않는 형식입니다.</p>
-                                  <p>파일: ${file.name}</p>`;
+            placeholderMsg.className = 'video-format-notice alert alert-warning';
+            placeholderMsg.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i> 
+                미리보기를 지원하지 않는 형식입니다.<br>
+                파일: ${file.name}
+            `;
             uploadPreview.insertBefore(placeholderMsg, videoPreview.nextSibling);
 
-            // 예상 길이 입력 요청
             if (!durationSec.value) {
-                durationSec.value = ""; // 비워두기
                 durationSec.focus();
                 showAlert('이 비디오 형식은 자동으로 길이를 계산할 수 없습니다. 영상 길이(초)를 직접 입력해주세요.', 'warning');
             }
@@ -399,32 +414,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /**
      * 썸네일 이미지 선택 처리
-     * @param {File} file - 선택된 이미지 파일
      */
     function handleThumbnailFileSelect(file) {
-        // 파일 유형 검증
         const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!validTypes.includes(file.type)) {
             showAlert('지원하지 않는 파일 형식입니다. JPG, PNG, WEBP 파일만 허용됩니다.', 'danger');
             return;
         }
 
-        // 파일 크기 검증 (10MB)
-        const maxSize = 10 * 1024 * 1024; // 10MB
+        const maxSize = 10 * 1024 * 1024;
         if (file.size > maxSize) {
             showAlert('파일 크기가 너무 큽니다. 최대 10MB까지 허용됩니다.', 'danger');
             return;
         }
 
-        // 파일 정보 설정
         thumbnailFileName.textContent = file.name;
         thumbnailFileSize.textContent = formatFileSize(file.size);
 
-        // 이미지 미리보기 설정
         const imageURL = URL.createObjectURL(file);
         thumbnailImage.src = imageURL;
 
-        // 미리보기 표시
         thumbnailPlaceholder.classList.add('d-none');
         thumbnailPreview.classList.remove('d-none');
     }
@@ -435,9 +444,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function resetVideoUploader() {
         videoFile.value = '';
         videoPreview.src = '';
-        videoPreview.style.display = ''; // 스타일 초기화
+        videoPreview.style.display = '';
 
-        // 포맷 공지 제거
         const formatNotice = uploadPreview.querySelector('.video-format-notice');
         if (formatNotice) {
             formatNotice.remove();
@@ -468,7 +476,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // YouTube ID 추출
         const videoId = extractYouTubeId(urlOrId);
 
         if (!videoId) {
@@ -476,13 +483,32 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // embed URL로 변환 (모든 YouTube URL을 embed 형태로 변환)
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+
         // 아이프레임 소스 설정
-        youtubePreviewFrame.src = `https://www.youtube.com/embed/${videoId}`;
+        youtubePreviewFrame.src = embedUrl;
         youtubePreviewContainer.classList.remove('d-none');
 
-        // 기본 동영상 길이 설정 (유튜브는 API 사용 없이 길이를 알 수 없음)
+        // Shorts인지 일반 비디오인지 확인하여 크기 조정
+        const isShorts = urlOrId.includes('/shorts/');
+        if (isShorts) {
+            // Shorts용 크기 (9:16)
+            youtubePreviewContainer.querySelector('.ratio').className = 'ratio';
+            youtubePreviewContainer.querySelector('.ratio').style.aspectRatio = '9/16';
+            youtubePreviewContainer.querySelector('.ratio').style.maxWidth = '315px';
+            youtubePreviewContainer.querySelector('.ratio').style.margin = '0 auto';
+        } else {
+            // 일반 비디오용 크기 (16:9)
+            youtubePreviewContainer.querySelector('.ratio').className = 'ratio ratio-16x9';
+            youtubePreviewContainer.querySelector('.ratio').style.aspectRatio = '';
+            youtubePreviewContainer.querySelector('.ratio').style.maxWidth = '';
+            youtubePreviewContainer.querySelector('.ratio').style.margin = '';
+        }
+
+        // 기본 동영상 길이 설정
         if (!durationSec.value) {
-            durationSec.value = 180; // 3분으로 기본 설정
+            durationSec.value = 180;
         }
     }
 
@@ -495,9 +521,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * 개선된 YouTube URL에서 비디오 ID 추출
-     * @param {string} input - YouTube URL 또는 ID
-     * @returns {string|null} - 추출된 비디오 ID 또는 null
+     * YouTube URL에서 비디오 ID 추출
      */
     function extractYouTubeId(input) {
         if (!input) return null;
@@ -511,16 +535,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 2. 다양한 YouTube URL 패턴 처리
         const patterns = [
-            // 일반 URL: https://www.youtube.com/watch?v=VIDEO_ID
             /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
-            // 짧은 URL: https://youtu.be/VIDEO_ID
             /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-            // 임베드 URL: https://www.youtube.com/embed/VIDEO_ID
             /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-            // 모바일 URL: https://m.youtube.com/watch?v=VIDEO_ID
             /(?:m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
-            // 유튜브 앱 공유 URL: https://youtube.com/watch?v=VIDEO_ID (www 없음)
-            /(?:^youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/
+            /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+            /(?:youtu\.be\/shorts\/)([a-zA-Z0-9_-]{11})/
         ];
 
         for (const pattern of patterns) {
@@ -535,13 +555,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /**
      * 파일 크기 포맷팅
-     * @param {number} bytes - 바이트 수
-     * @returns {string} - 포맷팅된 크기
      */
     function formatFileSize(bytes) {
-        if (bytes === 0) {
-            return '0 Bytes';
-        }
+        if (bytes === 0) return '0 Bytes';
 
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -556,16 +572,18 @@ document.addEventListener('DOMContentLoaded', function () {
     function initDateTimePicker() {
         const publishedAtInput = document.getElementById('publishedAt');
 
-        flatpickr(publishedAtInput, {
-            locale: 'ko',
-            enableTime: true,
-            dateFormat: 'Y-m-d H:i',
-            time_24hr: true,
-            minuteIncrement: 5,
-            allowInput: true,
-            disableMobile: true,
-            defaultDate: publishedAtInput.value || new Date()
-        });
+        if (publishedAtInput) {
+            flatpickr(publishedAtInput, {
+                locale: 'ko',
+                enableTime: true,
+                dateFormat: 'Y-m-d H:i',
+                time_24hr: true,
+                minuteIncrement: 5,
+                allowInput: true,
+                disableMobile: true,
+                defaultDate: publishedAtInput.value || new Date()
+            });
+        }
     }
 
     /**
@@ -596,8 +614,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (!durationSecValue) {
-            showAlert('영상 길이를 입력해주세요.', 'danger');
+        if (!durationSecValue || isNaN(durationSecValue) || parseInt(durationSecValue) <= 0) {
+            showAlert('올바른 영상 길이를 입력해주세요.', 'danger');
             durationSec.focus();
             return;
         }
@@ -613,7 +631,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // YouTube ID 추출 가능한지 확인
             const extractedId = extractYouTubeId(youtubeUrlValue);
             if (!extractedId) {
                 showAlert('올바른 유튜브 URL 또는 ID를 입력해주세요.', 'warning');
@@ -621,13 +638,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
         } else {
-            // 파일 업로드 검증 (수정이 아닌 경우에만 필수)
+            // 파일 업로드 검증
             if (!isEditing && !videoFile.files.length) {
                 showAlert('동영상 파일을 업로드해주세요.', 'danger');
                 return;
             }
 
-            // 썸네일 검증 (파일 업로드이고 수정이 아닌 경우에만 필수)
             if (!isEditing && !thumbnailFile.files.length) {
                 showAlert('썸네일 이미지를 업로드해주세요.', 'danger');
                 return;
@@ -646,15 +662,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const originalBtnText = btnSubmit.innerHTML;
         btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
 
-        // FormData 객체 생성
         const formData = new FormData(videoForm);
 
-        // 수정 모드인지 확인하여 URL 및 메서드 결정
         const endpoint = isEditing
             ? {url: '/admin/original/video/update', method: 'POST'}
             : {url: '/admin/original/video/upload', method: 'POST'};
 
-        // 체크박스 상태 수동 추가 (선택되지 않은 경우 false로 전송)
+        // 체크박스 상태 수동 추가
         formData.set('isPublic', document.getElementById('isPublic').checked);
         formData.set('isHot', document.getElementById('isHot').checked);
 
@@ -667,45 +681,38 @@ document.addEventListener('DOMContentLoaded', function () {
             method: endpoint.method,
             body: formData
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('서버 응답 오류: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(result => {
-                if (result.status.code === 'OK_0000') {
-                    showAlert(isEditing ? '동영상이 성공적으로 수정되었습니다.' : '동영상이 성공적으로 업로드되었습니다.',
-                        'success');
-                    // 1초 후 목록 페이지로 이동
-                    setTimeout(() => {
-                        window.location.href = '/admin/original/video/list';
-                    }, 1000);
-                } else {
-                    throw new Error(result.message || '처리 중 오류가 발생했습니다.');
-                }
-            })
-            .catch(error => {
-                console.error('요청 오류:', error);
-                showAlert('요청 처리 중 오류가 발생했습니다: ' + error.message, 'danger');
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = originalBtnText;
-            });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('서버 응답 오류: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(result => {
+            if (result.status && result.status.code === 'OK_0000') {
+                showAlert(isEditing ? '동영상이 성공적으로 수정되었습니다.' : '동영상이 성공적으로 업로드되었습니다.', 'success');
+                setTimeout(() => {
+                    window.location.href = '/admin/original/video/list';
+                }, 1000);
+            } else {
+                throw new Error(result.message || '처리 중 오류가 발생했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('요청 오류:', error);
+            showAlert('요청 처리 중 오류가 발생했습니다: ' + error.message, 'danger');
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = originalBtnText;
+        });
     }
 
     /**
      * 알림 표시 함수
-     * @param {string} message - 알림 메시지
-     * @param {string} type - 알림 타입 (success, danger, warning, info)
      */
     function showAlert(message, type = 'info') {
-        // 커스텀 알림 시스템 사용
         if (window.CustomNotification) {
             window.CustomNotification.show(message, type);
             return;
         }
-
-        // 기본 alert 사용
         alert(message);
     }
 });
