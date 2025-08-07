@@ -307,29 +307,48 @@ function createVideoListHTML(items) {
     const isNew = item.new;
     const videoId = item.videoId;
     const videoUrl = item.videoUrl;
+    const videoType = getVideoType(item);
+
+    // 유튜브 동영상 ID 추출
+    const youtubeId = videoType === 'youtube' ?
+      (item.youtubeVideoId || extractYouTubeId(videoUrl) || videoId) : null;
 
     return `
-      <div class="video-item" data-id="${videoId}" data-url="${videoUrl}">
+      <div class="video-item" data-id="${videoId}" data-url="${videoUrl}" data-type="${videoType}" data-youtube-id="${youtubeId || ''}">
         <div class="video-thumbnail-container">
           <img src="${item.thumbnailUrl}" alt="${item.title}" class="video-thumbnail">
           
-          <!-- 비디오 요소 (마우스 오버 시 재생) -->
-          <video class="hover-video" src="${videoUrl}" muted preload="none" loop></video>
+          ${videoType === 'uploaded' ? `
+            <!-- 직접 업로드 동영상만 hover-video 적용 -->
+            <video class="hover-video" src="${videoUrl}" muted preload="none" loop></video>
+          ` : `
+            <!-- 유튜브 동영상은 iframe 미리보기 (선택사항) -->
+            <div class="youtube-preview-container" style="display: none;">
+              <iframe 
+                class="youtube-preview-iframe" 
+                src="https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1" 
+                frameborder="0" 
+                allow="autoplay; encrypted-media">
+              </iframe>
+            </div>
+          `}
           
           <span class="video-duration">${formatDuration(item.durationSec)}</span>
           ${isNew ? '<span class="video-badge badge-new">N</span>' : ''}
+          
           <div class="play-overlay">
             <div class="play-button">
               <i class="fas fa-play"></i>
             </div>
           </div>
         </div>
+        
         <div class="video-info" data-id="${videoId}">
           <h3 class="video-title">${item.title}</h3>
           <div class="video-meta">
-            <span class="video-date">${formatDate(
-        item.publishedAt || item.createdAt)}</span>
+            <span class="video-date">${formatDate(item.publishedAt || item.createdAt)}</span>
             <span class="video-views">조회수 ${formatViews(item.viewCount)}회</span>
+            ${videoType === 'youtube' ? '<span class="video-source">YouTube</span>' : ''}
           </div>
         </div>
       </div>
@@ -347,15 +366,23 @@ function createShortsListHTML(items) {
     const isNew = item.new;
     const videoId = item.videoId;
     const videoUrl = item.videoUrl;
+    const videoType = getVideoType(item);
+
+    // 유튜브 동영상 ID 추출
+    const youtubeId = videoType === 'youtube' ?
+      (item.youtubeVideoId || extractYouTubeId(videoUrl) || videoId) : null;
 
     return `
-      <div class="shorts-item" data-id="${videoId}" data-url="${videoUrl}">
+      <div class="shorts-item" data-id="${videoId}" data-url="${videoUrl}" data-type="${videoType}" data-youtube-id="${youtubeId || ''}">
         <img src="${item.thumbnailUrl}" alt="${item.title}" class="shorts-thumbnail">
         
-        <!-- 비디오 요소 (마우스 오버 시 재생) -->
-        <video class="hover-video" src="${videoUrl}" muted preload="none" loop></video>
+        ${videoType === 'uploaded' ? `
+          <!-- 직접 업로드 쇼츠만 hover-video 적용 -->
+          <video class="hover-video" src="${videoUrl}" muted preload="none" loop></video>
+        ` : ''}
         
         ${isNew ? '<span class="shorts-badge badge-new">N</span>' : ''}
+        
         <div class="shorts-overlay" data-id="${videoId}">
           <h3 class="shorts-title">${item.title}</h3>
           <span class="shorts-views">조회수 ${formatViews(item.viewCount)}회</span>
@@ -427,6 +454,14 @@ function initContentItemsClick(tab) {
   const items = document.querySelectorAll(`.${tab}-item`);
   items.forEach(item => {
     item.addEventListener('click', function(e) {
+      const videoType = this.getAttribute('data-type');
+      const contentId = this.getAttribute('data-id');
+      const youtubeId = this.getAttribute('data-youtube-id');
+
+      if (!contentId) {
+        return;
+      }
+
       // 비디오 영역 클릭 시 미리보기가 시작된 경우 이벤트 중지
       if (tab !== 'article' &&
           e.target.closest('.video-thumbnail-container') &&
@@ -434,13 +469,18 @@ function initContentItemsClick(tab) {
         return;
       }
 
-      const contentId = this.getAttribute('data-id');
-      if (!contentId) {
-        return;
-      }
+      // 유튜브 동영상인 경우 처리 방식 선택
+      if (videoType === 'youtube' && youtubeId) {
+        // 옵션 1: 유튜브로 직접 이동
+        // window.open(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank');
+        // return;
 
-      // 콘텐츠 상세 페이지로 이동
-      navigateToDetail(tab, contentId);
+        // 옵션 2: 내 사이트의 상세 페이지로 이동 (유튜브 임베드)
+        navigateToDetail(tab, contentId, videoType);
+      } else {
+        // 직접 업로드 동영상은 기존대로 처리
+        navigateToDetail(tab, contentId, videoType);
+      }
     });
   });
 
@@ -458,19 +498,23 @@ function initContentItemsClick(tab) {
           return;
         }
 
+        const parentItem = this.closest(`.${tab}-item`);
+        const videoType = parentItem?.getAttribute('data-type') || 'uploaded';
+
         // 콘텐츠 상세 페이지로 이동
-        navigateToDetail(tab, contentId);
+        navigateToDetail(tab, contentId, videoType);
       });
     });
   }
 }
+
 
 /**
  * 콘텐츠 상세 페이지로 이동
  * @param {string} tab - 탭 종류
  * @param {string|number} contentId - 콘텐츠 ID
  */
-function navigateToDetail(tab, contentId) {
+function navigateToDetail(tab, contentId, videoType = 'uploaded') {
   let detailPage = '';
 
   switch (tab) {
@@ -487,8 +531,50 @@ function navigateToDetail(tab, contentId) {
 
   saveCurrentTab(tab);
 
-  window.location.href = `${detailPage}?id=${contentId}`;
+  // 동영상 타입을 쿼리 파라미터로 전달
+  const separator = detailPage.includes('?') ? '&' : '?';
+  window.location.href = `${detailPage}?id=${contentId}${separator}type=${videoType}`;
 }
+
+/**
+ * 동영상 타입 판별 함수
+ * @param {Object} item - 동영상 아이템
+ * @returns {string} 'youtube' | 'uploaded'
+ */
+function getVideoType(item) {
+  // videoUrl이 유튜브 링크인지 확인
+  if (item.videoUrl && (
+    item.videoUrl.includes('youtube.com') ||
+    item.videoUrl.includes('youtu.be') ||
+    item.videoUrl.includes('youtube.com/embed')
+  )) {
+    return 'youtube';
+  }
+
+  // youtubeVideoId가 있으면 유튜브
+  if (item.youtubeVideoId || item.videoId?.length === 11) {
+    return 'youtube';
+  }
+
+  // 그 외는 직접 업로드
+  return 'uploaded';
+}
+
+
+/**
+ * 유튜브 동영상 ID 추출 함수
+ * @param {string} url - 유튜브 URL
+ * @returns {string|null} 동영상 ID
+ */
+function extractYouTubeId(url) {
+  if (!url) return null;
+
+  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+}
+
+
 
 /**
  * 비디오 마우스 오버 미리보기 초기화
@@ -498,10 +584,12 @@ function initVideoHoverPreview(tab) {
   const videoContainers = document.querySelectorAll(`.${tab}-item`);
 
   videoContainers.forEach(container => {
+    const videoType = container.getAttribute('data-type');
     const thumbnailImg = container.querySelector(`.${tab}-thumbnail`);
     const videoElement = container.querySelector('.hover-video');
 
-    if (!thumbnailImg || !videoElement) {
+    // 유튜브 동영상은 호버 미리보기 적용하지 않음
+    if (videoType === 'youtube' || !videoElement || !thumbnailImg) {
       return;
     }
 
@@ -537,26 +625,11 @@ function initVideoHoverPreview(tab) {
       }, 1000);
     });
 
-    // 모바일: 위로 스와이프 감지
-    // container.addEventListener('touchmove', function (e) {
-    //   const currentY = e.touches[0].clientY;
-    //   const deltaY = touchStartY - currentY;
-    //
-    //   // 위로 25px 이상 스와이프하면 미리보기 시작
-    //   if (deltaY > 25) {
-    //     clearTimeout(touchTimer); // 기존 터치 타이머 취소
-    //     if (!previewStarted) {
-    //       previewStarted = true;
-    //       e.preventDefault(); // 스와이프로 미리보기 시작할 때만 기본 동작 방지
-    //       startVideoPreview();
-    //     }
-    //   }
-    // });
     container.addEventListener('touchmove', function (e) {
       const currentY = e.touches[0].clientY;
       const deltaY = touchStartY - currentY;
 
-      // 위로 25px 이상 스와이프하면 미리보기 시작 (preventDefault 없이)
+      // 위로 25px 이상 스와이프하면 미리보기 시작
       if (deltaY > 25) {
         clearTimeout(touchTimer);
         if (!previewStarted) {
@@ -605,22 +678,6 @@ function initVideoHoverPreview(tab) {
     });
 
     // 모바일: touchend 이벤트
-    // container.addEventListener('touchend', function (e) {
-    //   clearTimeout(touchTimer); // 터치 타이머 취소
-    //
-    //   // 터치 지속 시간이 짧으면(300ms 미만) 클릭으로 간주
-    //   const touchEndTime = Date.now();
-    //   const touchDuration = touchEndTime - touchStartTime;
-    //
-    //   if (previewStarted) {
-    //     // 미리보기가 시작된 상태면 멈추고 클릭 이벤트 방지
-    //     e.preventDefault();
-    //     stopVideoPreview();
-    //   } else if (touchDuration < 300) {
-    //     // 짧은 터치는 클릭 이벤트 그대로 통과 (기본 동작 유지)
-    //     // 아무 것도 하지 않음
-    //   }
-    // });
     container.addEventListener('touchend', function (e) {
       clearTimeout(touchTimer);
 
@@ -630,7 +687,6 @@ function initVideoHoverPreview(tab) {
       if (previewStarted) {
         stopVideoPreview();
       }
-      // preventDefault를 호출하지 않음
     });
 
     // 비디오 미리보기 중지 함수

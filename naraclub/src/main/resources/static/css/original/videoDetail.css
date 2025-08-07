@@ -450,6 +450,75 @@
   padding: 20px;
 }
 
+/* 유튜브 플레이어 스타일 */
+.youtube-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none; /* 초기에는 숨김 */
+  border: none;
+  background-color: #000;
+}
+
+/* 유튜브 영상일 때 기존 비디오 컨트롤 숨김 */
+.video-wrapper.youtube-mode .video-controls {
+  display: none !important;
+}
+
+/* 유튜브 영상일 때 비디오 플레이어 숨김 */
+.video-wrapper.youtube-mode .video-player {
+  display: none !important;
+}
+
+/* 전체화면에서 유튜브 플레이어 */
+.fullscreen-video .youtube-player {
+  z-index: 10000;
+}
+
+/* 유튜브 로딩 표시 */
+.youtube-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 10px 15px;
+  border-radius: 5px;
+  z-index: 5;
+}
+
+/* 유튜브 영상 표시기 */
+.youtube-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #ff0000;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  z-index: 3;
+}
+
+/* 반응형: 모바일에서 유튜브 플레이어 최적화 */
+@media (max-width: 480px) {
+  .youtube-player {
+    /* 모바일에서도 전체 영역 사용 */
+    width: 100%;
+    height: 100%;
+  }
+
+  .youtube-indicator {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+}
+
 /* 반응형 스타일 */
 @media (max-width: 480px) {
   .video-title {

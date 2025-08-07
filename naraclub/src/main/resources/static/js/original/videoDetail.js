@@ -13,8 +13,34 @@ let isPlaying = false;
 let isMuted = false;
 let isFullscreen = false;
 let shareModal = null;
-let videoType = null;
+let videoType = null; // API 호출용 (사용하지 않음)
+let shareVideoType = null; // 공유 기능용
+let isYouTubeVideo = false;
 
+// URL 정리 함수 - type 파라미터 제거
+(function cleanupUrl() {
+  console.log('URL 정리 시작:', window.location.href);
+
+  const urlParams = new URLSearchParams(window.location.search);
+  let urlChanged = false;
+
+  // type 파라미터 제거
+  if (urlParams.has('type')) {
+    console.log('⚠️ type 파라미터 발견 및 제거:', urlParams.get('type'));
+    urlParams.delete('type');
+    urlChanged = true;
+  }
+
+  // URL 업데이트
+  if (urlChanged) {
+    const cleanUrl = urlParams.toString()
+      ? `${window.location.pathname}?${urlParams.toString()}`
+      : window.location.pathname;
+
+    window.history.replaceState({}, '', cleanUrl);
+    console.log('✅ URL 정리 완료:', cleanUrl);
+  }
+})();
 
 // 문서 로드 완료 시 실행
 document.addEventListener('DOMContentLoaded', function () {
@@ -24,10 +50,6 @@ document.addEventListener('DOMContentLoaded', function () {
   initBackButton();
   // 비디오 데이터 로드
   loadVideoData();
-  // 비디오 플레이어 초기화
-  initVideoPlayer();
-  // 비디오 컨트롤 초기화
-  initVideoControls();
   // 공유 버튼 초기화
   initShareFeatures();
   // 댓글 영역은 별도로 처리
@@ -49,9 +71,8 @@ function initBackButton() {
         let tabType = 'video';
 
         // videoData가 로드된 경우에만 콘텐츠 타입 확인
-        if (videoData && videoData.originalType) {
-          tabType = videoData.originalType === 'YOUTUBE_SHORTS' ? 'shorts'
-              : 'video';
+        if (videoData && videoData.type) {
+          tabType = videoData.type === 'YOUTUBE_SHORTS' ? 'shorts' : 'video';
         }
 
         // 현재 탭 정보 저장
@@ -73,6 +94,38 @@ function getVideoIdFromUrl() {
 }
 
 /**
+ * 유튜브 동영상 ID 추출 함수
+ */
+function extractYouTubeId(url) {
+  if (!url) return null;
+
+  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+}
+
+/**
+ * 동영상 타입 판별 함수 (YouTube vs 직접 업로드)
+ */
+function determineVideoType(data) {
+  console.log('비디오 타입 판별 시작:', data);
+
+  // type이 YouTube 관련이면서 youtubeId가 존재하는 경우만 YouTube로 판단
+  if (data.type && (data.type === 'YOUTUBE_VIDEO' || data.type === 'YOUTUBE_SHORTS')) {
+    if (data.youtubeVideoId || data.youtubeId || extractYouTubeId(data.videoUrl)) {
+      console.log('✅ YouTube 비디오 (type + youtubeId):', data.type);
+      return true;
+    } else {
+      console.log('✅ 직접 업로드 비디오 (type은 YouTube이지만 youtubeId 없음):', data.type);
+      return false;
+    }
+  }
+
+  console.log('✅ 일반 업로드 비디오 (type:', data.type + ')');
+  return false;
+}
+
+/**
  * 비디오 데이터 로드
  */
 async function loadVideoData() {
@@ -84,13 +137,36 @@ async function loadVideoData() {
   }
 
   try {
-    const response = await optionalAuthFetch(`/api/videos/${videoId}`);
+    // videoID에서 불필요한 파라미터 제거
+    const cleanVideoId = videoId.toString().split('?')[0];
+
+    // type 파라미터 없이 깔끔한 API 호출
+    const apiUrl = `/api/videos/${cleanVideoId}`;
+    console.log('📡 API 호출:', apiUrl);
+
+    const response = await optionalAuthFetch(apiUrl);
     const data = await response.json();
     if (!data?.response) {
       throw new Error('Invalid video data');
     }
     videoData = data.response;
+
+    // 유튜브 영상인지 판별
+    isYouTubeVideo = determineVideoType(videoData);
+    console.log('📱 YouTube 비디오 여부:', isYouTubeVideo);
+
     updateVideoUI(videoData);
+
+    // 유튜브 영상이면 유튜브 플레이어 초기화, 아니면 기본 플레이어 초기화
+    if (isYouTubeVideo) {
+      console.log('🎬 YouTube 플레이어 초기화');
+      initYouTubePlayer(videoData);
+    } else {
+      console.log('🎬 일반 비디오 플레이어 초기화');
+      initVideoPlayer();
+      initVideoControls();
+    }
+
   } catch (error) {
     console.error('비디오 데이터 로드 오류:', error);
     handleFetchError(error);
@@ -101,27 +177,13 @@ async function loadVideoData() {
  * 비디오 UI 업데이트
  */
 function updateVideoUI(data) {
-
-  videoType = data.type === 'YOUTUBE_VIDEO' ? 'video_long' : 'video_short';
+  // 공유용 비디오 타입 설정 (공유 API에서 사용)
+  shareVideoType = data.type || (isYouTubeVideo ? 'YOUTUBE_VIDEO' : 'UPLOADED');
 
   // 타이틀 업데이트
   const titleElement = document.getElementById('videoTitle');
   if (titleElement) {
     titleElement.textContent = data.title;
-  }
-
-  // 썸네일 업데이트
-  const thumbnailElement = document.getElementById('videoThumbnail');
-  if (thumbnailElement) {
-    thumbnailElement.src = data.thumbnailUrl;
-    thumbnailElement.alt = data.title;
-  }
-
-  // 비디오 소스 업데이트
-  const videoElement = document.getElementById('videoPlayer');
-  if (videoElement) {
-    videoElement.src = data.videoUrl;
-    videoElement.poster = data.thumbnailUrl;
   }
 
   // 날짜 업데이트
@@ -153,12 +215,125 @@ function updateVideoUI(data) {
 }
 
 /**
- * 비디오 플레이어 초기화
+ * 유튜브 플레이어 초기화
+ */
+function initYouTubePlayer(data) {
+  const videoWrapper = document.getElementById('videoWrapper');
+  const thumbnailContainer = document.getElementById('thumbnailContainer');
+  const videoPlayerElement = document.getElementById('videoPlayer');
+  const videoControls = document.getElementById('videoControls');
+
+  // 유튜브 ID 추출
+  const youtubeId = data.youtubeVideoId || data.youtubeId || extractYouTubeId(data.videoUrl) || data.videoId;
+
+  if (!youtubeId) {
+    console.error('유튜브 ID를 찾을 수 없습니다.');
+    return;
+  }
+
+  // 기존 video 요소와 컨트롤 숨김
+  if (videoPlayerElement) {
+    videoPlayerElement.style.display = 'none';
+  }
+  if (videoControls) {
+    videoControls.style.display = 'none';
+  }
+
+  // 썸네일 설정
+  const thumbnailElement = document.getElementById('videoThumbnail');
+  if (thumbnailElement) {
+    thumbnailElement.src = data.thumbnailUrl || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+    thumbnailElement.alt = data.title;
+  }
+
+  // 유튜브 iframe 생성
+  const youtubeIframe = document.createElement('iframe');
+  youtubeIframe.id = 'youtubePlayer';
+  youtubeIframe.className = 'youtube-player';
+  youtubeIframe.src = `https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1&controls=1`;
+  youtubeIframe.frameBorder = '0';
+  youtubeIframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+  youtubeIframe.allowFullscreen = true;
+  youtubeIframe.style.display = 'none';
+  youtubeIframe.style.position = 'absolute';
+  youtubeIframe.style.top = '0';
+  youtubeIframe.style.left = '0';
+  youtubeIframe.style.width = '100%';
+  youtubeIframe.style.height = '100%';
+
+  // iframe을 wrapper에 추가
+  if (videoWrapper) {
+    videoWrapper.appendChild(youtubeIframe);
+  }
+
+  // 썸네일 클릭 이벤트
+  if (thumbnailContainer) {
+    thumbnailContainer.addEventListener('click', function() {
+      startYouTubePlayback(youtubeIframe, thumbnailContainer);
+    });
+  }
+
+  // 재생 버튼 클릭 이벤트
+  const playButton = document.getElementById('playButton');
+  if (playButton) {
+    playButton.addEventListener('click', function() {
+      startYouTubePlayback(youtubeIframe, thumbnailContainer);
+    });
+  }
+}
+
+/**
+ * 유튜브 재생 시작
+ */
+function startYouTubePlayback(iframe, thumbnailContainer) {
+  // 썸네일 숨기기
+  if (thumbnailContainer) {
+    thumbnailContainer.style.display = 'none';
+  }
+
+  // 유튜브 iframe 표시
+  if (iframe) {
+    iframe.style.display = 'block';
+
+    // 자동 재생을 위해 src에 autoplay 파라미터 추가
+    const currentSrc = iframe.src;
+    if (!currentSrc.includes('autoplay=1')) {
+      iframe.src = currentSrc + '&autoplay=1';
+    }
+  }
+}
+
+/**
+ * 일반 비디오 플레이어 초기화 (직접 업로드 영상용)
  */
 function initVideoPlayer() {
   const videoWrapper = document.getElementById('videoWrapper');
   const thumbnailContainer = document.getElementById('thumbnailContainer');
   const playButton = document.getElementById('playButton');
+
+  console.log('일반 비디오 플레이어 초기화 시작:', videoData);
+
+  // 썸네일 설정
+  const thumbnailElement = document.getElementById('videoThumbnail');
+  if (thumbnailElement && videoData) {
+    const thumbnailUrl = videoData.thumbnailUrl || '/images/default-thumbnail.jpg';
+    thumbnailElement.src = thumbnailUrl;
+    thumbnailElement.alt = videoData.title;
+    console.log('썸네일 설정:', thumbnailUrl);
+  }
+
+  // 비디오 소스 설정
+  if (videoPlayer && videoData) {
+    const videoUrl = videoData.videoUrl || videoData.url || videoData.src;
+    if (videoUrl) {
+      videoPlayer.src = videoUrl;
+      videoPlayer.poster = videoData.thumbnailUrl;
+      console.log('비디오 소스 설정:', videoUrl);
+    } else {
+      console.error('비디오 URL을 찾을 수 없습니다:', videoData);
+      return;
+    }
+  }
 
   // 썸네일 클릭 시 비디오 재생
   if (thumbnailContainer) {
@@ -174,11 +349,13 @@ function initVideoPlayer() {
   if (videoPlayer) {
     // 메타데이터 로드 완료 시
     videoPlayer.addEventListener('loadedmetadata', function () {
+      console.log('비디오 메타데이터 로드 완료');
       updateTotalTime();
     });
 
     // 재생 시작 시
     videoPlayer.addEventListener('play', function () {
+      console.log('비디오 재생 시작');
       isPlaying = true;
       updatePlayPauseButton();
       startProgressInterval();
@@ -186,6 +363,7 @@ function initVideoPlayer() {
 
     // 일시 정지 시
     videoPlayer.addEventListener('pause', function () {
+      console.log('비디오 일시정지');
       isPlaying = false;
       updatePlayPauseButton();
       stopProgressInterval();
@@ -193,6 +371,7 @@ function initVideoPlayer() {
 
     // 재생 완료 시
     videoPlayer.addEventListener('ended', function () {
+      console.log('비디오 재생 완료');
       isPlaying = false;
       updatePlayPauseButton();
       stopProgressInterval();
@@ -203,11 +382,17 @@ function initVideoPlayer() {
     videoPlayer.addEventListener('volumechange', function () {
       updateVolumeUI();
     });
+
+    // 에러 처리
+    videoPlayer.addEventListener('error', function(e) {
+      console.error('비디오 로드 에러:', e);
+      alert('동영상을 불러올 수 없습니다.');
+    });
   }
 }
 
 /**
- * 재생 시작
+ * 일반 비디오 재생 시작 (직접 업로드 영상용)
  */
 function startPlayback(event) {
   event.preventDefault();
@@ -253,8 +438,14 @@ function startPlayback(event) {
 function showThumbnail() {
   const thumbnailContainer = document.getElementById('thumbnailContainer');
   const videoControls = document.getElementById('videoControls');
+  const youtubePlayer = document.getElementById('youtubePlayer');
 
-  // 비디오 숨기고 썸네일 표시
+  // 유튜브 플레이어 숨기기
+  if (youtubePlayer) {
+    youtubePlayer.style.display = 'none';
+  }
+
+  // 일반 비디오 플레이어 숨기기
   if (videoPlayer) {
     videoPlayer.style.display = 'none';
   }
@@ -264,16 +455,21 @@ function showThumbnail() {
     thumbnailContainer.style.display = 'block';
   }
 
-  // 컨트롤 숨김
-  if (videoControls) {
+  // 컨트롤 숨김 (일반 비디오만)
+  if (videoControls && !isYouTubeVideo) {
     videoControls.style.display = 'none';
   }
 }
 
 /**
- * 비디오 컨트롤 초기화
+ * 비디오 컨트롤 초기화 (직접 업로드 영상만)
  */
 function initVideoControls() {
+  // 유튜브 영상이면 컨트롤 초기화하지 않음
+  if (isYouTubeVideo) {
+    return;
+  }
+
   const playPauseButton = document.getElementById('playPauseButton');
   const muteButton = document.getElementById('muteButton');
   const volumeSlider = document.getElementById('volumeSlider');
@@ -525,8 +721,7 @@ function initMoreButton() {
 
   if (moreButton && descriptionElement) {
     // 내용이 줄임 표시가 필요한지 확인
-    const isOverflowing = descriptionElement.scrollHeight
-        > descriptionElement.clientHeight;
+    const isOverflowing = descriptionElement.scrollHeight > descriptionElement.clientHeight;
 
     // 내용이 넘치는 경우에만 더보기 버튼 표시
     moreButton.style.display = isOverflowing ? 'block' : 'none';
@@ -536,8 +731,7 @@ function initMoreButton() {
       descriptionElement.classList.toggle('expanded');
 
       // 버튼 텍스트 변경
-      this.textContent = descriptionElement.classList.contains('expanded')
-          ? '접기' : '더보기';
+      this.textContent = descriptionElement.classList.contains('expanded') ? '접기' : '더보기';
     });
   }
 }
@@ -659,9 +853,9 @@ async function setupKakaoShare() {
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
       },
       serverCallbackArgs: {
-        type: videoType,      // 'board' | 'vote' | 'news' | 'video'
-        id: id,        // 게시물 PK
-        userId: userId // 로그인한 회원 ID
+        type: shareVideoType, // 공유용 타입 사용
+        id: id,
+        userId: userId
       }
     });
   } else {
@@ -676,9 +870,9 @@ async function setupKakaoShare() {
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
       },
       serverCallbackArgs: {
-        type: videoType,      // 'board' | 'vote' | 'news' | 'video'
-        id: id,        // 게시물 PK
-        userId: userId // 로그인한 회원 ID
+        type: shareVideoType, // 공유용 타입 사용
+        id: id,
+        userId: userId
       }
     });
   }
@@ -688,7 +882,8 @@ async function setupKakaoShare() {
  * X(구 Twitter) 공유 함수
  */
 async function shareToX() {
-  const title = document.querySelector('.post-title')?.textContent.trim() || '';
+  const title = document.querySelector('.video-title')?.textContent.trim() ||
+               document.getElementById('videoTitle')?.textContent.trim() || '';
   const postId = getVideoIdFromUrl();
   const shareUrl = `https://club1.newstomato.com/share/original/${postId}`;
 
@@ -699,7 +894,7 @@ async function shareToX() {
       body: JSON.stringify({
         title: title,
         shareUrl: shareUrl,
-        type: videoType.toUpperCase(),
+        type: shareVideoType.toUpperCase(), // 공유용 타입 사용
         targetId: postId
       })
     });
@@ -798,9 +993,12 @@ function initComments() {
 
     loading = true;
     try {
-      const res = await optionalAuthFetch(
-          `/api/videos/${videoId}/comments?page=${page}&size=${pageSize}`
-      );
+      // videoId가 깨끗한지 확인하고 댓글 API 호출
+      const cleanVideoId = videoId.toString().split('?')[0]; // ? 이후 제거
+      const commentApiUrl = `/api/videos/${cleanVideoId}/comments?page=${page}&size=${pageSize}`;
+      console.log('댓글 API 호출:', commentApiUrl);
+
+      const res = await optionalAuthFetch(commentApiUrl);
       const data = await res.json();
       const items = data.response.data || [];
 
@@ -845,8 +1043,13 @@ function initComments() {
     }
 
     try {
+      // videoId가 깨끗한지 확인
+      const cleanVideoId = videoId.toString().split('?')[0]; // ? 이후 제거
+      const submitApiUrl = `/api/videos/${cleanVideoId}/comments`;
+      console.log('댓글 등록 API 호출:', submitApiUrl);
+
       const res = await authFetch(
-          `/api/videos/${videoId}/comments`,
+          submitApiUrl,
           {
             method: 'POST',
             headers: {
@@ -893,8 +1096,11 @@ function initComments() {
 
       if (e.target.classList.contains('delete-btn')) {
         try {
+          // videoId가 깨끗한지 확인
+          const cleanVideoId = videoId.toString().split('?')[0]; // ? 이후 제거
+
           await authFetch(
-              `/api/videos/${videoId}/comments/${id}`,
+              `/api/videos/${cleanVideoId}/comments/${id}`,
               {method: 'DELETE'}
           );
           item.remove();
@@ -921,8 +1127,11 @@ function initComments() {
         if (p.isContentEditable) {
           p.contentEditable = false;
           try {
+            // videoId가 깨끗한지 확인
+            const cleanVideoId = videoId.toString().split('?')[0]; // ? 이후 제거
+
             await authFetch(
-                `/api/videos/${videoId}/comments/${id}`,
+                `/api/videos/${cleanVideoId}/comments/${id}`,
                 {
                   method: 'PUT',
                   headers: {
@@ -982,6 +1191,9 @@ function updateCommentCount(count) {
  * 숫자 포맷 (천 단위 콤마)
  */
 function formatNumber(num) {
+  if (num >= 10000) {
+    return (num / 10000).toFixed(1) + '만';
+  }
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
@@ -993,14 +1205,27 @@ function formatDate(dateString) {
     return '';
   }
 
+  const now = new Date();
   const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  return `${year}.${month}.${day} ${hours}:${minutes}`;
+  if (diffMins < 1) {
+    return '방금 전';
+  } else if (diffMins < 60) {
+    return `${diffMins}분 전`;
+  } else if (diffHours < 24) {
+    return `${diffHours}시간 전`;
+  } else if (diffDays < 7) {
+    return `${diffDays}일 전`;
+  } else {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
+  }
 }
 
 /**

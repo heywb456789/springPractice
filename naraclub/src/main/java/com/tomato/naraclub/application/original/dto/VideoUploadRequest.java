@@ -44,6 +44,7 @@ public class VideoUploadRequest {
     private Boolean isHot;
 
     private String youtubeUrl;
+    private String youtubeId;
 
     @NotBlank(message = "업로드 타입은 필수입니다")
     private String uploadType; // "file" 또는 "youtube"
